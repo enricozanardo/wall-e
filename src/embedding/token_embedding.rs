@@ -1,9 +1,8 @@
 use crate::nabla::tensor::Tensor;
-use crate::tokenizer::Vocab;
-use ndarray::{Array, Array2, Array3, Axis};
-use rand::thread_rng;
-use rand_distr::{Normal, Distribution};
+use ndarray::{Array, Array2};
 use rayon::prelude::*;
+use ndarray_rand::RandomExt;
+use ndarray_rand::rand_distr::Normal as NdNormal;
 
 use super::Embedding;
 
@@ -21,21 +20,15 @@ pub struct TokenEmbedding {
 impl TokenEmbedding {
     /// Crea un nuovo embedding di token con inizializzazione normale
     pub fn new(vocab_size: usize, embedding_dim: usize) -> Self {
-        // Crea la distribuzione normale con media 0 e deviazione standard 0.02
-        let normal = Normal::new(0.0, 0.02).unwrap();
-        let mut rng = rand::rng();
+        // Inizializzazione thread-safe della matrice di embedding usando ndarray-rand
+        // Usiamo ThreadRng che è thread-safe e genera numeri in parallelo
         
-        // Inizializza la matrice di embedding da una distribuzione normale
-        // Nota: Per parallelizzare questo codice in modo efficiente, si potrebbe:
-        // 1. Usare ndarray-rand con un RngCore thread-safe come ThreadRng
-        // 2. Utilizzare Rayon per costruire una Vec<f32> in parallelo e poi convertirla in Array2
-        // 3. Usare std::sync::Mutex o ArrayView/ArrayViewMut per accesso thread-safe
-        let mut embedding_data = Array::zeros((vocab_size, embedding_dim));
-        for i in 0..vocab_size {
-            for j in 0..embedding_dim {
-                embedding_data[[i, j]] = normal.sample(&mut rng);
-            }
-        }
+        // Crea la distribuzione normale con media 0 e deviazione standard 0.02
+        let normal_dist = NdNormal::new(0.0, 0.02).unwrap();
+        
+        // Genera la matrice di embedding direttamente usando ndarray_rand
+        // Questo è thread-safe e più efficiente di un loop manuale
+        let embedding_data = Array::random((vocab_size, embedding_dim), normal_dist);
         
         TokenEmbedding {
             embedding_matrix: Tensor::new(embedding_data),
@@ -114,7 +107,6 @@ impl Embedding for TokenEmbedding {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::ArrayView;
     
     #[test]
     fn test_token_embedding_creation() {
@@ -127,22 +119,28 @@ mod tests {
     
     #[test]
     fn test_token_embedding_normal_distribution() {
+        // Creiamo un embedding abbastanza grande per avere una distribuzione rappresentativa
         let embedding = TokenEmbedding::new(1000, 64);
         
-        // Calcola la media e la varianza per verificare l'inizializzazione normale
+        // Calcoliamo media e deviazione standard per verificare l'inizializzazione
         let matrix = &embedding.embedding_matrix().data;
-        let flat_view = matrix.view().into_shape(1000 * 64).unwrap();
         
-        let sum: f32 = flat_view.sum();
-        let mean = sum / (1000.0 * 64.0);
+        // Convertiamo la matrice in un vettore piatto per analisi statistica
+        let flat_vec: Vec<f32> = matrix.iter().cloned().collect();
         
-        let sum_sq: f32 = flat_view.iter().map(|&x| (x - mean).powi(2)).sum();
-        let variance = sum_sq / (1000.0 * 64.0);
+        // Usiamo Rayon per calcolare somma e somma dei quadrati in parallelo
+        let sum: f32 = flat_vec.par_iter().sum();
+        let mean = sum / (flat_vec.len() as f32);
+        
+        let sum_sq: f32 = flat_vec.par_iter()
+            .map(|&x| (x - mean).powi(2))
+            .sum();
+        let variance = sum_sq / (flat_vec.len() as f32);
         let std_dev = variance.sqrt();
         
-        // Verifica che la media sia vicina a 0 e la deviazione standard vicina a 0.02
-        assert!(mean.abs() < 0.01, "Mean should be close to 0, got {}", mean);
-        assert!((std_dev - 0.02).abs() < 0.01, "Std dev should be close to 0.02, got {}", std_dev);
+        // Verifichiamo che la media sia vicina a 0 e la deviazione standard vicina a 0.02
+        assert!(mean.abs() < 0.01, "Media dovrebbe essere vicina a 0, è {}", mean);
+        assert!((std_dev - 0.02).abs() < 0.01, "Deviazione standard dovrebbe essere vicina a 0.02, è {}", std_dev);
     }
     
     #[test]
