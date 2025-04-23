@@ -1,7 +1,8 @@
-mod e_tensor;
+mod nabla;
+mod tokenizer;
 
-use ndarray::{Array, s};
-use e_tensor::Tensor;
+use ndarray::Array;
+use nabla::tensor::Tensor;
 
 
 fn main() {
@@ -41,8 +42,8 @@ fn train_simple_model() {
         // Backward pass
         loss.backward(None);
         
-        // Get gradient and update weights
-        let w_grad = w.grad.borrow().clone().unwrap();
+        // Get gradient and update weights - unwrap safely with default
+        let w_grad = w.grad.borrow().clone().unwrap_or_else(|| Array::zeros(w.data.raw_dim()));
         
         // Create new weights by subtracting gradient * learning rate
         let new_weights = &w.data - &(&w_grad * lr);
