@@ -1,272 +1,362 @@
+use ndarray::{Array, Array2, Array3, Axis, Ix3};
+use ndarray_rand::RandomExt;
+use ndarray_rand::rand_distr::Normal;
+
 use crate::nabla::tensor::Tensor;
-use crate::attention::{Attention, create_weight_matrix, softmax};
-use ndarray::{Array2, Axis};
-use std::f32;
+use crate::attention::{Attention, create_weight_matrix, softmax_3d};
 
 /// Implementazione di Self-Attention come descritto nel paper "Attention is All You Need"
-/// 
-/// Self-Attention permette ad ogni posizione nella sequenza di prestare attenzione
-/// a tutte le altre posizioni nella stessa sequenza.
 pub struct SelfAttention {
     /// Dimensione del modello (d_model)
-    d_model: usize,
-    /// Dimensione delle chiavi (d_k)
-    d_k: usize,
-    /// Dimensione dei valori (d_v)
-    d_v: usize,
-    /// Matrice di proiezione di query
-    W_q: Tensor,
-    /// Matrice di proiezione di key
-    W_k: Tensor,
-    /// Matrice di proiezione di value
-    W_v: Tensor,
+    model_dimension: usize,
+    
+    /// Fattore di scala per l'attenzione (1/sqrt(d_k))
+    scale_factor: f32,
+    
+    /// Matrice di proiezione per le query
+    w_query: Array2<f32>,
+    
+    /// Matrice di proiezione per le chiavi
+    w_key: Array2<f32>,
+    
+    /// Matrice di proiezione per i valori
+    w_value: Array2<f32>,
+    
     /// Matrice di proiezione per l'output
-    W_o: Tensor,
+    w_output: Array2<f32>,
 }
 
 impl SelfAttention {
-    /// Crea una nuova istanza di Self-Attention
-    ///
+    /// Crea una nuova istanza di SelfAttention
+    /// 
     /// # Arguments
-    /// * `d_model` - La dimensione del modello
-    /// * `d_k` - La dimensione delle chiavi (di solito d_model / num_heads)
-    /// * `d_v` - La dimensione dei valori (di solito uguale a d_k)
-    ///
+    /// 
+    /// * `model_dimension` - Dimensione del modello (d_model)
+    /// * `std` - Deviazione standard per l'inizializzazione dei pesi
+    /// 
     /// # Returns
-    /// Una nuova istanza di SelfAttention
-    pub fn new(d_model: usize) -> Self {
-        let d_k = d_model;  // per semplicità, usiamo d_k = d_model
-
-        // Inizializza le matrici di proiezione con pesi casuali invece di zeri
-        let W_q = create_weight_matrix(d_model, d_k);
-        let W_k = create_weight_matrix(d_model, d_k);
-        let W_v = create_weight_matrix(d_model, d_k);
-        let W_o = create_weight_matrix(d_k, d_model);
-
-        Self {
-            d_model,
-            d_k,
-            d_v: d_k,
-            W_q,
-            W_k,
-            W_v,
-            W_o,
+    /// 
+    /// * Una nuova istanza di SelfAttention
+    pub fn new(model_dimension: usize, std: f32) -> Self {
+        let scale_factor = 1.0 / (model_dimension as f32).sqrt();
+        
+        // Inizializza le matrici di proiezione per query, key, value e output
+        let w_query = create_weight_matrix(model_dimension, model_dimension, std);
+        let w_key = create_weight_matrix(model_dimension, model_dimension, std);
+        let w_value = create_weight_matrix(model_dimension, model_dimension, std);
+        let w_output = create_weight_matrix(model_dimension, model_dimension, std);
+        
+        SelfAttention {
+            model_dimension,
+            scale_factor,
+            w_query,
+            w_key,
+            w_value,
+            w_output,
         }
     }
     
-    /// Calcola l'attenzione scalata tra query e key
-    ///
+    /// Calcola i punteggi di attenzione
+    /// 
     /// # Arguments
-    /// * `q` - Tensore di query [batch_size * seq_len, d_k]
-    /// * `k` - Tensore di key [batch_size * seq_len, d_k]
-    /// * `v` - Tensore di value [batch_size * seq_len, d_v]
-    /// * `seq_len` - Lunghezza della sequenza
-    /// * `mask` - Opzionale, maschera per l'attenzione [batch_size * seq_len, seq_len]
-    ///
+    /// 
+    /// * `q` - Tensore delle query
+    /// * `k` - Tensore delle chiavi
+    /// * `mask` - Maschera di attenzione opzionale
+    /// 
     /// # Returns
-    /// Tensore di output [batch_size * seq_len, d_v]
-    fn scaled_dot_product_attention(
-        &self,
-        q: &Tensor,
-        k: &Tensor,
-        v: &Tensor,
-        mask: Option<&Tensor>
-    ) -> Tensor {
-        let d_k = self.d_k as f32;
+    /// 
+    /// * Tensore dei punteggi di attenzione
+    fn compute_attention_scores(&self, q: &Array3<f32>, k: &Array3<f32>, mask: Option<&Array3<f32>>) -> Array3<f32> {
+        // Trasposizione delle chiavi per il prodotto matrice-matrice
+        // k_transposed sarà di forma [batch_size, d_k, seq_len]
+        let mut k_transposed = Array3::<f32>::zeros((k.shape()[0], k.shape()[2], k.shape()[1]));
         
-        // QK^T
-        // Utilizziamo il metodo transpose() e matmul_with()
-        let k_transposed = k.transpose();
-        let scores = q.matmul_with(&k_transposed);
-        
-        // Scala i punteggi per la stabilità numerica
-        let scaling_factor = (d_k).sqrt();
-        let scores_scaled_data = &scores.data / scaling_factor;
-        let scores_scaled = Tensor::new(scores_scaled_data);
-        
-        // Applica la maschera se presente
-        let scores_masked = if let Some(mask_tensor) = mask {
-            // Applica la maschera usando una moltiplicazione elemento per elemento
-            // Nei punti dove la maschera è 0, impostiamo -inf
-            let mut masked_data = scores_scaled.data.clone();
-            
-            for ((i, j), val) in masked_data.indexed_iter_mut() {
-                if mask_tensor.data[[i, j]] == 0.0 {
-                    *val = f32::NEG_INFINITY;
+        for b in 0..k.shape()[0] {
+            for i in 0..k.shape()[1] {
+                for j in 0..k.shape()[2] {
+                    k_transposed[[b, j, i]] = k[[b, i, j]];
                 }
             }
-            
-            Tensor::new(masked_data)
-        } else {
-            scores_scaled
-        };
+        }
         
-        // Applica softmax alle righe
-        let mut attention_weights_data = scores_masked.data.clone();
+        // Calcola il prodotto matrice-matrice q * k_t
+        // Risultato sarà di forma [batch_size, seq_len_q, seq_len_k]
+        let mut scores = Array3::<f32>::zeros((q.shape()[0], q.shape()[1], k_transposed.shape()[2]));
         
-        // Calcola softmax per ogni riga
-        for mut row in attention_weights_data.axis_iter_mut(Axis(0)) {
-            // Trova il massimo per stabilità numerica
-            let max_val = row.fold(f32::NEG_INFINITY, |a, &b| a.max(b));
-            
-            // Calcola exp(x_i - max) per ogni elemento
-            let mut exp_sum = 0.0;
-            for val in row.iter_mut() {
-                *val = (*val - max_val).exp();
-                exp_sum += *val;
-            }
-            
-            // Normalizza
-            for val in row.iter_mut() {
-                *val /= exp_sum;
+        for b in 0..q.shape()[0] {
+            for i in 0..q.shape()[1] {
+                for j in 0..k_transposed.shape()[2] {
+                    let mut sum = 0.0;
+                    for k in 0..q.shape()[2] {
+                        sum += q[[b, i, k]] * k_transposed[[b, k, j]];
+                    }
+                    scores[[b, i, j]] = sum * self.scale_factor;
+                }
             }
         }
         
-        let attention_weights = Tensor::new(attention_weights_data);
+        // Applica la maschera se presente
+        if let Some(mask) = mask {
+            for b in 0..scores.shape()[0] {
+                for i in 0..scores.shape()[1] {
+                    for j in 0..scores.shape()[2] {
+                        if mask[[b, i, j]] == 0.0 {
+                            scores[[b, i, j]] = std::f32::NEG_INFINITY;
+                        }
+                    }
+                }
+            }
+        }
         
-        // Calcola il risultato finale: attention_weights * V
-        attention_weights.matmul_with(v)
+        // Applica softmax per ottenere i pesi di attenzione
+        softmax_3d(&scores, 2)
     }
     
-    /// Proietta l'input in query, key e value
-    ///
+    /// Applica i pesi di attenzione ai valori
+    /// 
     /// # Arguments
-    /// * `x` - Tensore di input [batch_size * seq_len, d_model]
-    ///
+    /// 
+    /// * `attention_weights` - Pesi di attenzione
+    /// * `v` - Tensore dei valori
+    /// 
     /// # Returns
-    /// Tripla di tensori (q, k, v) di dimensioni rispettive:
-    /// q: [batch_size * seq_len, d_k]
-    /// k: [batch_size * seq_len, d_k]
-    /// v: [batch_size * seq_len, d_v]
-    fn project_qkv(&self, x: &Tensor) -> (Tensor, Tensor, Tensor) {
-        let q = x.matmul_with(&self.W_q);
-        let k = x.matmul_with(&self.W_k);
-        let v = x.matmul_with(&self.W_v);
-        (q, k, v)
+    /// 
+    /// * Tensore dell'output ponderato
+    fn apply_attention(&self, attention_weights: &Array3<f32>, v: &Array3<f32>) -> Array3<f32> {
+        // attention_weights: [batch_size, seq_len_q, seq_len_k]
+        // v: [batch_size, seq_len_k, d_v]
+        // output: [batch_size, seq_len_q, d_v]
+        
+        let mut output = Array3::<f32>::zeros((
+            attention_weights.shape()[0],  // batch_size
+            attention_weights.shape()[1],  // seq_len_q
+            v.shape()[2],                  // d_v
+        ));
+        
+        for b in 0..attention_weights.shape()[0] {
+            for i in 0..attention_weights.shape()[1] {
+                for j in 0..v.shape()[2] {
+                    let mut sum = 0.0;
+                    for k in 0..attention_weights.shape()[2] {
+                        sum += attention_weights[[b, i, k]] * v[[b, k, j]];
+                    }
+                    output[[b, i, j]] = sum;
+                }
+            }
+        }
+        
+        output
     }
 }
 
 impl Attention for SelfAttention {
-    /// Forward pass dell'attenzione senza maschera
-    ///
-    /// # Arguments
-    /// * `input` - Tensore di input [batch_size * seq_len, d_model]
-    ///
-    /// # Returns
-    /// Tensore di output [batch_size * seq_len, d_model]
-    fn forward(&self, input: &Tensor) -> Tensor {
-        let (q, k, v) = self.project_qkv(input);
-        let attention_output = self.scaled_dot_product_attention(&q, &k, &v, None);
-        attention_output.matmul_with(&self.W_o)
+    fn forward(&self, q: &Tensor, k: &Tensor, v: &Tensor, mask: Option<&Tensor>) -> Tensor {
+        // Ottieni i dati come Array3
+        let q_data = q.data.clone().into_dimensionality::<Ix3>().unwrap();
+        
+        let k_data = k.data.clone().into_dimensionality::<Ix3>().unwrap();
+        
+        let v_data = v.data.clone().into_dimensionality::<Ix3>().unwrap();
+        
+        // Proietta query, key e value
+        let mut q_proj = Array3::<f32>::zeros((
+            q_data.shape()[0],         // batch_size
+            q_data.shape()[1],         // seq_len
+            self.model_dimension,      // d_model
+        ));
+        
+        let mut k_proj = Array3::<f32>::zeros((
+            k_data.shape()[0],         // batch_size
+            k_data.shape()[1],         // seq_len
+            self.model_dimension,      // d_model
+        ));
+        
+        let mut v_proj = Array3::<f32>::zeros((
+            v_data.shape()[0],         // batch_size
+            v_data.shape()[1],         // seq_len
+            self.model_dimension,      // d_model
+        ));
+        
+        // Applica le proiezioni
+        for b in 0..q_data.shape()[0] {
+            for i in 0..q_data.shape()[1] {
+                for j in 0..self.model_dimension {
+                    let mut q_sum = 0.0;
+                    let mut k_sum = 0.0;
+                    let mut v_sum = 0.0;
+                    
+                    for k in 0..q_data.shape()[2] {
+                        q_sum += q_data[[b, i, k]] * self.w_query[[k, j]];
+                        k_sum += k_data[[b, i, k]] * self.w_key[[k, j]];
+                        v_sum += v_data[[b, i, k]] * self.w_value[[k, j]];
+                    }
+                    
+                    q_proj[[b, i, j]] = q_sum;
+                    k_proj[[b, i, j]] = k_sum;
+                    v_proj[[b, i, j]] = v_sum;
+                }
+            }
+        }
+        
+        // Converti la maschera se presente
+        let mask_data = mask.map(|m| {
+            m.data.clone().into_dimensionality::<Ix3>().unwrap()
+        });
+        
+        // Calcola i punteggi di attenzione e applica l'attenzione
+        let attention_weights = self.compute_attention_scores(&q_proj, &k_proj, mask_data.as_ref());
+        let context = self.apply_attention(&attention_weights, &v_proj);
+        
+        // Proietta l'output
+        let mut output = Array3::<f32>::zeros((
+            context.shape()[0],        // batch_size
+            context.shape()[1],        // seq_len
+            self.model_dimension,      // d_model
+        ));
+        
+        for b in 0..context.shape()[0] {
+            for i in 0..context.shape()[1] {
+                for j in 0..self.model_dimension {
+                    let mut sum = 0.0;
+                    for k in 0..context.shape()[2] {
+                        sum += context[[b, i, k]] * self.w_output[[k, j]];
+                    }
+                    output[[b, i, j]] = sum;
+                }
+            }
+        }
+        
+        // Converti il risultato in un Tensor
+        Tensor::new_3d(output)
     }
     
-    /// Forward pass dell'attenzione con maschera
-    ///
-    /// # Arguments
-    /// * `input` - Tensore di input [batch_size * seq_len, d_model]
-    /// * `mask` - Maschera [batch_size * seq_len, seq_len]
-    ///
-    /// # Returns
-    /// Tensore di output [batch_size * seq_len, d_model]
-    fn forward_with_mask(&self, input: &Tensor, mask: &Tensor) -> Tensor {
-        let (q, k, v) = self.project_qkv(input);
-        let attention_output = self.scaled_dot_product_attention(&q, &k, &v, Some(mask));
-        attention_output.matmul_with(&self.W_o)
-    }
-    
-    /// Restituisce la dimensione del modello
     fn model_dim(&self) -> usize {
-        self.d_model
+        self.model_dimension
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::{Array2, Array};
+    use ndarray::Array3;
     
     #[test]
-    fn test_self_attention_dimensions() {
-        let d_model = 64;
+    fn test_self_attention_forward() {
+        // Crea una istanza di SelfAttention
+        let model_dim = 4;
+        let attention = SelfAttention::new(model_dim, 0.1);
+        
+        // Crea tensori di input di esempio
         let batch_size = 2;
-        let seq_len = 4;
-        let total_seq = batch_size * seq_len;
+        let seq_len = 3;
         
-        let attention = SelfAttention::new(d_model);
+        let q_data = Array3::from_shape_vec((batch_size, seq_len, model_dim),
+            vec![
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                
+                0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+            ]
+        ).unwrap();
         
-        // Crea un input di test [batch_size * seq_len, d_model]
-        let input_data = Array2::ones((total_seq, d_model));
-        let input = Tensor::new(input_data);
+        let k_data = q_data.clone();
+        let v_data = q_data.clone();
         
-        // Test forward pass
-        let output = attention.forward(&input);
+        let q = Tensor::new_3d(q_data);
+        let k = Tensor::new_3d(k_data);
+        let v = Tensor::new_3d(v_data);
         
-        // Verifica che le dimensioni di output siano corrette
-        assert_eq!(output.data.shape(), &[total_seq, d_model]);
+        // Calcola l'output dell'attenzione
+        let output = attention.forward(&q, &k, &v, None);
+        
+        // Verifica le dimensioni dell'output
+        let output_data = output.data.clone().into_dimensionality::<Ix3>().unwrap();
+        assert_eq!(output_data.shape()[0], batch_size);
+        assert_eq!(output_data.shape()[1], seq_len);
+        assert_eq!(output_data.shape()[2], model_dim);
+        
+        // Verifica che tutti i valori siano numeri validi (non NaN o infiniti)
+        for v in output_data.iter() {
+            assert!(!v.is_nan() && !v.is_infinite());
+        }
     }
     
     #[test]
     fn test_self_attention_with_mask() {
-        let d_model = 8;
-        let batch_size = 1;
+        // Crea una istanza di SelfAttention
+        let model_dim = 4;
+        let attention = SelfAttention::new(model_dim, 0.1);
+        
+        // Crea tensori di input di esempio
+        let batch_size = 2;
         let seq_len = 3;
-        let total_seq = batch_size * seq_len;
         
-        let attention = SelfAttention::new(d_model);
+        let q_data = Array3::from_shape_vec((batch_size, seq_len, model_dim),
+            vec![
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                
+                0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+            ]
+        ).unwrap();
         
-        // Crea un input di test [batch_size * seq_len, d_model]
-        let mut input_data = Array2::zeros((total_seq, d_model));
+        let k_data = q_data.clone();
+        let v_data = q_data.clone();
         
-        // Assegna valori diversi a ciascuna posizione della sequenza
-        for i in 0..total_seq {
-            for j in 0..d_model {
-                input_data[[i, j]] = (i * d_model + j) as f32 * 0.1;
+        // Crea una maschera che permette solo l'attenzione causale
+        // (ogni posizione può vedere solo le posizioni precedenti)
+        let mut mask_data = Array3::<f32>::ones((batch_size, seq_len, seq_len));
+        
+        // Maschera causale: posizione i può vedere solo posizioni j <= i
+        for b in 0..batch_size {
+            for i in 0..seq_len {
+                for j in (i+1)..seq_len {
+                    mask_data[[b, i, j]] = 0.0;
+                }
             }
         }
         
-        let input = Tensor::new(input_data);
+        let q = Tensor::new_3d(q_data);
+        let k = Tensor::new_3d(k_data);
+        let v = Tensor::new_3d(v_data);
+        let mask = Tensor::new_3d(mask_data);
         
-        // Crea una maschera per impedire alla posizione 0 di vedere le posizioni 1 e 2
-        // e alla posizione 1 di vedere la posizione 2 (maschera triangolare inferiore)
-        let mut mask_data = Array2::zeros((total_seq, seq_len));
+        // Calcola l'output dell'attenzione con maschera
+        let output = attention.forward(&q, &k, &v, Some(&mask));
         
-        // Attenzione: per la maschera, 1 permette l'attenzione, 0 la blocca
-        // La maschera viene convertita internamente a -inf per i valori 0
-        mask_data[[0, 0]] = 1.0;
-        mask_data[[0, 1]] = 0.0;
-        mask_data[[0, 2]] = 0.0;
+        // Verifica le dimensioni dell'output
+        let output_data = output.data.clone().into_dimensionality::<Ix3>().unwrap();
+        assert_eq!(output_data.shape()[0], batch_size);
+        assert_eq!(output_data.shape()[1], seq_len);
+        assert_eq!(output_data.shape()[2], model_dim);
         
-        mask_data[[1, 0]] = 1.0;
-        mask_data[[1, 1]] = 1.0;
-        mask_data[[1, 2]] = 0.0;
-        
-        mask_data[[2, 0]] = 1.0;
-        mask_data[[2, 1]] = 1.0;
-        mask_data[[2, 2]] = 1.0;
-        
-        let mask = Tensor::new(mask_data);
-        
-        // Test forward pass con maschera
-        let output_with_mask = attention.forward_with_mask(&input, &mask);
-        let output_no_mask = attention.forward(&input);
-        
-        // Verifica che le dimensioni di output siano corrette
-        assert_eq!(output_with_mask.data.shape(), &[total_seq, d_model]);
+        // Verifica che tutti i valori siano numeri validi
+        for v in output_data.iter() {
+            assert!(!v.is_nan() && !v.is_infinite());
+        }
         
         // Verifica che l'output con maschera sia diverso dall'output senza maschera
-        let mut is_different = false;
-        for i in 0..total_seq {
-            for j in 0..d_model {
-                if (output_with_mask.data[[i, j]] - output_no_mask.data[[i, j]]).abs() > 1e-5 {
-                    is_different = true;
-                    break;
-                }
-            }
-            if is_different {
+        let output_no_mask = attention.forward(&q, &k, &v, None);
+        let output_no_mask_data = output_no_mask.data.clone().into_dimensionality::<Ix3>().unwrap();
+        
+        let mut all_equal = true;
+        
+        for ((b, i, j), &v1) in output_data.indexed_iter() {
+            let v2 = output_no_mask_data[[b, i, j]];
+            if (v1 - v2).abs() > 1e-5 {
+                all_equal = false;
                 break;
             }
         }
         
-        assert!(is_different, "L'output con maschera dovrebbe essere diverso dall'output senza maschera");
+        // L'output con maschera dovrebbe essere diverso dall'output senza maschera
+        assert!(!all_equal, "L'output con maschera dovrebbe essere diverso dall'output senza maschera");
     }
 } 

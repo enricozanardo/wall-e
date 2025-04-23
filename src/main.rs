@@ -92,8 +92,8 @@ fn train_simple_model() {
         let out = Tensor::matmul(&x, &w);
         
         // Compute loss
-        let neg_target = Tensor::new(-1.0 * &target.data);
-        let diff = Tensor::add(&out, &neg_target);
+        let diff_data = Array::from_shape_vec((1, 1), vec![out.data.as_slice().unwrap()[0] - target.data.as_slice().unwrap()[0]]).unwrap();
+        let diff = Tensor::new(diff_data);
         let squared = Tensor::square(&diff);
         let loss = Tensor::sum(&squared);
         
@@ -101,18 +101,22 @@ fn train_simple_model() {
         loss.backward(None);
         
         // Get gradient and update weights - unwrap safely with default
-        let w_grad = w.grad.borrow().clone().unwrap_or_else(|| Array::zeros(w.data.raw_dim()));
+        let w_grad = w.grad.lock().unwrap().clone().unwrap_or_else(|| Array::zeros(w.data.raw_dim()));
+        
+        // Convert to Array2 for calculations
+        let w_data = w.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+        let w_grad_2d = w_grad.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
         
         // Create new weights by subtracting gradient * learning rate
-        let new_weights = &w.data - &(&w_grad * lr);
+        let new_weights = &w_data - &(&w_grad_2d * lr);
         
         // Print progress
         println!("Step {}: loss = {:.6}, prediction = {:.6}, w = [{:.6}, {:.6}]", 
                 i, 
-                loss.data[[0, 0]], 
-                out.data[[0, 0]],
-                w.data[[0, 0]],
-                w.data[[1, 0]]);
+                loss.data.as_slice().unwrap()[0], 
+                out.data.as_slice().unwrap()[0],
+                w_data[[0, 0]],
+                w_data[[1, 0]]);
         
         // Re-create weight tensor with new values and reset grad
         w = Tensor::new(new_weights);
@@ -120,8 +124,10 @@ fn train_simple_model() {
     
     // Final forward pass to check result
     let final_out = Tensor::matmul(&x, &w);
-    println!("\nFinal prediction: {:.6} (target: 0.8)", final_out.data[[0, 0]]);
-    println!("Final weights: w = [{:.6}, {:.6}]", w.data[[0, 0]], w.data[[1, 0]]);
+    let w_data = w.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+    
+    println!("\nFinal prediction: {:.6} (target: 0.8)", final_out.data.as_slice().unwrap()[0]);
+    println!("Final weights: w = [{:.6}, {:.6}]", w_data[[0, 0]], w_data[[1, 0]]);
     
     // For our simple network, both weights should converge to 0.8 / 2 = 0.4
     // since x = [0.5, 0.5] and we want out = 0.8
