@@ -120,14 +120,42 @@ impl MultiHeadAttention {
         
         // Applica la maschera se presente
         if let Some(mask) = mask {
-            for b in 0..scores.shape()[0] {
-                for i in 0..scores.shape()[1] {
-                    for j in 0..scores.shape()[2] {
-                        if mask[[b, i, j]] == 0.0 {
-                            scores[[b, i, j]] = std::f32::NEG_INFINITY;
+            // Verifica la forma della maschera e adattala se necessario
+            if mask.shape().len() == 3 {
+                let mask_shape = mask.shape();
+                
+                // Se la maschera ha forma [batch_size, seq_len, seq_len], 
+                // applicala direttamente ai punteggi di attenzione
+                if mask_shape.len() == 3 && mask_shape[0] == scores.shape()[0] &&
+                   mask_shape[1] == scores.shape()[1] && mask_shape[2] == scores.shape()[2] {
+                    
+                    // Print debug info for mask application
+                    println!("Applicazione della maschera in compute_attention_scores");
+                    println!("Forma maschera: {:?}, Forma scores: {:?}", mask_shape, scores.shape());
+                    
+                    let mut neg_inf_count = 0;
+                    for b in 0..scores.shape()[0] {
+                        for i in 0..scores.shape()[1] {
+                            for j in 0..scores.shape()[2] {
+                                if mask[[b, i, j]] == 0.0 {
+                                    scores[[b, i, j]] = std::f32::NEG_INFINITY;
+                                    neg_inf_count += 1;
+                                }
+                            }
                         }
                     }
+                    
+                    println!("Numero di valori impostati a NEG_INFINITY: {}", neg_inf_count);
+                    if neg_inf_count == 0 {
+                        println!("ATTENZIONE: Nessun valore della maschera è 0.0, quindi nessun valore è stato mascherato!");
+                    }
+                    
+                } else {
+                    panic!("La maschera ha una forma incompatibile: {:?}, attesa: {:?}", 
+                           mask_shape, scores.shape());
                 }
+            } else {
+                panic!("La maschera deve essere un tensore 3D, ricevuto: {}-D", mask.shape().len());
             }
         }
         

@@ -7,4 +7,4 @@ pub mod attention;
 pub use nabla::tensor::Tensor;
 pub use tokenizer::{Tokenizer, Vocab, BasicTokenizer, BPETokenizer};
 pub use embedding::{Embedding, TransformerEmbedding};
-pub use attention::{Attention, SelfAttention, MultiHeadAttention, FeedForward, BatchedFeedForward}; 
+pub use attention::{Attention, SelfAttention, MultiHeadAttention, EncoderLayer, EncoderStack}; 
