@@ -1,19 +1,77 @@
 mod nabla;
 mod tokenizer;
+mod embedding;
 
 use ndarray::Array;
 use nabla::tensor::Tensor;
+use tokenizer::{Tokenizer, basic_tokenizer::BasicTokenizer, vocab::Vocab};
+use embedding::TransformerEmbedding;
 
 
 fn main() {
     println!("Hello, world!");
     rayon::ThreadPoolBuilder::new().build_global().unwrap();
       
-    // More complete example showing model training
-    train_simple_model();
+    // Esempio di training di un modello semplice
+    // train_simple_model();
+    
+    // Esempio di utilizzo di tokenizer e embedding
+    embedding_example();
 }
 
-// Example of training a simple model over multiple steps
+// Esempio che mostra l'uso degli embedding
+fn embedding_example() {
+    println!("\n--- Embedding Example ---");
+    
+    // 1. Crea un tokenizer semplice
+    let mut tokenizer = BasicTokenizer::new();
+    
+    // 2. Costruisci un vocabolario minimo
+    let text = "hello world transformer models are amazing for natural language processing tasks";
+    tokenizer.build_vocab(text, 1);
+    
+    println!("Vocabolario costruito con {} token", tokenizer.get_vocab().len());
+    
+    // 3. Tokenizza una frase di esempio
+    let example = "hello transformer models";
+    let tokens = tokenizer.tokenize(example);
+    let token_ids = tokenizer.encode(example);
+    
+    println!("Frase: '{}'", example);
+    println!("Token: {:?}", tokens);
+    println!("Token IDs: {:?}", token_ids);
+    
+    // 4. Crea un embedding
+    let embedding = TransformerEmbedding::new(
+        tokenizer.get_vocab().len(),  // vocab_size
+        64,                           // embedding_dim
+        100,                          // max_seq_len
+        0.1,                          // dropout_rate
+    );
+    
+    // 5. Passa i token attraverso l'embedding
+    let embedded = embedding.forward(&token_ids);
+    
+    println!("Dimensione output embedding: {:?}", embedded.data.shape());
+    println!("Primo token embedding generato con successo");
+    
+    // 6. Esempio con batch di sequenze
+    let example2 = "natural language processing";
+    let token_ids2 = tokenizer.encode(example2);
+    
+    let batch_token_ids = vec![token_ids.clone(), token_ids2];
+    
+    println!("\nEsempio di batch processing:");
+    println!("Batch sequenze: [{}, {}]", example, example2);
+    
+    // Forward pass con batch
+    let batch_embedded = embedding.forward_batch(&batch_token_ids);
+    
+    println!("Dimensione output batch embedding: {:?}", batch_embedded.data.shape());
+    println!("Batch embedding generato con successo");
+}
+
+// Esempio di training di un modello semplice
 fn train_simple_model() {
     println!("\n--- Training a simple model ---");
     

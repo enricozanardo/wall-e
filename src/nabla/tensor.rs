@@ -3,6 +3,9 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use rayon::prelude::*;
 
+// motore di autograd per il calcolo dei gradienti
+
+
 /// Rappresenta un tensore con capacità di autograd
 #[derive(Clone)]
 pub struct Tensor {
