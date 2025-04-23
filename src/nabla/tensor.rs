@@ -125,6 +125,33 @@ impl Tensor {
             }),
         )
     }
+    
+    /// Calcola la trasposta di un Tensor
+    pub fn transpose(&self) -> Tensor {
+        // Ottiene la trasposta dell'array di dati
+        let transposed_data = self.data.t().to_owned();
+        
+        // Clona il tensore parent per la chiusura
+        let self_clone = self.clone();
+        
+        Tensor::with_grad_fn(
+            transposed_data,
+            vec![self.clone()],
+            Rc::new(move |_, grad| {
+                // Il gradiente della trasposta è la trasposta del gradiente
+                let grad_input = grad.t().to_owned();
+                
+                // Aggiorna il gradiente
+                self_clone.update_grad(&grad_input);
+            }),
+        )
+    }
+    
+    /// Moltiplica un tensore per un altro (moltiplicazione matriciale)
+    /// Metodo di istanza per migliorare l'usabilità
+    pub fn matmul_with(&self, other: &Tensor) -> Tensor {
+        Tensor::matmul(self, other)
+    }
 
     /// Applica la funzione ReLU al tensore
     pub fn relu(x: &Tensor) -> Tensor {
@@ -298,6 +325,37 @@ mod tests {
         // Per ReLU il gradiente dovrebbe essere 1 dove l'input è positivo, 0 altrimenti
         let expected_grad = arr2(&[[0.0, 1.0], [0.0, 1.0]]);
         assert_eq!(x.grad.borrow().as_ref().unwrap(), &expected_grad);
+    }
+    
+    #[test]
+    fn test_transpose() {
+        let x = Tensor::new(arr2(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]));
+        
+        // Test operazione transpose
+        let y = x.transpose();
+        
+        // Verifica che la matrice sia effettivamente trasposta
+        assert_eq!(y.data, arr2(&[[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]));
+        
+        // Test backpropagation
+        y.backward(None);
+        
+        // Il gradiente dovrebbe essere 1.0 ovunque, ma con la forma originale
+        let expected_grad: Array2<f32> = Array2::ones((2, 3));
+        assert_eq!(x.grad.borrow().as_ref().unwrap(), &expected_grad);
+    }
+    
+    #[test]
+    fn test_matmul_with() {
+        let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+        let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
+        
+        // Test metodo di istanza per matmul
+        let z1 = a.matmul_with(&b);
+        let z2 = Tensor::matmul(&a, &b);
+        
+        // Verifica che entrambi i metodi producano lo stesso risultato
+        assert_eq!(z1.data, z2.data);
     }
 }
 
