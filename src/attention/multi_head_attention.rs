@@ -130,8 +130,8 @@ impl MultiHeadAttention {
                    mask_shape[1] == scores.shape()[1] && mask_shape[2] == scores.shape()[2] {
                     
                     // Print debug info for mask application
-                    println!("Applicazione della maschera in compute_attention_scores");
-                    println!("Forma maschera: {:?}, Forma scores: {:?}", mask_shape, scores.shape());
+                    // println!("Applicazione della maschera in compute_attention_scores");
+                    // println!("Forma maschera: {:?}, Forma scores: {:?}", mask_shape, scores.shape());
                     
                     let mut neg_inf_count = 0;
                     for b in 0..scores.shape()[0] {
@@ -145,7 +145,7 @@ impl MultiHeadAttention {
                         }
                     }
                     
-                    println!("Numero di valori impostati a NEG_INFINITY: {}", neg_inf_count);
+                    // println!("Numero di valori impostati a NEG_INFINITY: {}", neg_inf_count);
                     if neg_inf_count == 0 {
                         println!("ATTENZIONE: Nessun valore della maschera è 0.0, quindi nessun valore è stato mascherato!");
                     }
