@@ -3,6 +3,7 @@ use crate::tokenizer::Vocab;
 use ndarray::{Array, Array2, Array3, Axis};
 use rand::thread_rng;
 use rand_distr::{Normal, Distribution};
+use rayon::prelude::*;
 
 use super::Embedding;
 
@@ -73,7 +74,8 @@ impl TokenEmbedding {
         // Crea una matrice 3D per memorizzare i risultati [batch_size, seq_len, embedding_dim]
         let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, seq_len, self.embedding_dim));
         
-        // Processa ogni sequenza nel batch
+        // Elabora gli embedding sequenzialmente anziché con Rayon
+        // Questo è necessario perché Tensor contiene Rc che non è Sync
         for (b, token_ids) in batch_token_ids.iter().enumerate() {
             for (i, &token_id) in token_ids.iter().enumerate().take(seq_len) {
                 let effective_id = token_id.min(self.vocab_size - 1);

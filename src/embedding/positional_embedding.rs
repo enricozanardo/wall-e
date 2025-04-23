@@ -1,6 +1,7 @@
 use crate::nabla::tensor::Tensor;
 use ndarray::{Array, Array2, Axis};
 use std::f32::consts::PI;
+use rayon::prelude::*;
 
 use super::Embedding;
 
@@ -23,16 +24,27 @@ impl PositionalEmbedding {
         
         let mut embedding_data = Array::zeros((max_len, embedding_dim));
         
-        for pos in 0..max_len {
-            for i in 0..embedding_dim / 2 {
+        // Crea un vettore di tutte le posizioni e dimensioni
+        let indices: Vec<(usize, usize)> = (0..max_len)
+            .flat_map(|pos| (0..embedding_dim/2).map(move |i| (pos, i)))
+            .collect();
+        
+        // Calcola i valori in parallelo
+        let results: Vec<(usize, usize, f32, f32)> = indices.par_iter()
+            .map(|&(pos, i)| {
                 let denominator = 10000_f32.powf(2.0 * i as f32 / embedding_dim as f32);
                 let angle = pos as f32 / denominator;
-                
-                embedding_data[[pos, 2 * i]] = angle.sin();
-                
-                if 2 * i + 1 < embedding_dim {
-                    embedding_data[[pos, 2 * i + 1]] = angle.cos();
-                }
+                let sin_val = angle.sin();
+                let cos_val = angle.cos();
+                (pos, i, sin_val, cos_val)
+            })
+            .collect();
+        
+        // Assegna i valori calcolati alla matrice
+        for (pos, i, sin_val, cos_val) in results {
+            embedding_data[[pos, 2 * i]] = sin_val;
+            if 2 * i + 1 < embedding_dim {
+                embedding_data[[pos, 2 * i + 1]] = cos_val;
             }
         }
         
@@ -62,6 +74,7 @@ impl PositionalEmbedding {
         let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, effective_len, self.embedding_dim));
         
         // Replica gli stessi embedding posizionali per ogni elemento del batch
+        // Questo metodo è sequenziale, ma funziona con tutte le implementazioni di Tensor
         for b in 0..batch_size {
             for i in 0..effective_len {
                 for j in 0..self.embedding_dim {

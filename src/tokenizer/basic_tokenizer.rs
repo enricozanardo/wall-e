@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::tokenizer::{Tokenizer, Vocab};
+use rayon::prelude::*;
 
 /// Tokenizer di base che utilizza spazi e punteggiatura per dividere il testo
 #[derive(Debug, Clone)]
@@ -42,11 +43,24 @@ impl BasicTokenizer {
         // Tokenizza il testo
         let tokens = self.tokenize_raw(text);
         
-        // Conteggio delle frequenze
-        let mut freqs: HashMap<String, usize> = HashMap::new();
-        for token in tokens {
-            *freqs.entry(token).or_insert(0) += 1;
-        }
+        // Conteggio delle frequenze in parallelo utilizzando Rayon
+        let freqs = tokens.par_iter()
+            .fold(
+                || HashMap::new(), 
+                |mut acc, token| {
+                    *acc.entry(token.clone()).or_insert(0) += 1;
+                    acc
+                }
+            )
+            .reduce(
+                || HashMap::new(),
+                |mut acc, map| {
+                    for (token, count) in map {
+                        *acc.entry(token).or_insert(0) += count;
+                    }
+                    acc
+                }
+            );
         
         // Aggiungi i token che superano la frequenza minima
         for (token, freq) in freqs {
