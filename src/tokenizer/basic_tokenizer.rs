@@ -73,28 +73,29 @@ impl BasicTokenizer {
     /// Tokenizza il testo senza utilizzare il vocabolario (per costruzione del vocabolario)
     fn tokenize_raw(&self, text: &str) -> Vec<String> {
         // Semplice tokenizzazione basata su spazi e punteggiatura
-        let mut tokens = Vec::new();
         
         // Sostituisci la punteggiatura con spazi + punteggiatura + spazi
         let text = text.replace('.', " . ")
-                       .replace(',', " , ")
-                       .replace('!', " ! ")
-                       .replace('?', " ? ")
-                       .replace(':', " : ")
-                       .replace(';', " ; ")
-                       .replace('(', " ( ")
-                       .replace(')', " ) ")
-                       .replace('[', " [ ")
-                       .replace(']', " ] ")
-                       .replace('{', " { ")
-                       .replace('}', " } ");
+                   .replace(',', " , ")
+                   .replace('!', " ! ")
+                   .replace('?', " ? ")
+                   .replace(':', " : ")
+                   .replace(';', " ; ")
+                   .replace('(', " ( ")
+                   .replace(')', " ) ")
+                   .replace('[', " [ ")
+                   .replace(']', " ] ")
+                   .replace('{', " { ")
+                   .replace('}', " } ");
         
-        // Dividi per spazi
-        for token in text.split_whitespace() {
-            if !token.is_empty() {
-                tokens.push(token.to_lowercase());
-            }
-        }
+        // Dividi per spazi e converti in minuscolo in parallelo
+        let tokens: Vec<String> = text.split_whitespace()
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>()
+            .into_par_iter()
+            .map(|s| s.to_lowercase())
+            .collect();
         
         tokens
     }
@@ -112,7 +113,18 @@ impl BasicTokenizer {
 
 impl Tokenizer for BasicTokenizer {
     fn tokenize(&self, text: &str) -> Vec<String> {
-        self.tokenize_raw(text)
+        let raw_tokens = self.tokenize_raw(text);
+        
+        // Mappa i token sconosciuti all'unknown token
+        raw_tokens.into_par_iter()
+            .map(|token| {
+                if self.vocab.token_to_id(&token).is_some() {
+                    token
+                } else {
+                    self.unk_token.clone()
+                }
+            })
+            .collect()
     }
     
     fn encode(&self, text: &str) -> Vec<usize> {
@@ -142,7 +154,13 @@ mod tests {
     
     #[test]
     fn test_basic_tokenizer_tokenize() {
-        let tokenizer = BasicTokenizer::new();
+        let mut tokenizer = BasicTokenizer::new();
+        
+        // Aggiungi i token necessari al vocabolario 
+        tokenizer.get_vocab_mut().add_token("hello");
+        tokenizer.get_vocab_mut().add_token("world");
+        tokenizer.get_vocab_mut().add_token(",");
+        tokenizer.get_vocab_mut().add_token("!");
         
         let text = "Hello, world!";
         let tokens = tokenizer.tokenize(text);

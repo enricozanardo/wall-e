@@ -71,8 +71,21 @@ impl Tensor {
 
     /// Somma due tensori elemento per elemento
     pub fn add(a: &Tensor, b: &Tensor) -> Tensor {
-        // Calcola il risultato forward
-        let data = &a.data + &b.data;
+        // Verifica che le dimensioni siano compatibili
+        assert_eq!(a.data.shape(), b.data.shape(), "Tensori di forme incompatibili per l'addizione");
+        
+        // Calcola il risultato forward usando Rayon
+        let a_vec: Vec<f32> = a.data.iter().cloned().collect();
+        let b_vec: Vec<f32> = b.data.iter().cloned().collect();
+        
+        // Parallelizza la somma elemento per elemento
+        let result_vec: Vec<f32> = a_vec.par_iter()
+            .zip(b_vec.par_iter())
+            .map(|(&a_val, &b_val)| a_val + b_val)
+            .collect();
+        
+        // Converte il risultato in Array2 con la stessa forma
+        let data = Array2::from_shape_vec(a.data.raw_dim(), result_vec).unwrap();
         
         // Clona i tensori parent per la chiusura
         let a_clone = a.clone();
@@ -146,14 +159,21 @@ impl Tensor {
 
     /// Eleva al quadrato ogni elemento del tensore
     pub fn square(x: &Tensor) -> Tensor {
-        // x² è calcolato come x * x
-        let data = &x.data * &x.data;
+        // x² è calcolato come x * x utilizzando Rayon per parallelizzare
+        // Convertiamo in vettore per usare Rayon, poi torniamo ad Array2
+        let data_vec: Vec<f32> = x.data.iter().cloned().collect();
+        let result_vec: Vec<f32> = data_vec.par_iter()
+            .map(|&v| v * v)
+            .collect();
+        
+        // Converte il risultato in Array2 con la stessa forma
+        let result_data = Array2::from_shape_vec(x.data.raw_dim(), result_vec).unwrap();
         
         // Clona il tensore parent per la chiusura
         let x_clone = x.clone();
         
         Tensor::with_grad_fn(
-            data,
+            result_data,
             vec![x.clone()],
             Rc::new(move |_, grad| {
                 // Il gradiente di x² è 2x

@@ -26,6 +26,10 @@ impl TokenEmbedding {
         let mut rng = rand::rng();
         
         // Inizializza la matrice di embedding da una distribuzione normale
+        // Nota: Per parallelizzare questo codice in modo efficiente, si potrebbe:
+        // 1. Usare ndarray-rand con un RngCore thread-safe come ThreadRng
+        // 2. Utilizzare Rayon per costruire una Vec<f32> in parallelo e poi convertirla in Array2
+        // 3. Usare std::sync::Mutex o ArrayView/ArrayViewMut per accesso thread-safe
         let mut embedding_data = Array::zeros((vocab_size, embedding_dim));
         for i in 0..vocab_size {
             for j in 0..embedding_dim {
