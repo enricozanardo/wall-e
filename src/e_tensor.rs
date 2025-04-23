@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use rayon::prelude::*;
 use ndarray::{Zip, Axis};
-use ndarray_parallel::prelude::*;
+
 
 
 #[derive(Clone)]
@@ -47,18 +47,23 @@ impl Tensor {
         
         if let Some(ref grad_fn) = self.grad_fn {
             grad_fn(self, &grad);
+            
+            // Explicitly propagate to all parents
+            for parent in &self.parents {
+                parent.backward(None);
+            }
         }
     }
 
     // Basic operations
     pub fn add(a: &Tensor, b: &Tensor) -> Tensor {
-       // Use parallel addition with operators which use SIMD under the hood
+       // Use SIMD optimizations from ndarray
        let data = &a.data + &b.data;
        
        let a_ = a.clone();
        let b_ = b.clone();
 
-       Tensor::with_grad_fn(data, vec![a_.clone(), b_.clone()], Rc::new(move |_, grad| {
+       Tensor::with_grad_fn(data, vec![a.clone(), b.clone()], Rc::new(move |_, grad| {
            // Update a's gradient
            {
                let mut a_grad = a_.grad.borrow_mut();
@@ -67,7 +72,9 @@ impl Tensor {
                        // Addition is vectorized by ndarray
                        *a_grad = Some(existing + grad);
                    },
-                   None => *a_grad = Some(grad.clone()),
+                   None => {
+                       *a_grad = Some(grad.clone());
+                   }
                }
            }
            
@@ -79,7 +86,9 @@ impl Tensor {
                        // Addition is vectorized by ndarray
                        *b_grad = Some(existing + grad);
                    },
-                   None => *b_grad = Some(grad.clone()),
+                   None => {
+                       *b_grad = Some(grad.clone());
+                   }
                }
            }
        }))
@@ -105,7 +114,9 @@ impl Tensor {
                         Some(ref existing) => {
                             *a_grad = Some(existing + &grad_a);
                         },
-                        None => *a_grad = Some(grad_a),
+                        None => {
+                            *a_grad = Some(grad_a);
+                        }
                     }
                 }
                 
@@ -116,7 +127,9 @@ impl Tensor {
                         Some(ref existing) => {
                             *b_grad = Some(existing + &grad_b);
                         },
-                        None => *b_grad = Some(grad_b),
+                        None => {
+                            *b_grad = Some(grad_b);
+                        }
                     }
                 }
             }),
@@ -163,6 +176,76 @@ impl Tensor {
                 }
             }),
         )
+    }
+
+    // Square each element of the tensor (element-wise)
+    pub fn square(x: &Tensor) -> Tensor {
+        let data = &x.data * &x.data; // Element-wise multiplication
+        let x_ = x.clone();
+        
+        Tensor::with_grad_fn(
+            data,
+            vec![x.clone()],
+            Rc::new(move |_, grad| {
+                // Gradient of x^2 is 2x * grad
+                let two_x = &x_.data * 2.0;
+                let grad_input = grad * &two_x;
+                
+                // Update gradient
+                let mut x_grad = x_.grad.borrow_mut();
+                match *x_grad {
+                    Some(ref existing) => {
+                        *x_grad = Some(existing + &grad_input);
+                    },
+                    None => {
+                        *x_grad = Some(grad_input);
+                    }
+                }
+            }),
+        )
+    }
+    
+    // Sum all elements of a tensor to produce a scalar (1x1) tensor
+    pub fn sum(x: &Tensor) -> Tensor {
+        let sum_val = x.data.sum();
+        let data = Array2::from_elem((1, 1), sum_val);
+        let x_ = x.clone();
+        
+        Tensor::with_grad_fn(
+            data,
+            vec![x.clone()],
+            Rc::new(move |_, grad| {
+                // Gradient of sum is ones tensor scaled by incoming gradient
+                let grad_val = grad[[0, 0]]; // Extract scalar value
+                let grad_input = Array2::ones(x_.data.raw_dim()) * grad_val;
+                
+                // Update gradient
+                let mut x_grad = x_.grad.borrow_mut();
+                match *x_grad {
+                    Some(ref existing) => {
+                        *x_grad = Some(existing + &grad_input);
+                    },
+                    None => *x_grad = Some(grad_input),
+                }
+            }),
+        )
+    }
+    
+    // Mean Squared Error loss between two tensors
+    pub fn mse(output: &Tensor, target: &Tensor) -> Tensor {
+        // First compute the difference
+        let neg_target = Tensor::new(-1.0 * &target.data);
+        let diff = Tensor::add(output, &neg_target);
+        
+        // Square each element
+        let squared = Tensor::square(&diff);
+        
+        // Sum and divide by number of elements for mean
+        let sum_squared = Tensor::sum(&squared);
+        let n = (output.data.shape()[0] * output.data.shape()[1]) as f32;
+        let mse_data = sum_squared.data / n;
+        
+        Tensor::new(mse_data)
     }
 }
 
