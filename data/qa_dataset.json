@@ -1,0 +1,49 @@
+{
+  "train_data": [
+    {
+      "context": "Il linguaggio di programmazione Rust è stato sviluppato da Mozilla Research. Rust è stato progettato per essere un linguaggio di programmazione sicuro, concorrente e pratico. Rust è sinteticamente simile a C++, ma è progettato per fornire un migliore controllo della memoria senza l'uso di un garbage collector. Rust è stato votato come 'linguaggio di programmazione più amato' nei sondaggi annuali degli sviluppatori Stack Overflow dal 2016 al 2022.",
+      "questions": [
+        {"question": "Chi ha sviluppato Rust?", "answer": "Mozilla Research"},
+        {"question": "Per cosa è stato progettato Rust?", "answer": "Per essere un linguaggio di programmazione sicuro, concorrente e pratico"},
+        {"question": "A quale linguaggio è simile Rust?", "answer": "C++"},
+        {"question": "Come gestisce Rust la memoria?", "answer": "Fornisce un migliore controllo della memoria senza l'uso di un garbage collector"},
+        {"question": "Quale riconoscimento ha ottenuto Rust nei sondaggi di Stack Overflow?", "answer": "È stato votato come 'linguaggio di programmazione più amato' dal 2016 al 2022"}
+      ]
+    },
+    {
+      "context": "L'Italia è un paese situato nell'Europa meridionale, con una popolazione di circa 60 milioni di abitanti. Roma è la capitale dell'Italia e una delle città più antiche e storicamente ricche del mondo. L'Italia è conosciuta per la sua cucina, arte, moda, storia e bellissimi paesaggi. La lingua ufficiale è l'italiano, una lingua romanza derivata dal latino. L'Italia è una repubblica parlamentare dal 2 giugno 1946, quando la monarchia fu abolita tramite un referendum popolare.",
+      "questions": [
+        {"question": "Qual è la popolazione dell'Italia?", "answer": "Circa 60 milioni di abitanti"},
+        {"question": "Qual è la capitale dell'Italia?", "answer": "Roma"},
+        {"question": "Per cosa è conosciuta l'Italia?", "answer": "Per la sua cucina, arte, moda, storia e bellissimi paesaggi"},
+        {"question": "Qual è la lingua ufficiale dell'Italia?", "answer": "L'italiano"},
+        {"question": "Che tipo di governo ha l'Italia?", "answer": "Una repubblica parlamentare"}
+      ]
+    }
+  ],
+  "test_data": [
+    {
+      "context": "La programmazione in Rust utilizza un sistema di proprietà (ownership) per gestire la memoria. Ogni valore ha una variabile che è il suo 'proprietario'. Può esserci un solo proprietario alla volta. Quando il proprietario esce dall'ambito, il valore viene eliminato. Rust verifica queste regole in fase di compilazione, quindi non c'è overhead durante l'esecuzione. Rust non ha un garbage collector, ma garantisce comunque la sicurezza della memoria.",
+      "questions": [
+        {"question": "Come gestisce Rust la memoria?", "answer": "Utilizza un sistema di proprietà (ownership)"},
+        {"question": "Quanti proprietari può avere un valore in Rust?", "answer": "Un solo proprietario alla volta"},
+        {"question": "Quando viene eliminato un valore in Rust?", "answer": "Quando il proprietario esce dall'ambito"},
+        {"question": "In quale fase Rust verifica le regole di proprietà?", "answer": "In fase di compilazione"}
+      ]
+    }
+  ],
+  "prompts": [
+    "Come gestisce Rust la memoria?",
+    "Qual è la capitale dell'Italia?",
+    "Che tipo di governo ha l'Italia?"
+  ],
+  "model_params": {
+    "d_model": 96,
+    "max_seq_len": 256,
+    "num_heads": 6,
+    "ff_dim": 192,
+    "num_layers": 3,
+    "dropout_rate": 0.15,
+    "learning_rate": 0.0005
+  }
+} 

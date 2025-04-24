@@ -28,7 +28,13 @@ fn main() {
     // Se viene passato un argomento da riga di comando, usalo come percorso al file di configurazione
     if args.len() > 1 {
         let config_path = &args[1];
-        training_example(Some(config_path));
+        
+        // Se il percorso contiene "qa", usa l'esempio di question answering
+        if config_path.contains("qa") {
+            question_answering_example(Some(config_path));
+        } else {
+            training_example(Some(config_path));
+        }
     } else {
         // Altrimenti usa il file predefinito
         training_example(None);
@@ -690,5 +696,339 @@ fn dataset_example() {
     }
     
     println!("\nFine dell'esempio dataset");
+}
+
+/// Esempio di fine-tuning di un modello per question answering
+fn question_answering_example(config_path: Option<&str>) {
+    println!("\n--- Question Answering Example ---");
+    
+    // 1. Caricamento dei dati da file JSON
+    println!("Caricamento del dataset di domande e risposte...");
+    
+    // Usa il percorso fornito o quello predefinito
+    let default_json_path = "data/qa_dataset.json";
+    let json_file_path = config_path.unwrap_or(default_json_path);
+    println!("Usando il file JSON: {}", json_file_path);
+    
+    // Carica i dati JSON
+    let file = match std::fs::File::open(json_file_path) {
+        Ok(file) => file,
+        Err(e) => {
+            eprintln!("Errore nell'apertura del file JSON {}: {}", json_file_path, e);
+            return;
+        }
+    };
+    
+    let reader = std::io::BufReader::new(file);
+    let json_data: serde_json::Value = match serde_json::from_reader(reader) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("Errore nella decodifica del JSON da {}: {}", json_file_path, e);
+            return;
+        }
+    };
+    
+    // 2. Prepara i dati di training e test
+    let mut train_contexts = Vec::new();
+    let mut train_questions = Vec::new();
+    let mut train_answers = Vec::new();
+    
+    // Estrai i dati di training dal JSON
+    if let Some(train_data) = json_data.get("train_data").and_then(|v| v.as_array()) {
+        for item in train_data {
+            if let Some(context) = item.get("context").and_then(|v| v.as_str()) {
+                if let Some(questions) = item.get("questions").and_then(|v| v.as_array()) {
+                    for q in questions {
+                        if let (Some(question), Some(answer)) = (
+                            q.get("question").and_then(|v| v.as_str()),
+                            q.get("answer").and_then(|v| v.as_str()),
+                        ) {
+                            train_contexts.push(context.to_string());
+                            train_questions.push(question.to_string());
+                            train_answers.push(answer.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    let mut test_contexts = Vec::new();
+    let mut test_questions = Vec::new();
+    let mut test_answers = Vec::new();
+    
+    // Estrai i dati di test dal JSON
+    if let Some(test_data) = json_data.get("test_data").and_then(|v| v.as_array()) {
+        for item in test_data {
+            if let Some(context) = item.get("context").and_then(|v| v.as_str()) {
+                if let Some(questions) = item.get("questions").and_then(|v| v.as_array()) {
+                    for q in questions {
+                        if let (Some(question), Some(answer)) = (
+                            q.get("question").and_then(|v| v.as_str()),
+                            q.get("answer").and_then(|v| v.as_str()),
+                        ) {
+                            test_contexts.push(context.to_string());
+                            test_questions.push(question.to_string());
+                            test_answers.push(answer.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    println!("Dataset caricato con successo:");
+    println!("- Esempi di training: {}", train_questions.len());
+    println!("- Esempi di test: {}", test_questions.len());
+    
+    // 3. Estrai i parametri del modello dal JSON
+    let mut d_model = 64;      // Dimensione dell'embedding
+    let mut max_seq_len = 256; // Lunghezza massima delle sequenze
+    let mut num_heads = 4;     // Numero di teste per multi-head attention
+    let mut ff_dim = 128;      // Dimensione interna del feed-forward network
+    let mut num_layers = 2;    // Numero di layer nell'encoder stack
+    let mut dropout_rate = 0.1;
+    let mut learning_rate = 0.001;
+    
+    // Estrai i parametri se presenti
+    if let Some(model_params) = json_data.get("model_params") {
+        if let Some(val) = model_params.get("d_model").and_then(|v| v.as_u64()) {
+            d_model = val as usize;
+        }
+        
+        if let Some(val) = model_params.get("max_seq_len").and_then(|v| v.as_u64()) {
+            max_seq_len = val as usize;
+        }
+        
+        if let Some(val) = model_params.get("num_heads").and_then(|v| v.as_u64()) {
+            num_heads = val as usize;
+        }
+        
+        if let Some(val) = model_params.get("ff_dim").and_then(|v| v.as_u64()) {
+            ff_dim = val as usize;
+        }
+        
+        if let Some(val) = model_params.get("num_layers").and_then(|v| v.as_u64()) {
+            num_layers = val as usize;
+        }
+        
+        if let Some(val) = model_params.get("dropout_rate").and_then(|v| v.as_f64()) {
+            dropout_rate = val as f32;
+        }
+        
+        if let Some(val) = model_params.get("learning_rate").and_then(|v| v.as_f64()) {
+            learning_rate = val as f32;
+        }
+    }
+    
+    println!("Parametri del modello:");
+    println!("- d_model: {}", d_model);
+    println!("- max_seq_len: {}", max_seq_len);
+    println!("- num_heads: {}", num_heads);
+    println!("- ff_dim: {}", ff_dim);
+    println!("- num_layers: {}", num_layers);
+    println!("- dropout_rate: {}", dropout_rate);
+    println!("- learning_rate: {}", learning_rate);
+    
+    // 4. Formatta i dati di training nel formato corretto per QA
+    println!("\nPreparazione dei dati per il training...");
+    
+    let mut train_text = String::new();
+    let mut test_text = String::new();
+    
+    // Formato per QA: "Contesto: {context} Domanda: {question} Risposta: {answer}"
+    for i in 0..train_contexts.len() {
+        train_text.push_str(&format!(
+            "Contesto: {} Domanda: {} Risposta: {}\n",
+            train_contexts[i], train_questions[i], train_answers[i]
+        ));
+    }
+    
+    for i in 0..test_contexts.len() {
+        test_text.push_str(&format!(
+            "Contesto: {} Domanda: {} Risposta: {}\n",
+            test_contexts[i], test_questions[i], test_answers[i]
+        ));
+    }
+    
+    // 5. Tokenizzazione
+    let mut tokenizer = BasicTokenizer::new();
+    tokenizer.build_vocab(&train_text, 1);
+    tokenizer.build_vocab(&test_text, 1);
+    
+    println!("Vocabolario costruito con {} token", tokenizer.get_vocab().len());
+    
+    // 6. Preparazione dei dati di training
+    let train_tokens = tokenizer.encode(&train_text);
+    let test_tokens = tokenizer.encode(&test_text);
+    
+    // 7. Creazione del trainer
+    let mut trainer = Trainer::new(
+        Box::new(tokenizer.clone()) as Box<dyn Tokenizer>,
+        d_model,
+        ff_dim,
+        num_heads,
+        num_layers,
+        dropout_rate,
+        learning_rate,
+    );
+    
+    // 8. Training loop
+    println!("\nInizio del training...");
+    let num_epochs = 1; // Ridotto a 1 per debug
+    
+    println!("Debug: Preparazione degli input e target");
+    
+    // Prepara gli input e i target
+    // Input: tutti i token tranne l'ultimo
+    // Target: tutti i token tranne il primo (predizione del token successivo)
+    let input_tokens = train_tokens[0..train_tokens.len()-1].to_vec();
+    let target_tokens = train_tokens[1..train_tokens.len()].to_vec();
+    
+    println!("Debug: Creazione dell'array targets");
+    
+    // Converti target_tokens in Array2
+    let mut targets = ndarray::Array2::zeros((1, target_tokens.len()));
+    for (j, &token_id) in target_tokens.iter().enumerate() {
+        targets[[0, j]] = token_id;
+    }
+    
+    println!("Debug: Forward pass per calcolare accuracy");
+    
+    for epoch in 0..num_epochs {
+        // Forward pass per calcolare l'accuracy prima dell'aggiornamento
+        println!("Debug: Esecuzione forward pass - Inizio");
+        let output = trainer.forward(&[input_tokens.clone()], Some(&targets));
+        println!("Debug: Esecuzione forward pass - Fine");
+        
+        // Calcola l'accuracy
+        println!("Debug: Calcolo accuracy");
+        let mut correct = 0;
+        let total = target_tokens.len();
+        
+        // Estrai i logits dell'output
+        println!("Debug: Estrazione logits");
+        let logits_data = output.logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
+        
+        // Per ogni posizione, trova il token con la probabilità più alta
+        println!("Debug: Elaborazione token per token");
+        for j in 0..total {
+            let mut max_idx = 0;
+            let mut max_val = f32::MIN;
+            
+            for v in 0..logits_data.shape()[2] {
+                let val = logits_data[[0, j, v]];
+                if val > max_val {
+                    max_val = val;
+                    max_idx = v;
+                }
+            }
+            
+            // Confronta con il target
+            if max_idx == targets[[0, j]] as usize {
+                correct += 1;
+            }
+        }
+        
+        let accuracy = (correct as f32) / (total as f32) * 100.0;
+        println!("Debug: Accuracy calcolata: {}%", accuracy);
+        
+        // Backward pass e aggiornamento dei parametri
+        println!("Debug: Esecuzione train_step - Inizio");
+        let loss = trainer.train_step(
+            &[input_tokens.clone()], 
+            &targets
+        );
+        println!("Debug: Esecuzione train_step - Fine");
+        
+        println!("Epoca {}/{}: loss = {:.6}, accuracy = {:.2}%", epoch + 1, num_epochs, loss, accuracy);
+    }
+    
+    println!("Debug: Training completato");
+    
+    // 9. Valutazione sul test set
+    let forward_fn = |model: &Trainer, token_ids: &Vec<Vec<usize>>, _: Option<ndarray::Array2<f32>>| {
+        let mut targets = ndarray::Array2::zeros((token_ids.len(), token_ids[0].len()));
+        for (i, seq) in token_ids.iter().enumerate() {
+            for (j, &token_id) in seq.iter().enumerate() {
+                targets[[i, j]] = token_id;
+            }
+        }
+        model.forward(token_ids, Some(&targets))
+    };
+    
+    // Prepara i dati di test
+    let test_input = test_tokens[0..test_tokens.len()-1].to_vec();
+    let test_dataset = vec![vec![test_input]];
+    
+    // Padding token ID (assumiamo 0 per [PAD])
+    let padding_token_id = 0;
+    
+    // Valutazione
+    let (avg_loss, accuracy) = training::evaluate::evaluate(
+        &trainer,
+        forward_fn,
+        &test_dataset,
+        &(Box::new(tokenizer.clone()) as Box<dyn Tokenizer>),
+        Some(padding_token_id)
+    );
+    
+    let perplexity = (avg_loss as f64).exp();
+    
+    println!("\nValutazione sul test set:");
+    println!("- Loss: {:.4}", avg_loss);
+    println!("- Perplexity: {:.4}", perplexity);
+    println!("- Accuratezza: {:.2}%", accuracy * 100.0);
+    
+    // 10. Test di inferenza con domande specifiche
+    println!("\nTest di domande e risposte:");
+    
+    // Estrai prompt dal JSON o usa quelli predefiniti
+    let prompts = if let Some(prompts_json) = json_data.get("prompts").and_then(|v| v.as_array()) {
+        prompts_json
+            .iter()
+            .filter_map(|p| p.as_str().map(String::from))
+            .collect::<Vec<String>>()
+    } else {
+        vec![
+            "Come gestisce Rust la memoria?".to_string(),
+            "Qual è la capitale dell'Italia?".to_string(),
+            "Per cosa è stato progettato Rust?".to_string(),
+        ]
+    };
+    
+    // Funzione per generare risposte
+    let answer_question = |context: &str, question: &str| {
+        let input = format!("Contesto: {} Domanda: {}", context, question);
+        let temperature = 0.5;
+        let max_tokens = 30;
+        
+        let response = trainer.generate(
+            &input,
+            max_tokens,
+            temperature,
+            None, // top_k
+        );
+        
+        // Estrai solo la parte di risposta
+        if let Some(resp_idx) = response.find("Risposta: ") {
+            response[resp_idx + 10..].trim().to_string()
+        } else {
+            response
+        }
+    };
+    
+    // Test con i contesti del set di test
+    if !test_contexts.is_empty() {
+        let context = &test_contexts[0];
+        
+        for prompt in &prompts {
+            println!("\nDomanda: {}", prompt);
+            let answer = answer_question(context, prompt);
+            println!("Risposta: {}", answer);
+        }
+    }
+    
+    println!("\nExample di Question Answering completato!");
 }
 

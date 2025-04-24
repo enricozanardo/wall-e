@@ -18,7 +18,8 @@ Esempio:
 
 I file JSON consentono di specificare sia i dati di addestramento/testing che i parametri del modello in un unico file.
 
-Formato:
+#### Formato standard
+
 ```json
 {
   "train_text": "Testo per l'addestramento...",
@@ -53,12 +54,64 @@ Parametri:
   - `dropout_rate`: Tasso di dropout (default: 0.1)
   - `learning_rate`: Tasso di apprendimento (default: 0.001)
 
+#### Formato Question-Answering
+
+È disponibile anche un formato speciale per task di Question-Answering:
+
+```json
+{
+  "train_data": [
+    {
+      "context": "Contesto per le domande...",
+      "questions": [
+        {"question": "Domanda 1?", "answer": "Risposta 1"},
+        {"question": "Domanda 2?", "answer": "Risposta 2"}
+      ]
+    }
+  ],
+  "test_data": [
+    {
+      "context": "Contesto per le domande di test...",
+      "questions": [
+        {"question": "Domanda di test?", "answer": "Risposta di test"}
+      ]
+    }
+  ],
+  "prompts": [
+    "Domanda di esempio 1?",
+    "Domanda di esempio 2?"
+  ],
+  "model_params": {
+    "d_model": 96,
+    "max_seq_len": 256,
+    "num_heads": 6,
+    "ff_dim": 192,
+    "num_layers": 3,
+    "dropout_rate": 0.15,
+    "learning_rate": 0.0005
+  }
+}
+```
+
+Parametri specifici QA:
+- `train_data`: Array di oggetti contesto-domande per l'addestramento
+  - `context`: Il testo di contesto che contiene le informazioni per rispondere alle domande
+  - `questions`: Array di coppie domanda-risposta associate al contesto
+- `test_data`: Array di oggetti contesto-domande per il testing, con la stessa struttura di `train_data`
+- `prompts`: Array di domande da utilizzare per la valutazione del modello
+
 ## Utilizzo
 
 Per avviare l'addestramento con un file di configurazione JSON specifico:
 
 ```bash
 cargo run -- data/dataset.json
+```
+
+Per avviare un esempio di question-answering:
+
+```bash
+cargo run -- data/qa_dataset.json
 ```
 
 Se non viene specificato alcun percorso, verrà utilizzato il file predefinito `data/dataset.json`.
@@ -68,6 +121,7 @@ Se non viene specificato alcun percorso, verrà utilizzato il file predefinito `
 - `dataset.json` - Un file JSON di esempio che contiene un estratto di storia
 - `story.txt` - Un file di testo di esempio che contiene un estratto di storia
 - `test.txt` - Un file di testo di esempio per il testing
+- `qa_dataset.json` - Un file JSON di esempio che contiene coppie di domande-risposte per il question-answering
 
 ## Aggiungere nuovi dataset
 
