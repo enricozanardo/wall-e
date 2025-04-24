@@ -364,13 +364,44 @@ fn training_example() {
             targets[[0, j]] = token_id;
         }
         
+        // Forward pass per calcolare l'accuracy prima dell'aggiornamento
+        let output = trainer.forward(&[input_tokens.clone()], Some(&targets));
+        
+        // Calcola l'accuracy
+        let mut correct = 0;
+        let total = target_tokens.len();
+        
+        // Estrai i logits dell'output
+        let logits_data = output.logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
+        
+        // Per ogni posizione, trova il token con la probabilità più alta
+        for j in 0..total {
+            let mut max_idx = 0;
+            let mut max_val = f32::MIN;
+            
+            for v in 0..logits_data.shape()[2] {
+                let val = logits_data[[0, j, v]];
+                if val > max_val {
+                    max_val = val;
+                    max_idx = v;
+                }
+            }
+            
+            // Confronta con il target
+            if max_idx == targets[[0, j]] as usize {
+                correct += 1;
+            }
+        }
+        
+        let accuracy = (correct as f32) / (total as f32) * 100.0;
+        
         // Backward pass e aggiornamento dei parametri
         let loss = trainer.train_step(
             &[input_tokens], 
             &targets
         );
         
-        println!("Epoca {}/{}: loss = {:.6}", epoch + 1, num_epochs, loss);
+        println!("Epoca {}/{}: loss = {:.6}, accuracy = {:.2}%", epoch + 1, num_epochs, loss, accuracy);
     }
 
     // 7. Generazione di testo
