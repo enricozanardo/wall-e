@@ -1,0 +1,18 @@
+{
+  "train_text": "C'era una volta una bambina di nome Stella Marie che viveva in un piccolo villaggio ai piedi di una montagna silenziosa. Stella Marie aveva occhi chiari come il cielo d'inverno e capelli scuri come la terra bagnata dopo la pioggia. Era una bambina diversa dalle altre, non perché fosse più forte o più veloce, ma perché vedeva cose che gli altri non notavano. Mentre gli altri bambini correvano nei campi e si arrampicavano sugli alberi, lei si fermava ad ascoltare i sussurri del vento tra le foglie o osservava i movimenti lenti delle lumache sotto la pioggia.",
+  "test_text": "Il villaggio dove viveva era circondato da una foresta che nessuno osava attraversare. Gli adulti dicevano che era pericolosa, che al suo interno vivevano spiriti antichi e animali che parlavano una lingua dimenticata dagli uomini. Ma Stella Marie non aveva paura. Ogni sera guardava quella distesa verde e sognava di scoprirne i segreti.",
+  "prompts": [
+    "C'era una volta",
+    "Stella Marie",
+    "Gli adulti dicevano"
+  ],
+  "model_params": {
+    "d_model": 64,
+    "max_seq_len": 128,
+    "num_heads": 4,
+    "ff_dim": 128,
+    "num_layers": 2,
+    "dropout_rate": 0.1,
+    "learning_rate": 0.001
+  }
+} 

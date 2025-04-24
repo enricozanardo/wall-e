@@ -10,23 +10,29 @@ use tokenizer::{Tokenizer, basic_tokenizer::BasicTokenizer};
 use embedding::TransformerEmbedding;
 use attention::{Attention, SelfAttention, MultiHeadAttention, FeedForward};
 use training::Trainer;
+use std::env;
 
-
+/// Funzione principale
 fn main() {
     println!("Hello, world!");
     rayon::ThreadPoolBuilder::new().build_global().unwrap();
+    
+    // Ottieni gli argomenti dalla riga di comando
+    let args: Vec<String> = env::args().collect();
       
-    // Esempio di training di un modello semplice
-    // train_simple_model();
+    // Esempi di utilizzo
+    // transformer_pipeline_example();
+    // embedding_example();
+    dataset_example();
     
-    // Esempio di utilizzo di tokenizer e embedding
-    embedding_example();
-    
-    // Esempio completo di transformer pipeline
-    transformer_pipeline_example();
-    
-    // Esempio di training di un modello transformer
-    training_example();
+    // Se viene passato un argomento da riga di comando, usalo come percorso al file di configurazione
+    if args.len() > 1 {
+        let config_path = &args[1];
+        training_example(Some(config_path));
+    } else {
+        // Altrimenti usa il file predefinito
+        training_example(None);
+    }
 }
 
 // Esempio che dimostra la pipeline completa da una frase all'output del transformer
@@ -309,33 +315,201 @@ fn train_simple_model() {
 }
 
 // Esempio di training di un modello transformer
-fn training_example() {
-    // 1. Preparazione dei dati
-    //let train_text = "Io sono un robot che impara il linguaggio naturale e posso elaborare informazioni complesse";
-    let train_text = "C'era una volta una bambina di nome Stella Marie che viveva in un piccolo villaggio ai piedi di una montagna silenziosa. Stella Marie aveva occhi chiari come il cielo d'inverno e capelli scuri come la terra bagnata dopo la pioggia. Era una bambina diversa dalle altre, non perché fosse più forte o più veloce, ma perché vedeva cose che gli altri non notavano. Mentre gli altri bambini correvano nei campi e si arrampicavano sugli alberi, lei si fermava ad ascoltare i sussurri del vento tra le foglie o osservava i movimenti lenti delle lumache sotto la pioggia. Il villaggio dove viveva era circondato da una foresta che nessuno osava attraversare. Gli adulti dicevano che era pericolosa, che al suo interno vivevano spiriti antichi e animali che parlavano una lingua dimenticata dagli uomini. Ma Stella Marie non aveva paura. Ogni sera guardava quella distesa verde e sognava di scoprirne i segreti. Un giorno, mentre camminava lungo il fiume raccogliendo pietre lisce da portare a casa, vide qualcosa di strano. Un piccolo bagliore, come una lucciola, ma più intenso e costante. Lo seguì, allontanandosi sempre più dal sentiero. La luce si muoveva tra gli alberi, lenta e sicura, come se volesse guidarla. E Stella Marie la seguì. Camminò a lungo, finché il sole non cominciò a tramontare. Il cielo si fece rosa, poi arancione, poi scuro. Ma la bambina non ebbe paura. Continuava a seguire quella luce, che ora sembrava fluttuare più in alto, quasi tra i rami degli alberi. Alla fine, arrivò in una radura che non aveva mai visto prima. Al centro c'era un albero enorme, più grande di qualsiasi altro, con rami che sembravano toccare il cielo. Sotto l'albero, seduta su una radice curva, c'era una donna anziana, vestita con un mantello fatto di foglie. I suoi occhi brillavano come stelle. Benvenuta, Stella Marie disse la donna. Ti aspettavamo. La bambina non parlò. Sentiva che non servivano parole. La donna le fece cenno di avvicinarsi e le porse un piccolo seme. Questo è il seme della memoria disse. È il dono per chi vede oltre. Se lo pianterai, crescerà solo dove il cuore è puro e la verità non è dimenticata. Stella Marie prese il seme e lo tenne stretto nel palmo. Poi la donna sparì, come nebbia al sole, e la radura sembrò svanire con lei. La bambina si ritrovò di nuovo nel bosco, vicino al fiume, con il seme ancora tra le mani. Tornò a casa senza raccontare nulla. Sapeva che nessuno le avrebbe creduto. Ma da quel giorno, ogni sera, tornava in quel punto del bosco e cercava il luogo giusto dove piantare il seme. Passarono giorni, settimane, mesi. Poi, una mattina d'autunno, Stella Marie si svegliò con una strana sensazione. Uscì di casa, camminò fino al bosco e trovò un punto dove il sole filtrava tra i rami in un modo mai visto prima. Il terreno era morbido e profumava di pioggia e di muschio. Lì piantò il seme. Ogni giorno lo visitava, gli parlava, gli cantava. Un anno dopo, al suo posto, crebbe un albero diverso da tutti gli altri. I suoi frutti erano trasparenti e dentro ogni frutto si poteva vedere un ricordo: il volto di una madre, il suono di una risata, la carezza del vento su una collina lontana. Le persone del villaggio, incuriosite, cominciarono a visitare l'albero e a cogliere quei frutti. Quando li assaggiavano, ricordavano cose che avevano dimenticato, momenti felici, promesse fatte e sogni persi nel tempo. L'albero ridiede loro ciò che avevano perso. Col tempo, tutti cominciarono a rispettare Stella Marie, non come una bambina strana, ma come una custode del mistero e della memoria. Non fu mai più sola. E l'albero, che chiamarono Albero del Ricordo, divenne il cuore del villaggio. Nessuno seppe mai chi fosse davvero la donna che aveva dato a Stella Marie quel seme, né come la bambina avesse trovato il coraggio di seguire la luce nel bosco. Ma una cosa era certa: Stella Marie aveva cambiato per sempre la vita del suo villaggio. Non con la forza, non con la magia, ma con la pazienza, la fiducia e la capacità di vedere ciò che gli altri ignoravano. E ancora oggi, se si ascolta bene, nel vento tra le foglie si può sentire una voce lieve che racconta di una bambina che seguì la luce e fece crescere un albero di ricordi.";
-    let test_text = "C'era una volta una bambina di nome Stella Marie che viveva in un piccolo villaggio ai piedi di una montagna silenziosa. Stella Marie aveva occhi chiari come il cielo d'inverno e capelli scuri come la terra bagnata dopo la pioggia. Era una bambina diversa dalle altre, non perché fosse più forte o più veloce, ma perché vedeva cose che gli altri non notavano. Mentre gli altri bambini correvano nei campi e si arrampicavano sugli alberi, lei si fermava ad ascoltare i sussurri del vento tra le foglie o osservava i movimenti lenti delle lumache sotto la pioggia. Il villaggio dove viveva era circondato da una foresta che nessuno osava attraversare. Gli adulti dicevano che era pericolosa, che al suo interno vivevano spiriti antichi e animali che parlavano una lingua dimenticata dagli uomini. Ma Stella Marie non aveva paura. Ogni sera guardava quella distesa verde e sognava di scoprirne i segreti. Un giorno, mentre camminava lungo il fiume raccogliendo pietre lisce da portare a casa, vide qualcosa di strano. Un piccolo bagliore, come una lucciola, ma più intenso e costante. Lo seguì, allontanandosi sempre più dal sentiero. La luce si muoveva tra gli alberi, lenta e sicura, come se volesse guidarla. E Stella Marie la seguì. Camminò a lungo, finché il sole non cominciò a tramontare. Il cielo si fece rosa, poi arancione, poi scuro. Ma la bambina non ebbe paura. Continuava a seguire quella luce, che ora sembrava fluttuare più in alto, quasi tra i rami degli alberi. Alla fine, arrivò in una radura che non aveva mai visto prima. Al centro c'era un albero enorme, più grande di qualsiasi altro, con rami che sembravano toccare il cielo. Sotto l'albero, seduta su una radice curva, c'era una donna anziana, vestita con un mantello fatto di foglie. I suoi occhi brillavano come stelle. Benvenuta, Stella Marie disse la donna. Ti aspettavamo. La bambina non parlò. Sentiva che non servivano parole. La donna le fece cenno di avvicinarsi e le porse un piccolo seme. Questo è il seme della memoria disse. È il dono per chi vede oltre. Se lo pianterai, crescerà solo dove il cuore è puro e la verità non è dimenticata. Stella Marie prese il seme e lo tenne stretto nel palmo. Poi la donna sparì, come nebbia al sole, e la radura sembrò svanire con lei. La bambina si ritrovò di nuovo nel bosco, vicino al fiume, con il seme ancora tra le mani. Tornò a casa senza raccontare nulla. Sapeva che nessuno le avrebbe creduto. Ma da quel giorno, ogni sera, tornava in quel punto del bosco e cercava il luogo giusto dove piantare il seme. Passarono giorni, settimane, mesi. Poi, una mattina d'autunno, Stella Marie si svegliò con una strana sensazione. Uscì di casa, camminò fino al bosco e trovò un punto dove il sole filtrava tra i rami in un modo mai visto prima. Il terreno era morbido e profumava di pioggia e di muschio. Lì piantò il seme. Ogni giorno lo visitava, gli parlava, gli cantava. Un anno dopo, al suo posto, crebbe un albero diverso da tutti gli altri. I suoi frutti erano trasparenti e dentro ogni frutto si poteva vedere un ricordo: il volto di una madre, il suono di una risata, la carezza del vento su una collina lontana. Le persone del villaggio, incuriosite, cominciarono a visitare l'albero e a cogliere quei frutti. Quando li assaggiavano, ricordavano cose che avevano dimenticato, momenti felici, promesse fatte e sogni persi nel tempo. L'albero ridiede loro ciò che avevano perso. Col tempo, tutti cominciarono a rispettare Stella Marie, non come una bambina strana, ma come una custode del mistero e della memoria. Non fu mai più sola. E l'albero, che chiamarono Albero del Ricordo, divenne il cuore del villaggio. Nessuno seppe mai chi fosse davvero la donna che aveva dato a Stella Marie quel seme, né come la bambina avesse trovato il coraggio di seguire la luce nel bosco. Ma una cosa era certa: Stella Marie aveva cambiato per sempre la vita del suo villaggio. Non con la forza, non con la magia, ma con la pazienza, la fiducia e la capacità di vedere ciò che gli altri ignoravano. E ancora oggi, se si ascolta bene, nel vento tra le foglie si può sentire una voce lieve che racconta di una bambina che seguì la luce e fece crescere un albero di ricordi.";
-    // let test_text = "Io sono un robot che genera testo basato sul contesto fornito";
+fn training_example(config_path: Option<&str>) {
+    println!("\n--- Training Example ---");
+    
+    // 1. Caricamento dei dati da file esterni
+    println!("Caricamento dei dati di training e test da file...");
+    
+    // Controlla se è stato fornito un percorso personalizzato
+    let default_json_path = "data/dataset.json";
+    let default_train_path = "data/story.txt";
+    let default_test_path = "data/test.txt";
+    
+    // Possiamo caricare da file di testo o da JSON
+    let use_json = true; // Imposta su true per usare il file JSON, false per i file di testo
+    
+    let train_text: String;
+    let test_text: String;
+    let mut custom_prompts: Vec<String> = vec![];
+    
+    // Parametri del modello con valori predefiniti
+    let mut d_model = 64;      // Dimensione dell'embedding
+    let mut max_seq_len = 128; // Lunghezza massima delle sequenze
+    let mut num_heads = 4;     // Numero di teste per multi-head attention
+    let mut ff_dim = 128;      // Dimensione interna del feed-forward network
+    let mut num_layers = 2;    // Numero di layer nell'encoder stack
+    let mut dropout_rate = 0.1;
+    let mut learning_rate = 0.001;
+    
+    if use_json {
+        // Usa il percorso fornito da riga di comando o quello predefinito
+        let json_file_path = config_path.unwrap_or(default_json_path);
+        println!("Usando il file JSON: {}", json_file_path);
+        
+        // Carica i dati direttamente con serde_json
+        let file = match std::fs::File::open(json_file_path) {
+            Ok(file) => file,
+            Err(e) => {
+                eprintln!("Errore nell'apertura del file JSON {}: {}", json_file_path, e);
+                return;
+            }
+        };
+        
+        let reader = std::io::BufReader::new(file);
+        let json_data: serde_json::Value = match serde_json::from_reader(reader) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("Errore nella decodifica del JSON da {}: {}", json_file_path, e);
+                return;
+            }
+        };
+        
+        // Estrai i testi dal JSON
+        train_text = match json_data.get("train_text") {
+            Some(text) => match text.as_str() {
+                Some(s) => s.to_string(),
+                None => {
+                    eprintln!("Errore: il campo 'train_text' nel JSON non è una stringa valida");
+                    return;
+                }
+            },
+            None => {
+                eprintln!("Errore: campo 'train_text' non trovato nel file JSON");
+                return;
+            }
+        };
+        
+        test_text = match json_data.get("test_text") {
+            Some(text) => match text.as_str() {
+                Some(s) => s.to_string(),
+                None => {
+                    eprintln!("Errore: il campo 'test_text' nel JSON non è una stringa valida");
+                    return;
+                }
+            },
+            None => {
+                eprintln!("Errore: campo 'test_text' non trovato nel file JSON");
+                return;
+            }
+        };
+        
+        // Estrai i prompt personalizzati se presenti
+        if let Some(prompts_json) = json_data.get("prompts") {
+            if let Some(prompts_arr) = prompts_json.as_array() {
+                custom_prompts = prompts_arr.iter()
+                    .filter_map(|p| p.as_str().map(String::from))
+                    .collect();
+            }
+        }
+        
+        // Estrai i parametri del modello se presenti
+        if let Some(model_params) = json_data.get("model_params") {
+            // Estrai i parametri uno per uno, usando il valore predefinito se non trovato
+            if let Some(val) = model_params.get("d_model") {
+                if let Some(val) = val.as_u64() {
+                    d_model = val as usize;
+                }
+            }
+            
+            if let Some(val) = model_params.get("max_seq_len") {
+                if let Some(val) = val.as_u64() {
+                    max_seq_len = val as usize;
+                }
+            }
+            
+            if let Some(val) = model_params.get("num_heads") {
+                if let Some(val) = val.as_u64() {
+                    num_heads = val as usize;
+                }
+            }
+            
+            if let Some(val) = model_params.get("ff_dim") {
+                if let Some(val) = val.as_u64() {
+                    ff_dim = val as usize;
+                }
+            }
+            
+            if let Some(val) = model_params.get("num_layers") {
+                if let Some(val) = val.as_u64() {
+                    num_layers = val as usize;
+                }
+            }
+            
+            if let Some(val) = model_params.get("dropout_rate") {
+                if let Some(val) = val.as_f64() {
+                    dropout_rate = val as f32;
+                }
+            }
+            
+            if let Some(val) = model_params.get("learning_rate") {
+                if let Some(val) = val.as_f64() {
+                    learning_rate = val as f32;
+                }
+            }
+        }
+        
+        println!("Parametri del modello caricati da JSON:");
+        println!("- d_model: {}", d_model);
+        println!("- max_seq_len: {}", max_seq_len);
+        println!("- num_heads: {}", num_heads);
+        println!("- ff_dim: {}", ff_dim);
+        println!("- num_layers: {}", num_layers);
+        println!("- dropout_rate: {}", dropout_rate);
+        println!("- learning_rate: {}", learning_rate);
+    } else {
+        // Caricamento da file di testo separati
+        let train_file_path = default_train_path;
+        let test_file_path = default_test_path;
+        
+        println!("Usando i file di testo:");
+        println!("- Training: {}", train_file_path);
+        println!("- Test: {}", test_file_path);
+        
+        // Utilizzo delle funzioni del modulo dataset per caricare i file
+        train_text = match wall_e1::dataset::loader::load_text(train_file_path) {
+            Ok(text) => text,
+            Err(e) => {
+                eprintln!("Errore nel caricamento del file di training {}: {}", train_file_path, e);
+                return;
+            }
+        };
+        
+        test_text = match wall_e1::dataset::loader::load_text(test_file_path) {
+            Ok(text) => text,
+            Err(e) => {
+                eprintln!("Errore nel caricamento del file di test {}: {}", test_file_path, e);
+                return;
+            }
+        };
+    }
+    
+    println!("Dati caricati con successo:");
+    println!("- Testo di training: {} caratteri", train_text.len());
+    println!("- Testo di test: {} caratteri", test_text.len());
 
     // 2. Tokenizzazione
     let mut tokenizer = BasicTokenizer::new();
-    tokenizer.build_vocab(train_text, 1);
-    tokenizer.build_vocab(test_text, 1);
+    tokenizer.build_vocab(&train_text, 1);
+    tokenizer.build_vocab(&test_text, 1);
 
     println!("Vocabolario costruito con {} token", tokenizer.get_vocab().len());
 
     // 3. Preparazione dei dati di training
-    let train_tokens = tokenizer.encode(train_text);
-    let test_tokens = tokenizer.encode(test_text);
+    let train_tokens = tokenizer.encode(&train_text);
+    let test_tokens = tokenizer.encode(&test_text);
 
     // 4. Configurazione del modello
     let vocab_size = tokenizer.get_vocab().len();
-    let d_model = 128;      // Dimensione dell'embedding
-    let max_seq_len = 128; // Lunghezza massima delle sequenze
-    let num_heads = 4;     // Numero di teste per multi-head attention
-    let ff_dim = 128;      // Dimensione interna del feed-forward network
-    let num_layers = 4;    // Numero di layer nell'encoder stack
-    let dropout_rate = 0.1;
-    let learning_rate = 0.001;
+    
+    // Questi parametri ora sono impostati tramite variabili caricate dal JSON o valori predefiniti
+    // let d_model = 64;      // Dimensione dell'embedding
+    // let max_seq_len = 128; // Lunghezza massima delle sequenze
+    // let num_heads = 4;     // Numero di teste per multi-head attention
+    // let ff_dim = 128;      // Dimensione interna del feed-forward network
+    // let num_layers = 2;    // Numero di layer nell'encoder stack
+    // let dropout_rate = 0.1;
+    // let learning_rate = 0.001;
 
     // 5. Creazione del trainer, ottimizzatore e loss function
     let mut trainer = Trainer::new(
@@ -349,7 +523,7 @@ fn training_example() {
     );
 
     // 6. Training loop
-    let num_epochs = 20;
+    let num_epochs = 10;
 
     for epoch in 0..num_epochs {
         // Prepara gli input e i target
@@ -464,19 +638,57 @@ fn training_example() {
     println!("Accuratezza: {:.2}%", accuracy * 100.0);
 
     // Generazione di campioni di testo
-    let prompts = vec![
-        "Stella Marie",
-        "Ma da quel giorno",
-        "E l'albero",
-    ];
+    let prompts_str: Vec<&str> = if !custom_prompts.is_empty() {
+        // Usa i prompt dal file JSON se disponibili
+        custom_prompts.iter().map(|s| s.as_str()).collect()
+    } else {
+        // Altrimenti usa i prompt predefiniti
+        vec![
+            "Stella Marie",
+            "Ma la bambina", 
+            "La luce si"
+        ]
+    };
 
     training::evaluate::print_generated_samples(
         &trainer,
         forward_fn,
-        &prompts.iter().map(|&s| s).collect::<Vec<&str>>(),
+        &prompts_str,
         &(Box::new(tokenizer.clone()) as Box<dyn Tokenizer>),
         20,   // max_new_tokens
         0.8   // temperature
     );
+}
+
+/// Esempio di utilizzo del modulo di dataset
+fn dataset_example() {
+    println!("\n--- Esempio di utilizzo del modulo dataset ---");
+    
+    // Dati di esempio
+    let data: Vec<i32> = (0..100).collect();
+    println!("Dataset originale: {} elementi", data.len());
+    
+    // Divisione in train, validation e test
+    match wall_e1::dataset::split_dataset(&data, 0.7, 0.15, 0.15, true) {
+        Ok(split) => {
+            println!("Split del dataset:");
+            println!("- Training: {} elementi", split.train.len());
+            println!("- Validation: {} elementi", split.validation.len());
+            println!("- Test: {} elementi", split.test.len());
+        },
+        Err(e) => {
+            println!("Errore nella divisione del dataset: {}", e);
+        }
+    }
+    
+    // Divisione K-fold
+    let k = 5;
+    let folds = wall_e1::dataset::k_fold_split(&data, k, true);
+    println!("\nK-fold cross validation (k={})", k);
+    for (i, (train, val)) in folds.iter().enumerate() {
+        println!("Fold {}: train={}, validation={}", i+1, train.len(), val.len());
+    }
+    
+    println!("\nFine dell'esempio dataset");
 }
 

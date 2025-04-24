@@ -347,7 +347,7 @@ mod tests {
         z.backward(None);
         
         // Il gradiente dovrebbe essere 1.0 ovunque
-        let expected_grad = Array2::ones((2, 2)).into_dyn();
+        let expected_grad: ndarray::ArrayBase<ndarray::OwnedRepr<f32>, ndarray::Dim<ndarray::IxDynImpl>> = Array2::ones((2, 2)).into_dyn();
         assert_eq!(a.grad.lock().unwrap().clone().unwrap(), expected_grad);
         assert_eq!(b.grad.lock().unwrap().clone().unwrap(), expected_grad);
     }
@@ -411,7 +411,7 @@ mod tests {
         y.backward(None);
         
         // Il gradiente dovrebbe essere 1.0 ovunque, ma con la forma originale
-        let expected_grad = Array2::ones((2, 3)).into_dyn();
+        let expected_grad: ndarray::ArrayBase<ndarray::OwnedRepr<f32>, ndarray::Dim<ndarray::IxDynImpl>> = Array2::ones((2, 3)).into_dyn();
         assert_eq!(x.grad.lock().unwrap().clone().unwrap(), expected_grad);
     }
     
