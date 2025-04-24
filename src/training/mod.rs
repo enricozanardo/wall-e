@@ -209,6 +209,8 @@ pub struct Trainer {
     model_dim: usize,
     /// Dimensione del vocabolario
     vocab_size: usize,
+    /// Lunghezza massima della sequenza
+    max_seq_len: usize,
     /// Funzione di loss
     loss_fn: CrossEntropyLoss,
     /// Ottimizzatore
@@ -231,11 +233,14 @@ impl Trainer {
         // Accedi al vocabolario attraverso il trait
         let vocab_size = tokenizer.vocab_size();
         
+        // Impostiamo un max_seq_len predefinito
+        let max_seq_len = 1024;
+        
         // Crea embedding layer
         let embedding = TransformerEmbedding::new(
             vocab_size,
             model_dim,
-            1024, // max_seq_len
+            max_seq_len, // Usiamo un valore coerente
             dropout_rate,
         );
         
@@ -277,28 +282,62 @@ impl Trainer {
             output_projection,
             model_dim,
             vocab_size,
+            max_seq_len,
             loss_fn,
             optimizer,
             params,
         }
     }
     
+    /// Getter per max_seq_len
+    pub fn get_max_seq_len(&self) -> usize {
+        self.max_seq_len
+    }
+
     /// Forward pass del modello
     pub fn forward(&self, token_ids: &[Vec<usize>], targets: Option<&Array2<usize>>) -> ModelOutput {
         let batch_size = token_ids.len();
-        let seq_len = if !token_ids.is_empty() { token_ids[0].len() } else { 0 };
+        if batch_size == 0 {
+            // Restituisci un output vuoto in caso di batch vuoto
+            return ModelOutput {
+                logits: Tensor::new(Array::zeros((0, 0))),
+                loss: None,
+            };
+        }
+        
+        // Controlla e limita la lunghezza della sequenza al max_seq_len
+        let seq_len = token_ids[0].len();
+        if seq_len > self.max_seq_len {
+            println!("ATTENZIONE: Lunghezza sequenza ({}) superiore a max_seq_len ({}). I token extra saranno ignorati.", 
+                    seq_len, self.max_seq_len);
+        }
+        
+        let effective_seq_len = std::cmp::min(seq_len, self.max_seq_len);
+        
+        // Crea un nuovo batch con sequenze troncate se necessario
+        let effective_token_ids: Vec<Vec<usize>> = token_ids.iter()
+            .map(|seq| {
+                if seq.len() <= self.max_seq_len {
+                    seq.clone()
+                } else {
+                    seq[0..self.max_seq_len].to_vec()
+                }
+            })
+            .collect();
+            
+        println!("Debug: forward - batch_size: {}, effective_seq_len: {}", batch_size, effective_seq_len);
         
         // Ottieni gli embedding per il batch
-        let embedded = self.embedding.forward_batch(token_ids);
+        let embedded = self.embedding.forward_batch(&effective_token_ids);
         
         // Reshape degli embedding per l'encoder
         let embedded_data = embedded.data.clone()
-            .into_shape((batch_size, seq_len, self.model_dim))
+            .into_shape((batch_size, effective_seq_len, self.model_dim))
             .unwrap();
         let embedded_tensor = Tensor::new_3d(embedded_data.into_dimensionality::<ndarray::Ix3>().unwrap());
         
         // Crea una maschera causale se necessario
-        let mask = create_causal_mask(seq_len);
+        let mask = create_causal_mask(effective_seq_len);
         
         // Forward pass attraverso l'encoder
         let encoder_output = self.encoder.forward(&embedded_tensor, Some(&mask));
@@ -308,11 +347,11 @@ impl Trainer {
             .into_dimensionality::<ndarray::Ix3>().unwrap();
         
         // Calcola i logits [batch_size, seq_len, vocab_size]
-        let mut logits_data = Array3::<f32>::zeros((batch_size, seq_len, self.vocab_size));
+        let mut logits_data = Array3::<f32>::zeros((batch_size, effective_seq_len, self.vocab_size));
         
         // Calcola il prodotto matriciale per ottenere i logits
         for b in 0..batch_size {
-            for s in 0..seq_len {
+            for s in 0..effective_seq_len {
                 for v in 0..self.vocab_size {
                     let mut sum = 0.0;
                     for d in 0..self.model_dim {
@@ -346,33 +385,76 @@ impl Trainer {
         
         // Converti il gradiente dei logits in gradiente della matrice di proiezione
         let batch_size = token_ids.len();
+        
+        // Utilizziamo effective_seq_len che è limitato a max_seq_len
         let seq_len = if !token_ids.is_empty() { token_ids[0].len() } else { 0 };
+        let effective_seq_len = std::cmp::min(seq_len, self.max_seq_len);
         
-        // Ottieni gli embedding per il batch
-        let embedded = self.embedding.forward_batch(token_ids);
+        // Stampa informazioni di debug sulle dimensioni
+        println!("Debug: train_step - batch_size: {}, effective_seq_len: {}, vocab_size: {}, model_dim: {}", 
+                 batch_size, effective_seq_len, self.vocab_size, self.model_dim);
         
-        // Reshape degli embedding per l'encoder
+        // Creazione di token_ids troncati se necessario
+        let effective_token_ids: Vec<Vec<usize>> = token_ids.iter()
+            .map(|seq| {
+                if seq.len() <= self.max_seq_len {
+                    seq.clone()
+                } else {
+                    seq[0..self.max_seq_len].to_vec()
+                }
+            })
+            .collect();
+        
+        // Ottieni gli embedding per il batch (con token_ids potenzialmente troncati)
+        let embedded = self.embedding.forward_batch(&effective_token_ids);
+        
+        // Verifica le dimensioni dell'embedding
+        println!("Debug: train_step - embedded shape: {:?}", embedded.data.shape());
+        
+        // Reshape degli embedding per l'encoder - con controllo per sicurezza
+        let embedded_shape = embedded.data.shape();
+        if embedded_shape.len() != 2 || embedded_shape[0] != batch_size || embedded_shape[1] != effective_seq_len * self.model_dim {
+            println!("ERRORE: La forma dell'embedding è incorretta! Atteso [batch_size, effective_seq_len * model_dim] = [{}, {}], trovato {:?}",
+                     batch_size, effective_seq_len * self.model_dim, embedded_shape);
+            // Ritorna la loss senza aggiornare i pesi
+            return loss;
+        }
+        
         let embedded_data = embedded.data.clone()
-            .into_shape((batch_size, seq_len, self.model_dim))
-            .unwrap();
+            .into_shape((batch_size, effective_seq_len, self.model_dim))
+            .unwrap_or_else(|_| {
+                println!("ERRORE: Impossibile reshape dell'embedding a [batch_size, effective_seq_len, model_dim]");
+                Array3::<f32>::zeros((batch_size, effective_seq_len, self.model_dim))
+            });
         let embedded_tensor = Tensor::new_3d(embedded_data.into_dimensionality::<ndarray::Ix3>().unwrap());
         
         // Crea una maschera causale
-        let mask = create_causal_mask(seq_len);
+        let mask = create_causal_mask(effective_seq_len);
         
         // Forward pass attraverso l'encoder
         let encoder_output = self.encoder.forward(&embedded_tensor, Some(&mask));
         
         // Prepara il gradiente per la matrice di proiezione finale
-        let grad_logits_data = grad_logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
-        let encoder_data = encoder_output.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
+        let grad_logits_data = grad_logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap_or_else(|_| {
+            println!("ERRORE: Impossibile convertire grad_logits in Array3");
+            Array3::<f32>::zeros((batch_size, effective_seq_len, self.vocab_size))
+        });
+        
+        let encoder_data = encoder_output.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap_or_else(|_| {
+            println!("ERRORE: Impossibile convertire encoder_output in Array3");
+            Array3::<f32>::zeros((batch_size, effective_seq_len, self.model_dim))
+        });
+        
+        // Verifica le dimensioni
+        println!("Debug: train_step - grad_logits shape: {:?}, encoder_data shape: {:?}", 
+                 grad_logits_data.shape(), encoder_data.shape());
         
         // Inizializza gradiente per output_projection
         let mut grad_output_proj = Array::zeros((self.model_dim, self.vocab_size));
         
         // Calcola il gradiente rispetto alla matrice di proiezione
         for b in 0..batch_size {
-            for s in 0..seq_len {
+            for s in 0..effective_seq_len {
                 for d in 0..self.model_dim {
                     for v in 0..self.vocab_size {
                         grad_output_proj[[d, v]] += encoder_data[[b, s, d]] * grad_logits_data[[b, s, v]];

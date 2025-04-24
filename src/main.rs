@@ -11,11 +11,17 @@ use embedding::TransformerEmbedding;
 use attention::{Attention, SelfAttention, MultiHeadAttention, FeedForward};
 use training::Trainer;
 use std::env;
+use rayon::prelude::*;
+use ndarray_rand::RandomExt;
+use ndarray_rand::rand_distr::{Uniform, Normal};
 
 /// Funzione principale
 fn main() {
-    println!("Hello, world!");
-    rayon::ThreadPoolBuilder::new().build_global().unwrap();
+    println!("Hi Wall-e!");
+    // Configura il thread pool di Rayon per utilizzare tutte le CPU disponibili
+    let num_cpus = num_cpus::get();
+    println!("Utilizzo di {} CPU per il calcolo parallelo", num_cpus);
+    rayon::ThreadPoolBuilder::new().num_threads(num_cpus).build_global().unwrap();
     
     // Ottieni gli argomenti dalla riga di comando
     let args: Vec<String> = env::args().collect();
@@ -529,33 +535,52 @@ fn training_example(config_path: Option<&str>) {
     );
 
     // 6. Training loop
-    let num_epochs = 10;
-
+    println!("\nInizio del training...");
+    let num_epochs = 1; // Ridotto a 1 per debug
+    
+    println!("Debug: Preparazione degli input e target");
+    
+    // Otteniamo il max_seq_len dal trainer
+    let max_seq_chunk = trainer.get_max_seq_len();
+    
+    // Prendiamo solo il primo chunk per addestrare il modello
+    let chunk_size = std::cmp::min(max_seq_chunk, train_tokens.len());
+    let train_chunk = train_tokens[0..chunk_size].to_vec();
+    println!("Debug: Uso il primo chunk di {} token per il training", chunk_size);
+    
+    // Prepara gli input e i target
+    // Input: tutti i token tranne l'ultimo
+    // Target: tutti i token tranne il primo (predizione del token successivo)
+    let input_tokens = train_chunk[0..train_chunk.len()-1].to_vec();
+    let target_tokens = train_chunk[1..train_chunk.len()].to_vec();
+    
+    println!("Debug: Dimensione input: {}, target: {}", input_tokens.len(), target_tokens.len());
+    
+    // Converti target_tokens in Array2
+    let mut targets = ndarray::Array2::zeros((1, target_tokens.len()));
+    for (j, &token_id) in target_tokens.iter().enumerate() {
+        targets[[0, j]] = token_id;
+    }
+    
+    println!("Debug: Forward pass per calcolare accuracy");
+    
     for epoch in 0..num_epochs {
-        // Prepara gli input e i target
-        // Input: tutti i token tranne l'ultimo
-        // Target: tutti i token tranne il primo (predizione del token successivo)
-        let input_tokens = train_tokens[0..train_tokens.len()-1].to_vec();
-        let target_tokens = train_tokens[1..train_tokens.len()].to_vec();
-        
-        // Converti target_tokens in Array2
-        let mut targets = ndarray::Array2::zeros((1, target_tokens.len()));
-        for (j, &token_id) in target_tokens.iter().enumerate() {
-            targets[[0, j]] = token_id;
-        }
-        
         // Forward pass per calcolare l'accuracy prima dell'aggiornamento
+        println!("Debug: Esecuzione forward pass - Inizio");
         let output = trainer.forward(&[input_tokens.clone()], Some(&targets));
+        println!("Debug: Esecuzione forward pass - Fine");
         
         // Calcola l'accuracy
+        println!("Debug: Calcolo accuracy");
         let mut correct = 0;
         let total = target_tokens.len();
         
         // Estrai i logits dell'output
+        println!("Debug: Estrazione logits");
         let logits_data = output.logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
         
-        // Per ogni posizione, trova il token con la probabilità più alta
-        for j in 0..total {
+        // Implementazione parallela del calcolo dell'accuracy
+        let correct = (0..total).into_par_iter().map(|j| {
             let mut max_idx = 0;
             let mut max_val = f32::MIN;
             
@@ -567,50 +592,26 @@ fn training_example(config_path: Option<&str>) {
                 }
             }
             
-            // Confronta con il target
-            if max_idx == targets[[0, j]] as usize {
-                correct += 1;
-            }
-        }
+            if max_idx == targets[[0, j]] as usize { 1 } else { 0 }
+        }).sum::<usize>();
         
         let accuracy = (correct as f32) / (total as f32) * 100.0;
+        println!("Debug: Accuracy calcolata: {}%", accuracy);
         
         // Backward pass e aggiornamento dei parametri
+        println!("Debug: Esecuzione train_step - Inizio");
         let loss = trainer.train_step(
-            &[input_tokens], 
+            &[input_tokens.clone()], 
             &targets
         );
+        println!("Debug: Esecuzione train_step - Fine");
         
         println!("Epoca {}/{}: loss = {:.6}, accuracy = {:.2}%", epoch + 1, num_epochs, loss, accuracy);
     }
-
-    // 7. Generazione di testo
-    let prompt = "C'era una volta";
     
-    // Generazione con temperatura bassa (output più deterministico)
-    let temperature_low = 0.2;
-    let generated_text_low_temp = trainer.generate(
-        prompt,
-        15,              // max_tokens
-        temperature_low, // temperatura bassa
-        None             // top_k (None = usa tutti i token)
-    );
-
-    println!("Prompt: '{}'", prompt);
-    println!("Testo generato (temperatura bassa): '{}'", generated_text_low_temp);
-
-    // Generazione con temperatura alta (output più creativo)
-    let temperature_high = 1.5;
-    let generated_text_high_temp = trainer.generate(
-        prompt,
-        15,               // max_tokens
-        temperature_high, // temperatura alta
-        None              // top_k (None = usa tutti i token)
-    );
-
-    println!("Testo generato (temperatura alta): '{}'", generated_text_high_temp);
-
-    // Prepara i dati di valutazione usando un closure per funzione forward
+    println!("Debug: Training completato");
+    
+    // 7. Valutazione sul test set
     let forward_fn = |model: &Trainer, token_ids: &Vec<Vec<usize>>, _: Option<ndarray::Array2<f32>>| {
         let mut targets = ndarray::Array2::zeros((token_ids.len(), token_ids[0].len()));
         for (i, seq) in token_ids.iter().enumerate() {
@@ -620,11 +621,11 @@ fn training_example(config_path: Option<&str>) {
         }
         model.forward(token_ids, Some(&targets))
     };
-
+    
     // Prepara i dati di test
     let test_input = test_tokens[0..test_tokens.len()-1].to_vec();
     let test_dataset = vec![vec![test_input]];
-
+    
     // Padding token ID (assumiamo 0 per [PAD])
     let padding_token_id = 0;
 
@@ -639,9 +640,10 @@ fn training_example(config_path: Option<&str>) {
 
     let perplexity = (avg_loss as f64).exp();
 
-    println!("Loss: {:.4}", avg_loss);
-    println!("Perplexity: {:.4}", perplexity);
-    println!("Accuratezza: {:.2}%", accuracy * 100.0);
+    println!("\nValutazione sul test set:");
+    println!("- Loss: {:.4}", avg_loss);
+    println!("- Perplexity: {:.4}", perplexity);
+    println!("- Accuratezza: {:.2}%", accuracy * 100.0);
 
     // Generazione di campioni di testo
     let prompts_str: Vec<&str> = if !custom_prompts.is_empty() {
@@ -833,23 +835,40 @@ fn question_answering_example(config_path: Option<&str>) {
     // 4. Formatta i dati di training nel formato corretto per QA
     println!("\nPreparazione dei dati per il training...");
     
-    let mut train_text = String::new();
-    let mut test_text = String::new();
+    // Versione parallelizzata della preparazione dei dati
+    println!("Debug: Preparazione parallela dei dati di training...");
     
-    // Formato per QA: "Contesto: {context} Domanda: {question} Risposta: {answer}"
-    for i in 0..train_contexts.len() {
-        train_text.push_str(&format!(
-            "Contesto: {} Domanda: {} Risposta: {}\n",
-            train_contexts[i], train_questions[i], train_answers[i]
-        ));
-    }
+    let train_text = {
+        // Preparazione parallela dei dati di training
+        let formatted_examples: Vec<String> = (0..train_contexts.len())
+            .into_par_iter()
+            .map(|i| {
+                format!(
+                    "Contesto: {} Domanda: {} Risposta: {}\n",
+                    train_contexts[i], train_questions[i], train_answers[i]
+                )
+            })
+            .collect();
+        
+        formatted_examples.join("")
+    };
     
-    for i in 0..test_contexts.len() {
-        test_text.push_str(&format!(
-            "Contesto: {} Domanda: {} Risposta: {}\n",
-            test_contexts[i], test_questions[i], test_answers[i]
-        ));
-    }
+    let test_text = {
+        // Preparazione parallela dei dati di test
+        let formatted_examples: Vec<String> = (0..test_contexts.len())
+            .into_par_iter()
+            .map(|i| {
+                format!(
+                    "Contesto: {} Domanda: {} Risposta: {}\n",
+                    test_contexts[i], test_questions[i], test_answers[i]
+                )
+            })
+            .collect();
+        
+        formatted_examples.join("")
+    };
+    
+    println!("Debug: Preparazione dati completata!");
     
     // 5. Tokenizzazione
     let mut tokenizer = BasicTokenizer::new();
@@ -861,6 +880,27 @@ fn question_answering_example(config_path: Option<&str>) {
     // 6. Preparazione dei dati di training
     let train_tokens = tokenizer.encode(&train_text);
     let test_tokens = tokenizer.encode(&test_text);
+    
+    println!("Debug: Dimensione dei token di training: {}", train_tokens.len());
+    
+    // Limita la dimensione dei dati di training per prevenire errori di memoria
+    // Massimo 100k token per l'esecuzione di test (precedente limite era 1M, troppo grande)
+    let max_tokens = 100_000;
+    let train_tokens = if train_tokens.len() > max_tokens {
+        println!("ATTENZIONE: Troncamento dei token di training da {} a {} per evitare errori di memoria", 
+                train_tokens.len(), max_tokens);
+        train_tokens[0..max_tokens].to_vec()
+    } else {
+        train_tokens
+    };
+    
+    println!("Debug: Lunghezza max_seq_len del modello: {}", max_seq_len);
+    
+    // Controlla che la lunghezza della sequenza non superi max_seq_len
+    // Limitiamo ulteriormente la sequenza per garantire che le operazioni di embedding funzionino
+    let max_seq_chunk = 1024; // Deve essere <= max_seq_len
+    let num_chunks = (train_tokens.len() + max_seq_chunk - 1) / max_seq_chunk;
+    println!("Debug: Divisione in {} chunks di massimo {} token ciascuno", num_chunks, max_seq_chunk);
     
     // 7. Creazione del trainer
     let mut trainer = Trainer::new(
@@ -879,13 +919,21 @@ fn question_answering_example(config_path: Option<&str>) {
     
     println!("Debug: Preparazione degli input e target");
     
+    // Otteniamo il max_seq_len dal trainer
+    let max_seq_chunk = trainer.get_max_seq_len();
+    
+    // Prendiamo solo il primo chunk per addestrare il modello
+    let chunk_size = std::cmp::min(max_seq_chunk, train_tokens.len());
+    let train_chunk = train_tokens[0..chunk_size].to_vec();
+    println!("Debug: Uso il primo chunk di {} token per il training", chunk_size);
+    
     // Prepara gli input e i target
     // Input: tutti i token tranne l'ultimo
     // Target: tutti i token tranne il primo (predizione del token successivo)
-    let input_tokens = train_tokens[0..train_tokens.len()-1].to_vec();
-    let target_tokens = train_tokens[1..train_tokens.len()].to_vec();
+    let input_tokens = train_chunk[0..train_chunk.len()-1].to_vec();
+    let target_tokens = train_chunk[1..train_chunk.len()].to_vec();
     
-    println!("Debug: Creazione dell'array targets");
+    println!("Debug: Dimensione input: {}, target: {}", input_tokens.len(), target_tokens.len());
     
     // Converti target_tokens in Array2
     let mut targets = ndarray::Array2::zeros((1, target_tokens.len()));
@@ -910,9 +958,8 @@ fn question_answering_example(config_path: Option<&str>) {
         println!("Debug: Estrazione logits");
         let logits_data = output.logits.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
         
-        // Per ogni posizione, trova il token con la probabilità più alta
-        println!("Debug: Elaborazione token per token");
-        for j in 0..total {
+        // Implementazione parallela del calcolo dell'accuracy
+        let correct = (0..total).into_par_iter().map(|j| {
             let mut max_idx = 0;
             let mut max_val = f32::MIN;
             
@@ -924,11 +971,8 @@ fn question_answering_example(config_path: Option<&str>) {
                 }
             }
             
-            // Confronta con il target
-            if max_idx == targets[[0, j]] as usize {
-                correct += 1;
-            }
-        }
+            if max_idx == targets[[0, j]] as usize { 1 } else { 0 }
+        }).sum::<usize>();
         
         let accuracy = (correct as f32) / (total as f32) * 100.0;
         println!("Debug: Accuracy calcolata: {}%", accuracy);

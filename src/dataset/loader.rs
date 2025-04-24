@@ -4,6 +4,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
+use rayon::prelude::*;
 
 /// Struttura dati generica per dataset
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,6 +42,53 @@ pub fn load_text_lines<P: AsRef<Path>>(file_path: P) -> io::Result<Vec<String>> 
     reader.lines().collect()
 }
 
+/// Carica un file di testo completo in memoria in modo parallelizzato
+/// 
+/// # Argomenti
+/// * `file_path` - Il percorso del file da caricare
+/// 
+/// # Restituisce
+/// * `Ok(String)` - Il contenuto del file
+/// * `Err(io::Error)` - Errore durante la lettura
+pub fn load_text_parallel<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
+    // Legge le linee del file
+    let lines = load_text_lines_parallel(&file_path)?;
+    
+    // Unisce le linee in modo efficiente
+    Ok(lines.join("\n"))
+}
+
+/// Carica un file di testo linea per linea in modo parallelizzato, utile per file molto grandi
+/// 
+/// # Argomenti
+/// * `file_path` - Il percorso del file da caricare
+/// 
+/// # Restituisce
+/// * `Ok(Vec<String>)` - Le righe del file
+/// * `Err(io::Error)` - Errore durante la lettura
+pub fn load_text_lines_parallel<P: AsRef<Path>>(file_path: P) -> io::Result<Vec<String>> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+    
+    // Raccoglie le linee in un vettore
+    let lines: Vec<io::Result<String>> = reader.lines().collect();
+    
+    // Processa le linee in parallelo
+    let result: io::Result<Vec<String>> = lines
+        .into_par_iter()
+        .map(|line_result| line_result.map(|line| process_line(&line)))
+        .collect();
+    
+    result
+}
+
+/// Elabora una singola linea di testo (può essere estesa con operazioni più complesse)
+fn process_line(line: &str) -> String {
+    // Qui è possibile aggiungere elaborazione specifica
+    // Ad esempio, normalizzazione, pulizia, tokenizzazione, ecc.
+    line.to_string()
+}
+
 /// Apre un file di testo e restituisce un BufReader per lo streaming
 /// 
 /// # Argomenti
@@ -67,6 +115,34 @@ pub fn load_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn 
     let reader = BufReader::new(file);
     let items: Vec<DataItem> = serde_json::from_reader(reader)?;
     Ok(items)
+}
+
+/// Carica un dataset JSON in memoria utilizzando parallelizzazione dove possibile
+/// 
+/// # Argomenti
+/// * `file_path` - Il percorso del file JSON da caricare
+/// 
+/// # Restituisce
+/// * `Ok(Vec<DataItem>)` - Gli elementi nel file JSON
+/// * `Err(...)` - Errore durante la lettura o il parsing
+pub fn load_json_parallel<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn std::error::Error>> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+    
+    // Prima fase: carica l'intero JSON
+    let items: Vec<DataItem> = serde_json::from_reader(reader)?;
+    
+    // Seconda fase: processa gli elementi in parallelo
+    let processed_items: Vec<DataItem> = items
+        .into_par_iter()
+        .map(|item| {
+            // Qui è possibile aggiungere elaborazione specifica
+            // Ad esempio, normalizzazione del testo, preparazione dei dati, ecc.
+            item
+        })
+        .collect();
+    
+    Ok(processed_items)
 }
 
 /// Carica un dataset JSONL (JSON Lines) linea per linea

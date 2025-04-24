@@ -3,6 +3,7 @@ use ndarray::{Array, Array2};
 use rayon::prelude::*;
 use ndarray_rand::RandomExt;
 use ndarray_rand::rand_distr::Normal as NdNormal;
+use std::sync::{Arc, Mutex};
 
 use super::Embedding;
 
@@ -67,23 +68,68 @@ impl TokenEmbedding {
         }
         
         let seq_len = batch_token_ids[0].len();
+        if seq_len == 0 {
+            println!("ATTENZIONE: Sequenza vuota nel batch. Ritorno matrice vuota.");
+            return Tensor::new(Array2::<f32>::zeros((batch_size, 0)));
+        }
         
-        // Crea una matrice 3D per memorizzare i risultati [batch_size, seq_len, embedding_dim]
+        // Debug info
+        println!("Debug: token_embedding.forward_batch - batch_size: {}, seq_len: {}, embedding_dim: {}", 
+                 batch_size, seq_len, self.embedding_dim);
+        
+        // Strategia: creiamo un vettore di matrici 2D, una per ogni batch
+        // e poi le combiniamo alla fine
+        let batch_results: Vec<_> = (0..batch_size)
+            .into_par_iter()
+            .map(|b| {
+                let token_ids = &batch_token_ids[b];
+                let actual_len = token_ids.len(); // Potrebbe essere diverso se le sequenze non sono uniformi
+                
+                if actual_len != seq_len {
+                    println!("ATTENZIONE: Sequenza di lunghezza non uniforme nel batch. Atteso: {}, Trovato: {}", 
+                             seq_len, actual_len);
+                }
+                
+                let safe_len = actual_len.min(seq_len);
+                let mut batch_data = Array2::<f32>::zeros((seq_len, self.embedding_dim));
+                
+                // Copia i vettori di embedding nella matrice temporanea
+                for (i, &token_id) in token_ids.iter().enumerate().take(safe_len) {
+                    let effective_id = token_id.min(self.vocab_size - 1);
+                    for j in 0..self.embedding_dim {
+                        batch_data[[i, j]] = self.embedding_matrix.data[[effective_id, j]];
+                    }
+                }
+                
+                batch_data
+            })
+            .collect();
+        
+        // Ora combiniamo i risultati in una singola matrice 3D
         let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, seq_len, self.embedding_dim));
-        
-        // Elabora gli embedding sequenzialmente anziché con Rayon
-        // Questo è necessario perché Tensor contiene Rc che non è Sync
-        for (b, token_ids) in batch_token_ids.iter().enumerate() {
-            for (i, &token_id) in token_ids.iter().enumerate().take(seq_len) {
-                let effective_id = token_id.min(self.vocab_size - 1);
+        for (b, batch_data) in batch_results.iter().enumerate() {
+            for i in 0..seq_len {
                 for j in 0..self.embedding_dim {
-                    result_data[[b, i, j]] = self.embedding_matrix.data[[effective_id, j]];
+                    result_data[[b, i, j]] = batch_data[[i, j]];
                 }
             }
         }
         
+        // Debug info sulla forma finale
+        println!("Debug: token_embedding.forward_batch - risultato 3D shape: {:?}", result_data.shape());
+        
         // Converti il tensore 3D in un tensore 2D con forma [batch_size, seq_len * embedding_dim]
-        let flattened = result_data.into_shape((batch_size, seq_len * self.embedding_dim)).unwrap();
+        let flattened_shape = (batch_size, seq_len * self.embedding_dim);
+        println!("Debug: token_embedding.forward_batch - flattening a shape: {:?}", flattened_shape);
+        
+        let flattened = match result_data.into_shape_with_order(flattened_shape) {
+            Ok(flat) => flat,
+            Err(e) => {
+                println!("ERRORE durante flattening del risultato: {} - Creazione di zero array", e);
+                Array2::<f32>::zeros(flattened_shape)
+            }
+        };
+        
         Tensor::new(flattened)
     }
     
