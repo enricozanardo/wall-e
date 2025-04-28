@@ -17,6 +17,7 @@ use std::sync::{Arc, Mutex};
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Addestramento modello QA Wall-E1");
     println!("--------------------------------");
+    println!("Utilizzo {} thread per il calcolo parallelo", rayon::current_num_threads());
     
     // Carica il dataset QA
     println!("Caricamento del dataset da 'data/qa_dataset.json'...");
@@ -54,30 +55,46 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Estrai i dati di training
     let train_data = &data["train_data"];
-    let mut training_texts = Vec::new();
+    
+    // Usiamo Rayon per elaborare i dati di training in parallelo
+    let training_texts: Vec<String> = {
+        let items = train_data.as_array().unwrap();
+        let contexts_and_qa: Vec<(String, Vec<(String, String)>)> = items.par_iter().map(|item| {
+            let context = item["context"].as_str().unwrap().to_string();
+            
+            let qa_pairs = item["questions"].as_array().unwrap().iter()
+                .map(|qa| {
+                    let question = qa["question"].as_str().unwrap().to_string();
+                    let answer = qa["answer"].as_str().unwrap().to_string();
+                    (question, answer)
+                })
+                .collect();
+                
+            (context, qa_pairs)
+        }).collect();
+        
+        // Appiattire i risultati per ottenere un unico vettore di testi
+        contexts_and_qa.into_par_iter().flat_map(|(context, qa_pairs)| {
+            let mut texts = vec![context.clone()];
+            
+            qa_pairs.into_iter().for_each(|(question, answer)| {
+                texts.push(format!("Domanda: {} Risposta: {}", question, answer));
+            });
+            
+            texts
+        }).collect()
+    };
     
     // Prepara un corpus per costruire il vocabolario
-    let mut corpus = String::new();
-    
-    for item in train_data.as_array().unwrap() {
-        let context = item["context"].as_str().unwrap();
-        corpus.push_str(context);
-        corpus.push_str(" ");
-        
-        training_texts.push(context.to_string());
-        
-        // Aggiungi anche domande e risposte al corpus
-        for qa in item["questions"].as_array().unwrap() {
-            let question = qa["question"].as_str().unwrap();
-            let answer = qa["answer"].as_str().unwrap();
-            corpus.push_str(question);
-            corpus.push_str(" ");
-            corpus.push_str(answer);
-            corpus.push_str(" ");
+    let corpus = {
+        // Uniamo tutti i testi in parallelo
+        let corpus_chunks: Vec<String> = training_texts.par_iter()
+            .map(|text| text.clone() + " ")
+            .collect();
             
-            training_texts.push(format!("Domanda: {} Risposta: {}", question, answer));
-        }
-    }
+        // Unisci i chunk in una stringa unica
+        corpus_chunks.join("")
+    };
     
     // Crea e inizializza il tokenizer
     let mut tokenizer = BasicTokenizer::new();
@@ -142,22 +159,29 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     
     // Estrai i dati dai mutex
-    let mut training_examples = Arc::try_unwrap(training_examples_mutex)
+    let training_examples = Arc::try_unwrap(training_examples_mutex)
         .map_err(|_| "Impossibile ottenere i dati di addestramento").unwrap()
         .into_inner().map_err(|_| "Errore di lock").unwrap();
     
-    let mut training_targets = Arc::try_unwrap(training_targets_mutex)
+    let training_targets = Arc::try_unwrap(training_targets_mutex)
         .map_err(|_| "Impossibile ottenere i target di addestramento").unwrap()
         .into_inner().map_err(|_| "Errore di lock").unwrap();
     
     println!("Generati {} esempi di addestramento", training_examples.len());
     
-    // Batch delle sequenze
-    let mut batched_examples = Vec::new();
-    let mut batched_targets = Vec::new();
+    // Batch delle sequenze - Utilizziamo Rayon per processare i batch in parallelo
+    println!("Preparazione dei batch in parallelo...");
     let batch_size = 1; // Ridotto a 1 per evitare problemi di compatibilità di forma
     
-    for i in (0..training_examples.len()).step_by(batch_size) {
+    // Crea range di indici
+    let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
+    
+    // Struttura dati per i batch
+    let batch_results = Arc::new(Mutex::new(Vec::new()));
+    let target_results = Arc::new(Mutex::new(Vec::new()));
+    
+    // Processamento parallelo dei batch
+    indices.par_iter().for_each(|&i| {
         let mut batch = Vec::new();
         let mut batch_targets = Vec::new();
         
@@ -197,10 +221,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         
         if !batch.is_empty() {
-            batched_examples.push(batch);
-            batched_targets.push(batch_targets);
+            // Aggiungi il batch ai risultati
+            if let Ok(mut batches) = batch_results.lock() {
+                batches.push(batch);
+            }
+            
+            if let Ok(mut targets) = target_results.lock() {
+                targets.push(batch_targets);
+            }
         }
-    }
+    });
+    
+    // Estrai i dati dai mutex
+    let batched_examples = Arc::try_unwrap(batch_results)
+        .map_err(|_| "Impossibile ottenere i batch").unwrap()
+        .into_inner().map_err(|_| "Errore di lock").unwrap();
+    
+    let batched_targets = Arc::try_unwrap(target_results)
+        .map_err(|_| "Impossibile ottenere i target batch").unwrap()
+        .into_inner().map_err(|_| "Errore di lock").unwrap();
     
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
@@ -208,9 +247,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let epochs = 3; // Aumentiamo a 3 epoche
     
     for epoch in 1..=epochs {
-        let mut total_loss = 0.0;
-        let mut num_batches = 0;
+        // Utilizziamo Mutex per aggiornare in modo sicuro i contatori di loss
+        let total_loss_mutex = Arc::new(Mutex::new(0.0));
+        let num_batches_mutex = Arc::new(Mutex::new(0));
         
+        // Creiamo un contatore per monitorare i batch
+        let batch_counter = Arc::new(Mutex::new(0));
+        
+        // Trainer deve essere mutato sequenzialmente, quindi non possiamo usare par_iter qui
         for (batch_idx, (batch, targets)) in batched_examples.iter().zip(batched_targets.iter()).enumerate() {
             // Converti i target in Array2
             let max_seq_len = targets.iter().map(|t| t.len()).max().unwrap_or(1);
@@ -227,14 +271,32 @@ fn main() -> Result<(), Box<dyn Error>> {
             
             // Esegui un passo di training
             let loss = trainer.train_step(batch, &targets_array);
-            total_loss += loss;
-            num_batches += 1;
             
-            if batch_idx % 10 == 0 {
+            // Aggiorna il conteggio in modo thread-safe
+            if let Ok(mut total) = total_loss_mutex.lock() {
+                *total += loss;
+            }
+            
+            if let Ok(mut count) = num_batches_mutex.lock() {
+                *count += 1;
+            }
+            
+            // Incrementa e controlla se mostrare l'avanzamento
+            let should_print = {
+                let mut counter = batch_counter.lock().unwrap();
+                *counter += 1;
+                *counter % 10 == 0
+            };
+            
+            if should_print {
                 println!("  Epoch {}, Batch {}/{}: Loss = {:.4}", 
                          epoch, batch_idx + 1, batched_examples.len(), loss);
             }
         }
+        
+        // Estrai i valori finali dai mutex
+        let total_loss = *total_loss_mutex.lock().unwrap();
+        let num_batches = *num_batches_mutex.lock().unwrap();
         
         let avg_loss = total_loss / num_batches as f32;
         println!("Epoch {} completata. Loss media: {:.4}", epoch, avg_loss);
@@ -250,14 +312,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let test_prompts = data["prompts"].as_array().unwrap();
     
+    // Prepara una struttura per i risultati
+    struct TestResult {
+        question: String,
+        top_responses: Vec<(String, f32)>
+    }
+    
+    // Creiamo un mutex per i risultati
+    let results_mutex = Arc::new(Mutex::new(Vec::new()));
+    
     // Test sincronizzato per i prompts
     for prompt in test_prompts {
-        let question = prompt.as_str().unwrap();
-        println!("\nDomanda: {}", question);
+        let question = prompt.as_str().unwrap().to_string();
         
         // Codifichiamo il prompt
-        let tokens = tokenizer.encode(question);
-        println!("Token IDs: {:?}", tokens);
+        let tokens = tokenizer.encode(&question);
         
         // Prepariamo l'input (un batch con un singolo esempio)
         let input = vec![tokens.clone()];
@@ -278,10 +347,30 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut sorted_probs = token_probs;
         sorted_probs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         
-        // Mostriamo i top 3 token
+        // Prepara le risposte migliori
+        let top_responses: Vec<(String, f32)> = sorted_probs.iter().take(3)
+            .map(|(token_id, prob)| (tokenizer.decode(&[*token_id]), *prob))
+            .collect();
+            
+        // Aggiungi il risultato
+        if let Ok(mut results) = results_mutex.lock() {
+            results.push(TestResult {
+                question,
+                top_responses
+            });
+        }
+    }
+    
+    // Estrai i risultati e stampali
+    let test_results = Arc::try_unwrap(results_mutex)
+        .map_err(|_| "Impossibile ottenere i risultati del test").unwrap()
+        .into_inner().map_err(|_| "Errore di lock").unwrap();
+        
+    // Stampa i risultati in parallelo
+    for result in test_results {
+        println!("\nDomanda: {}", result.question);
         println!("Risposte più probabili:");
-        for (i, (token_id, prob)) in sorted_probs.iter().take(3).enumerate() {
-            let token_text = tokenizer.decode(&[*token_id]);
+        for (i, (token_text, prob)) in result.top_responses.iter().enumerate() {
             println!("  {}. \"{}\" (probabilità: {:.3})", i+1, token_text, prob);
         }
     }
