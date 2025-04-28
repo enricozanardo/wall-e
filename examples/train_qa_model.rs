@@ -10,6 +10,9 @@ use ndarray::Array2;
 use std::io::{self, Write};
 use std::time::Instant;
 use ndarray::{Array, Axis, s};
+use ndarray_parallel::prelude::*;
+use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Addestramento modello QA Wall-E1");
@@ -98,12 +101,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Prepara gli esempi di addestramento
     println!("Preparazione degli esempi di addestramento...");
-    let mut training_examples = Vec::new();
-    let mut training_targets = Vec::new();
     
-    for text in &training_texts {
+    // Utilizziamo un vettore di esempi e target condiviso tra thread
+    let training_examples_mutex = Arc::new(Mutex::new(Vec::new()));
+    let training_targets_mutex = Arc::new(Mutex::new(Vec::new()));
+    
+    // Parallelizza la generazione degli esempi di addestramento
+    training_texts.par_iter().for_each(|text| {
         let tokens = tokenizer.encode(text);
         if tokens.len() > 3 {  // Assicuriamoci che ci siano abbastanza token
+            let mut local_examples = Vec::new();
+            let mut local_targets = Vec::new();
+            
             for i in 0..(tokens.len() - 1) {
                 let mut input = Vec::new();
                 let mut target = Vec::new();
@@ -117,11 +126,31 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // Il target è il token successivo
                 target.push(tokens[i + 1]);
                 
-                training_examples.push(input);
-                training_targets.push(target);
+                local_examples.push(input);
+                local_targets.push(target);
+            }
+            
+            // Acquisici il lock e aggiungi esempi e target
+            if let Ok(mut examples) = training_examples_mutex.lock() {
+                examples.extend(local_examples);
+            }
+            
+            if let Ok(mut targets) = training_targets_mutex.lock() {
+                targets.extend(local_targets);
             }
         }
-    }
+    });
+    
+    // Estrai i dati dai mutex
+    let mut training_examples = Arc::try_unwrap(training_examples_mutex)
+        .map_err(|_| "Impossibile ottenere i dati di addestramento").unwrap()
+        .into_inner().map_err(|_| "Errore di lock").unwrap();
+    
+    let mut training_targets = Arc::try_unwrap(training_targets_mutex)
+        .map_err(|_| "Impossibile ottenere i target di addestramento").unwrap()
+        .into_inner().map_err(|_| "Errore di lock").unwrap();
+    
+    println!("Generati {} esempi di addestramento", training_examples.len());
     
     // Batch delle sequenze
     let mut batched_examples = Vec::new();
@@ -187,9 +216,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             let max_seq_len = targets.iter().map(|t| t.len()).max().unwrap_or(1);
             let mut targets_array = Array2::zeros((targets.len(), max_seq_len));
             
-            for (i, target_seq) in targets.iter().enumerate() {
-                for (j, &token) in target_seq.iter().enumerate() {
-                    targets_array[[i, j]] = token;
+            // Utilizziamo par_azip per impostare i valori di targets_array in parallelo
+            if targets.len() == 1 && targets[0].len() > 0 {
+                for (i, target_seq) in targets.iter().enumerate() {
+                    for (j, &token) in target_seq.iter().enumerate() {
+                        targets_array[[i, j]] = token;
+                    }
                 }
             }
             
@@ -217,6 +249,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("\nTest del modello con le domande dal dataset:");
     
     let test_prompts = data["prompts"].as_array().unwrap();
+    
+    // Test sincronizzato per i prompts
     for prompt in test_prompts {
         let question = prompt.as_str().unwrap();
         println!("\nDomanda: {}", question);
@@ -233,19 +267,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         // Prendiamo i token più probabili dall'output
         let logits = output.logits.data.slice(s![0, tokens.len() - 1, ..]);
-        let mut token_probs: Vec<(usize, f32)> = Vec::new();
         
-        for token_id in 0..vocab_size {
-            let prob = logits[token_id];
-            token_probs.push((token_id, prob));
-        }
+        // Parallelizziamo la creazione dell'array di probabilità
+        let token_probs: Vec<(usize, f32)> = (0..vocab_size)
+            .into_par_iter()
+            .map(|token_id| (token_id, logits[token_id]))
+            .collect();
         
         // Ordiniamo per probabilità (decrescente)
-        token_probs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        let mut sorted_probs = token_probs;
+        sorted_probs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         
         // Mostriamo i top 3 token
         println!("Risposte più probabili:");
-        for (i, (token_id, prob)) in token_probs.iter().take(3).enumerate() {
+        for (i, (token_id, prob)) in sorted_probs.iter().take(3).enumerate() {
             let token_text = tokenizer.decode(&[*token_id]);
             println!("  {}. \"{}\" (probabilità: {:.3})", i+1, token_text, prob);
         }
