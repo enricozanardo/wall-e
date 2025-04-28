@@ -171,7 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Batch delle sequenze - Utilizziamo Rayon per processare i batch in parallelo
     println!("Preparazione dei batch in parallelo...");
-    let batch_size = 1; // Ridotto a 1 per evitare problemi di compatibilità di forma
+    let batch_size = 2; // Ridotto a 1 per evitare problemi di compatibilità di forma
     
     // Crea range di indici
     let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
@@ -243,7 +243,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
-    println!("\nNOTA: Usando batch size di 1 per compatibilità con l'implementazione attuale di attention.");
+    println!("\nNOTA: Usando batch size di {} compatibilità con l'implementazione attuale di attention.", batch_size);
     let epochs = 3; // Aumentiamo a 3 epoche
     
     for epoch in 1..=epochs {
@@ -261,11 +261,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut targets_array = Array2::zeros((targets.len(), max_seq_len));
             
             // Utilizziamo par_azip per impostare i valori di targets_array in parallelo
-            if targets.len() == 1 && targets[0].len() > 0 {
-                for (i, target_seq) in targets.iter().enumerate() {
-                    for (j, &token) in target_seq.iter().enumerate() {
-                        targets_array[[i, j]] = token;
-                    }
+            for (i, target_seq) in targets.iter().enumerate() {
+                for (j, &token) in target_seq.iter().enumerate() {
+                    targets_array[[i, j]] = token;
                 }
             }
             
