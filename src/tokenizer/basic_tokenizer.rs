@@ -146,6 +146,14 @@ impl Tokenizer for BasicTokenizer {
     fn vocab_size(&self) -> usize {
         self.vocab.len()
     }
+    
+    fn get_vocab(&self) -> &Vocab {
+        &self.vocab
+    }
+    
+    fn as_vocab_mut(&mut self) -> Option<&mut Vocab> {
+        Some(&mut self.vocab)
+    }
 }
 
 #[cfg(test)]

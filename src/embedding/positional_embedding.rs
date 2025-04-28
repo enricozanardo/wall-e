@@ -87,6 +87,32 @@ impl PositionalEmbedding {
         let flattened = result_data.into_shape((batch_size, effective_len * self.embedding_dim)).unwrap();
         Tensor::new(flattened)
     }
+
+    /// Forward pass con supporto per batch
+    /// Output: Tensor con forma [batch_size, seq_len, embedding_dim]
+    pub fn forward_batch_3d(&self, batch_size: usize, seq_len: usize) -> Tensor {
+        let effective_len = std::cmp::min(seq_len, self.max_len);
+        
+        // Ottieni gli embedding posizionali standard
+        let pos_embeddings = self.embedding_matrix.data.slice(
+            ndarray::s![0..effective_len, ..],
+        ).to_owned();
+        
+        // Crea una matrice 3D per memorizzare i risultati [batch_size, seq_len, embedding_dim]
+        let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, effective_len, self.embedding_dim));
+        
+        // Replica gli stessi embedding posizionali per ogni elemento del batch
+        for b in 0..batch_size {
+            for i in 0..effective_len {
+                for j in 0..self.embedding_dim {
+                    result_data[[b, i, j]] = pos_embeddings[[i, j]];
+                }
+            }
+        }
+        
+        // Restituisci direttamente il tensore 3D
+        Tensor::new_3d(result_data)
+    }
 }
 
 impl Embedding for PositionalEmbedding {

@@ -118,19 +118,8 @@ impl TokenEmbedding {
         // Debug info sulla forma finale
         println!("Debug: token_embedding.forward_batch - risultato 3D shape: {:?}", result_data.shape());
         
-        // Converti il tensore 3D in un tensore 2D con forma [batch_size, seq_len * embedding_dim]
-        let flattened_shape = (batch_size, seq_len * self.embedding_dim);
-        println!("Debug: token_embedding.forward_batch - flattening a shape: {:?}", flattened_shape);
-        
-        let flattened = match result_data.into_shape_with_order(flattened_shape) {
-            Ok(flat) => flat,
-            Err(e) => {
-                println!("ERRORE durante flattening del risultato: {} - Creazione di zero array", e);
-                Array2::<f32>::zeros(flattened_shape)
-            }
-        };
-        
-        Tensor::new(flattened)
+        // Ritorna direttamente il tensore 3D invece di appiattirlo
+        Tensor::new_3d(result_data)
     }
     
     /// Accesso alla matrice di embedding

@@ -2,15 +2,16 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
+use serde::{Serialize, Deserialize};
 
-/// Struttura dati per gestire un vocabolario di token
-#[derive(Debug, Clone)]
+/// Tipo che rappresenta un vocabolario per un tokenizer
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Vocab {
     /// Mappa da token a ID
     token_to_id: HashMap<String, usize>,
     /// Mappa da ID a token
     id_to_token: HashMap<usize, String>,
-    /// Token speciali
+    /// Set di token speciali
     special_tokens: HashSet<String>,
 }
 

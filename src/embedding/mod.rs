@@ -82,10 +82,10 @@ impl TransformerEmbedding {
     
     /// Forward pass con supporto per batch di token IDs
     /// Input: batch_token_ids - array di batch di token IDs
-    /// Output: Tensor con forma [batch_size, seq_len * embedding_dim]
+    /// Output: Tensor con forma [batch_size, seq_len, embedding_dim]
     pub fn forward_batch(&self, batch_token_ids: &[Vec<usize>]) -> Tensor {
         if batch_token_ids.is_empty() {
-            return Tensor::new(ndarray::Array2::<f32>::zeros((0, 0)));
+            return Tensor::new_3d(ndarray::Array3::<f32>::zeros((0, 0, 0)));
         }
         
         let batch_size = batch_token_ids.len();
@@ -94,8 +94,12 @@ impl TransformerEmbedding {
         // Get token embeddings con dimensione batch
         let token_embeddings = self.token_emb.forward_batch(batch_token_ids);
         
-        // Get positional embeddings con dimensione batch 
-        let positional_embeddings = self.pos_emb.forward_batch(batch_size, seq_len);
+        // Get positional embeddings con dimensione batch
+        // Assicuriamoci che anche gli embedding posizionali siano 3D
+        let positional_embeddings = self.pos_emb.forward_batch_3d(batch_size, seq_len);
+        
+        println!("Debug: TransformerEmbedding - token_embeddings shape: {:?}", token_embeddings.data.shape());
+        println!("Debug: TransformerEmbedding - pos_embeddings shape: {:?}", positional_embeddings.data.shape());
         
         // Sum the embeddings
         let embeddings = Tensor::add(&token_embeddings, &positional_embeddings);

@@ -4,6 +4,7 @@ pub mod embedding;
 pub mod attention;
 pub mod training;
 pub mod dataset;
+pub mod export;
 
 // Esporta le strutture principali per una facile importazione
 pub use nabla::tensor::Tensor;

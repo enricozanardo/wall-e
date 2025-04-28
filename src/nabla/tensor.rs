@@ -173,6 +173,48 @@ impl Tensor {
     /// Moltiplica un tensore per un altro (moltiplicazione matriciale)
     /// Metodo di istanza per migliorare l'usabilità
     pub fn matmul_with(&self, other: &Tensor) -> Tensor {
+        // Log delle forme per debug
+        println!("Debug: matmul_with - self shape: {:?}, other shape: {:?}", self.data.shape(), other.data.shape());
+        
+        // Supporto special case per tensori 3D [batch, seq_len, feature_dim] 
+        // moltiplicati per un tensore 2D [feature_dim, output_dim]
+        if self.data.ndim() == 3 && other.data.ndim() == 2 {
+            let self_shape = self.data.shape();
+            let other_shape = other.data.shape();
+            
+            // Verifica compatibilità delle dimensioni
+            if self_shape[2] != other_shape[0] {
+                panic!("Dimensioni incompatibili per matmul_with: {:?} e {:?}", self_shape, other_shape);
+            }
+            
+            let batch_size = self_shape[0];
+            let seq_len = self_shape[1];
+            let feature_dim = self_shape[2];
+            let output_dim = other_shape[1];
+            
+            println!("Debug: matmul_with - caso speciale 3D x 2D");
+            
+            // Risultato: [batch_size, seq_len, output_dim]
+            let mut result = Array3::<f32>::zeros((batch_size, seq_len, output_dim));
+            
+            // Esegui la moltiplicazione matriciale per ogni batch e ogni posizione nella sequenza
+            for b in 0..batch_size {
+                for s in 0..seq_len {
+                    for o in 0..output_dim {
+                        let mut sum = 0.0;
+                        for f in 0..feature_dim {
+                            sum += self.data[[b, s, f]] * other.data[[f, o]];
+                        }
+                        result[[b, s, o]] = sum;
+                    }
+                }
+            }
+            
+            // Ritorna un tensore 3D
+            return Tensor::new_3d(result);
+        }
+        
+        // Caso generale - usa la matmul standard
         Tensor::matmul(self, other)
     }
 
@@ -317,6 +359,16 @@ impl Tensor {
                 target_clone.update_grad(&grad_target);
             }),
         )
+    }
+
+    /// Crea un nuovo tensore da un ArrayD
+    pub fn new_from_array(data: ArrayD<f32>) -> Self {
+        Self {
+            data,
+            grad: Arc::new(Mutex::new(None)),
+            grad_fn: None,
+            parents: Vec::new(),
+        }
     }
 }
 
