@@ -98,8 +98,8 @@ impl TransformerEmbedding {
         // Assicuriamoci che anche gli embedding posizionali siano 3D
         let positional_embeddings = self.pos_emb.forward_batch_3d(batch_size, seq_len);
         
-        println!("Debug: TransformerEmbedding - token_embeddings shape: {:?}", token_embeddings.data.shape());
-        println!("Debug: TransformerEmbedding - pos_embeddings shape: {:?}", positional_embeddings.data.shape());
+        // println!("Debug: TransformerEmbedding - token_embeddings shape: {:?}", token_embeddings.data.shape());
+        // println!("Debug: TransformerEmbedding - pos_embeddings shape: {:?}", positional_embeddings.data.shape());
         
         // Sum the embeddings
         let embeddings = Tensor::add(&token_embeddings, &positional_embeddings);

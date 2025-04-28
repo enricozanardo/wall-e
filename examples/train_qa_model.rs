@@ -176,7 +176,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di 1 per compatibilità con l'implementazione attuale di attention.");
-    let epochs = 1; // Ridotto a 1 epoca poiché abbiamo più batch con batch size 1
+    let epochs = 3; // Aumentiamo a 3 epoche
     
     for epoch in 1..=epochs {
         let mut total_loss = 0.0;

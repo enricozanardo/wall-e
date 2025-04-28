@@ -63,8 +63,60 @@ impl CrossEntropyLoss {
     /// # Returns
     /// * Loss media e gradiente rispetto ai logits
     pub fn forward(&self, logits: &Tensor, targets: &Array2<usize>, ignore_index: Option<usize>) -> (f32, Tensor) {
-        // ... Implementazione invariata
-        (0.0, Tensor::new_from_array(Array1::zeros(1).into_dyn()))  // Placeholder
+        let batch_size = logits.data.shape()[0];
+        let seq_len = logits.data.shape()[1];
+        let vocab_size = logits.data.shape()[2];
+        
+        // Inizializza la loss a 0
+        let mut total_loss = 0.0;
+        let mut total_tokens = 0;
+        
+        // Crea un gradiente dello stesso shape dei logits
+        let mut grad_data = Array::zeros(logits.data.raw_dim());
+        
+        // Per ogni elemento del batch e posizione nella sequenza
+        for i in 0..batch_size {
+            for j in 0..seq_len {
+                if j < targets.shape()[1] {
+                    let target_id = targets[[i, j]];
+                    
+                    // Ignora i token di padding o gli indici specificati
+                    if target_id != 0 && Some(target_id) != ignore_index {
+                        if target_id < vocab_size {
+                            // Prendi i logits per questa posizione
+                            let pos_logits = logits.data.slice(s![i, j, ..]).to_owned();
+                            
+                            // Calcola softmax manualmente
+                            let max_logit = pos_logits.fold(std::f32::NEG_INFINITY, |max, &v| max.max(v));
+                            let exp_logits: Vec<f32> = pos_logits.iter().map(|&x| (x - max_logit).exp()).collect();
+                            let sum_exp: f32 = exp_logits.iter().sum();
+                            
+                            // Calcola probabilità per il token target
+                            let target_prob = exp_logits[target_id] / sum_exp;
+                            
+                            // Calcola cross entropy loss: -log(target_prob)
+                            let loss_value = -target_prob.ln();
+                            total_loss += loss_value;
+                            total_tokens += 1;
+                            
+                            // Calcola i gradienti (derivata della cross entropy)
+                            for k in 0..vocab_size {
+                                let prob = exp_logits[k] / sum_exp;
+                                // Il gradiente è (prob - 1) per il target e prob per gli altri
+                                let grad_val = if k == target_id { prob - 1.0 } else { prob };
+                                grad_data[[i, j, k]] = grad_val;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Calcola la loss media
+        let avg_loss = if total_tokens > 0 { total_loss / total_tokens as f32 } else { 0.0 };
+        
+        // Restituisci la loss media e il gradiente
+        (avg_loss, Tensor::new_from_array(grad_data))
     }
 }
 
@@ -112,7 +164,48 @@ impl AdamOptimizer {
     /// * `params` - Parametri da aggiornare
     /// * `grads` - Gradienti corrispondenti
     pub fn step(&mut self, params: &mut HashMap<String, Tensor>, grads: &HashMap<String, Tensor>) {
-        // ... Implementazione invariata
+        // Incrementa il passo di training
+        self.t += 1;
+        
+        // Calcola i fattori di correzione del bias
+        let m_corr = 1.0 / (1.0 - self.beta1.powi(self.t as i32));
+        let v_corr = 1.0 / (1.0 - self.beta2.powi(self.t as i32));
+        
+        // Aggiorna ogni parametro
+        for (name, grad) in grads.iter() {
+            if let Some(param) = params.get_mut(name) {
+                // Inizializza momenti se non esistono
+                if !self.m.contains_key(name) {
+                    self.m.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
+                }
+                if !self.v.contains_key(name) {
+                    self.v.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
+                }
+                
+                // Ottieni i momenti
+                let m = self.m.get_mut(name).unwrap();
+                let v = self.v.get_mut(name).unwrap();
+                
+                // Aggiorna i momenti (inplace)
+                for (((m_val, v_val), g_val), p_val) in m.data.iter_mut()
+                    .zip(v.data.iter_mut())
+                    .zip(grad.data.iter())
+                    .zip(param.data.iter_mut()) {
+                    // Aggiorna momento primo: m = beta1 * m + (1 - beta1) * grad
+                    *m_val = self.beta1 * *m_val + (1.0 - self.beta1) * g_val;
+                    
+                    // Aggiorna momento secondo: v = beta2 * v + (1 - beta2) * grad^2
+                    *v_val = self.beta2 * *v_val + (1.0 - self.beta2) * g_val * g_val;
+                    
+                    // Calcola i momenti corretti
+                    let m_hat = *m_val * m_corr;
+                    let v_hat = *v_val * v_corr;
+                    
+                    // Aggiorna i parametri: p = p - lr * m_hat / (sqrt(v_hat) + eps)
+                    *p_val -= self.lr * m_hat / (v_hat.sqrt() + self.epsilon);
+                }
+            }
+        }
     }
     
     /// Imposta il learning rate
@@ -245,29 +338,29 @@ impl Trainer {
         let seq_len = input[0].len();
         
         // Stampiamo informazioni di debug sulla forma dell'input
-        println!("Debug: forward - batch_size: {}, seq_len: {}", batch_size, seq_len);
+        // println!("Debug: forward - batch_size: {}, seq_len: {}", batch_size, seq_len);
         
         // L'embedding ora ritorna direttamente un tensore 3D
         let encoder_input = self.embedding.forward_batch(input);
         
-        println!("Debug: forward - shape dopo embedding: {:?}", encoder_input.data.shape());
+        // println!("Debug: forward - shape dopo embedding: {:?}", encoder_input.data.shape());
         
         // Forward pass attraverso l'encoder con il tensore 3D
         let encoder_output = self.encoder.forward(&encoder_input, None);
         
-        println!("Debug: forward - shape dopo encoder: {:?}", encoder_output.data.shape());
+        // println!("Debug: forward - shape dopo encoder: {:?}", encoder_output.data.shape());
         
         // Utilizziamo matmul_with invece di dot per la proiezione nell'output space
         let logits = encoder_output.matmul_with(&self.output_projection);
         
-        println!("Debug: forward - shape finale logits: {:?}", logits.data.shape());
+        // println!("Debug: forward - shape finale logits: {:?}", logits.data.shape());
         
         // Calcolo della loss se sono forniti i target
         let loss = if let Some(target_tokens) = target {
             let mut total_loss = 0.0;
             let mut total_tokens = 0;
             
-            // Implementazione semplificata di cross-entropy loss
+            // Implementazione corretta della cross-entropy loss
             for i in 0..batch_size {
                 for j in 0..seq_len {
                     if j < target_tokens.shape()[1] {  // Verifica che j sia nel range valido
@@ -275,8 +368,29 @@ impl Trainer {
                         if target_id != 0 { // Ignora padding tokens
                             // Verifica che target_id sia nel range valido
                             if target_id < logits.data.shape()[2] {
-                                let logit = logits.data[[i, j, target_id]];
-                                total_loss -= logit; // Semplificazione della cross-entropy
+                                // Calcola softmax per questa posizione
+                                let logits_row = Array1::from_iter(
+                                    (0..logits.data.shape()[2])
+                                        .map(|k| logits.data[[i, j, k]])
+                                );
+                                
+                                // Trova il valore massimo per stabilità numerica
+                                let max_logit = logits_row.fold(f32::NEG_INFINITY, |a, &b| a.max(b));
+                                
+                                // Calcola l'exp di (logits - max_logit)
+                                let exp_logits: Vec<f32> = logits_row
+                                    .iter()
+                                    .map(|&l| (l - max_logit).exp())
+                                    .collect();
+                                
+                                // Calcola la somma degli exp
+                                let sum_exp: f32 = exp_logits.iter().sum();
+                                
+                                // Calcola la probabilità del target
+                                let target_prob = exp_logits[target_id] / sum_exp;
+                                
+                                // Cross-entropy loss: -log(p_target)
+                                total_loss -= target_prob.ln();
                                 total_tokens += 1;
                             } else {
                                 println!("Warning: target_id {} fuori range (max {})", 
@@ -310,18 +424,47 @@ impl Trainer {
         // 2. Calcoliamo la loss e il gradiente
         let (loss, logits_grad) = self.loss_fn.forward(&output.logits, targets, None);
         
-        // 3. Backpropagation: in un'implementazione reale, calcoleremo i gradienti
-        // per tutti i parametri. Per questo test, creiamo un gradiente di esempio
-        // per output_projection
+        // 3. Backpropagation: per semplicità, consideriamo solo il gradiente dell'output projection
+        // In una implementazione completa, calcoleremmo i gradienti per tutti i parametri
+        
+        // Ottieni l'output dell'encoder (l'input dell'output projection)
+        let encoder_output = self.encoder.forward(&self.embedding.forward_batch(batch), None);
+        
+        // Calcola il gradiente dell'output projection usando la chain rule
+        // dL/dW = dL/dO * dO/dW = dL/dO * X^T dove O = XW
+        // Il gradiente rispetto ai pesi è il prodotto tra il gradiente dei logits 
+        // e il transpose dell'output dell'encoder
+        
+        // Reshape logits_grad per match con encoder_output
         let mut grads = HashMap::new();
         
-        // Creiamo un gradiente di esempio per output_projection
-        // In una implementazione reale, questo verrebbe calcolato dalla backpropagation
-        let output_proj_grad = Tensor::new_from_array(
-            Array::from_elem(self.output_projection.data.dim(), 0.01)
-        );
+        // Prepara gli input per il calcolo del gradiente
+        let batch_size = encoder_output.data.shape()[0];
+        let seq_len = encoder_output.data.shape()[1];
+        let d_model = encoder_output.data.shape()[2];
+        let vocab_size = logits_grad.data.shape()[2];
         
-        grads.insert("output_projection".to_string(), output_proj_grad);
+        // Reshape encoder output: [batch_size*seq_len, d_model]
+        let encoder_output_flat = encoder_output.data.clone().into_shape((batch_size * seq_len, d_model)).unwrap();
+        
+        // Reshape logits grad: [batch_size*seq_len, vocab_size]
+        let logits_grad_flat = logits_grad.data.clone().into_shape((batch_size * seq_len, vocab_size)).unwrap();
+        
+        // Calcola il gradiente dell'output projection: [d_model, vocab_size]
+        let mut output_proj_grad = Array::zeros((d_model, vocab_size));
+        
+        for i in 0..batch_size * seq_len {
+            for j in 0..d_model {
+                for k in 0..vocab_size {
+                    output_proj_grad[[j, k]] += encoder_output_flat[[i, j]] * logits_grad_flat[[i, k]];
+                }
+            }
+        }
+        
+        // Normalizza il gradiente per la dimensione del batch
+        output_proj_grad /= (batch_size * seq_len) as f32;
+        
+        grads.insert("output_projection".to_string(), Tensor::new_from_array(output_proj_grad.into_dyn()));
         
         // 4. Aggiorniamo i parametri con l'ottimizzatore
         self.optimizer.step(&mut self.params, &grads);

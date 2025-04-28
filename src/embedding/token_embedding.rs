@@ -74,8 +74,8 @@ impl TokenEmbedding {
         }
         
         // Debug info
-        println!("Debug: token_embedding.forward_batch - batch_size: {}, seq_len: {}, embedding_dim: {}", 
-                 batch_size, seq_len, self.embedding_dim);
+        // println!("Debug: token_embedding.forward_batch - batch_size: {}, seq_len: {}, embedding_dim: {}", 
+                //  batch_size, seq_len, self.embedding_dim);
         
         // Strategia: creiamo un vettore di matrici 2D, una per ogni batch
         // e poi le combiniamo alla fine
@@ -116,7 +116,7 @@ impl TokenEmbedding {
         }
         
         // Debug info sulla forma finale
-        println!("Debug: token_embedding.forward_batch - risultato 3D shape: {:?}", result_data.shape());
+        // println!("Debug: token_embedding.forward_batch - risultato 3D shape: {:?}", result_data.shape());
         
         // Ritorna direttamente il tensore 3D invece di appiattirlo
         Tensor::new_3d(result_data)

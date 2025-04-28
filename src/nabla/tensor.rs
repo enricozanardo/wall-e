@@ -174,7 +174,7 @@ impl Tensor {
     /// Metodo di istanza per migliorare l'usabilità
     pub fn matmul_with(&self, other: &Tensor) -> Tensor {
         // Log delle forme per debug
-        println!("Debug: matmul_with - self shape: {:?}, other shape: {:?}", self.data.shape(), other.data.shape());
+        // println!("Debug: matmul_with - self shape: {:?}, other shape: {:?}", self.data.shape(), other.data.shape());
         
         // Supporto special case per tensori 3D [batch, seq_len, feature_dim] 
         // moltiplicati per un tensore 2D [feature_dim, output_dim]
@@ -192,7 +192,7 @@ impl Tensor {
             let feature_dim = self_shape[2];
             let output_dim = other_shape[1];
             
-            println!("Debug: matmul_with - caso speciale 3D x 2D");
+            // println!("Debug: matmul_with - caso speciale 3D x 2D");
             
             // Risultato: [batch_size, seq_len, output_dim]
             let mut result = Array3::<f32>::zeros((batch_size, seq_len, output_dim));
