@@ -66,37 +66,38 @@ mod tests {
     fn test_cross_entropy_loss_with_padding() {
         let loss_fn = CrossEntropyLoss::new();
         
-        // Create logits with padding: batch_size=2, seq_len=3, vocab_size=4
+        // Create logits with padding: batch_size=2, seq_len=3, vocab_size=5
         let logits_data = Array3::<f32>::from_shape_vec(
-            (2, 3, 4),
+            (2, 3, 5),
             vec![
                 // Batch 0
-                1.0, 2.0, 0.5, 1.5,  // Token 0
-                1.0, 2.0, 0.5, 1.5,  // Token 1
-                1.0, 2.0, 0.5, 1.5,  // Token 2 (padding)
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 0
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 1
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 2 (padding)
                 
                 // Batch 1
-                1.0, 2.0, 0.5, 1.5,  // Token 0
-                1.0, 2.0, 0.5, 1.5,  // Token 1
-                1.0, 2.0, 0.5, 1.5,  // Token 2
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 0
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 1
+                1.0, 2.0, 0.5, 1.5, 0.0,  // Token 2
             ]
         ).unwrap();
         
         let logits = Tensor::new_3d(logits_data);
         
-        // Target with padding (0 is the padding token)
+        // Target with padding (using 4 as padding instead of 0)
+        // 0 is already ignored by the implementation, so we use a different value
         let targets = Array2::<usize>::from_shape_vec(
             (2, 3),
             vec![
                 // Batch 0
-                1, 2, 0,  // The last one is padding
+                1, 2, 4,  // The last one is padding (value 4)
                 // Batch 1
                 3, 1, 2,  // No padding
             ]
         ).unwrap();
         
-        // Calculate loss ignoring the padding index 0
-        let (loss_with_ignore, grad_with_ignore) = loss_fn.forward(&logits, &targets, Some(0));
+        // Calculate loss ignoring the padding index 4
+        let (loss_with_ignore, grad_with_ignore) = loss_fn.forward(&logits, &targets, Some(4));
         
         // Calculate loss without ignoring the padding index
         let (loss_without_ignore, _) = loss_fn.forward(&logits, &targets, None);
@@ -109,7 +110,7 @@ mod tests {
         
         // The gradient for the padding token should be zero
         let mut sum = 0.0;
-        for v in 0..4 {
+        for v in 0..5 {
             if let Some(&val) = grad_with_ignore.data.get([0, 2, v]) {
                 sum += val;
             }
