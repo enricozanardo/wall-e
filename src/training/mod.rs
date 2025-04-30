@@ -14,95 +14,153 @@ use crate::attention::{EncoderStack, Attention};
 use crate::nabla::tensor::Tensor;
 use crate::export;
 
-/// Errori possibili durante l'uso del modello
+/// Possible errors during model usage
 #[derive(Error, Debug)]
 pub enum ModelError {
-    #[error("Errore IO: {0}")]
+    #[error("IO Error: {0}")]
     Io(#[from] io::Error),
-    #[error("Errore di serializzazione: {0}")]
+    #[error("Serialization Error: {0}")]
     Serialization(#[from] bincode::Error),
-    #[error("File di modello non valido o corrotto")]
+    #[error("Invalid or corrupted model file")]
     InvalidModel,
-    #[error("Versione del modello non compatibile")]
+    #[error("Incompatible model version")]
     IncompatibleVersion,
-    #[error("Dimensione del vocabolario non compatibile")]
+    #[error("Incompatible vocabulary size")]
     IncompatibleVocabSize,
-    #[error("Formato non valido: {0}")]
+    #[error("Invalid format: {0}")]
     InvalidFormat(String),
-    #[error("Altro errore: {0}")]
+    #[error("Other error: {0}")]
     Other(String),
 }
 
-/// Tipo di risultato per le operazioni sul modello
+/// Result type for model operations
 pub type ModelResult<T> = Result<T, ModelError>;
 
-/// Rappresenta l'output di un modello, inclusi i logits e la loss
+/// Represents the output of a model, including logits and loss
+///
+/// This struct holds the output from a neural network forward pass,
+/// containing both the raw logits (unnormalized probabilities) and
+/// an optional loss value if the model was evaluated against targets.
+///
+/// # Examples
+///
+/// ```
+/// use ndarray::Array3;
+/// use crate::nabla::tensor::Tensor;
+/// use crate::training::ModelOutput;
+///
+/// // Create logits tensor with shape [batch_size=1, seq_len=1, vocab_size=10]
+/// let logits_data = Array3::<f32>::zeros((1, 1, 10));
+/// let logits = Tensor::new_3d(logits_data);
+///
+/// // Create model output with no loss (inference mode)
+/// let inference_output = ModelOutput { logits: logits.clone(), loss: None };
+///
+/// // Create model output with loss (training mode)
+/// let training_output = ModelOutput { logits, loss: Some(2.5) };
+/// ```
 pub struct ModelOutput {
-    /// Logits finali (probabilità non normalizzate)
+    /// Final logits (unnormalized probabilities)
     pub logits: Tensor,
-    /// Loss calcolata (se disponibile)
+    /// Calculated loss (if available)
     pub loss: Option<f32>,
 }
 
-/// Implementazione della funzione di loss Cross Entropy
+/// Implementation of the Cross Entropy loss function
+///
+/// This struct provides methods to compute cross entropy loss between
+/// predicted logits and target class indices. Cross entropy is commonly used
+/// for classification problems, especially in language modeling.
+///
+/// # Examples
+///
+/// ```
+/// use ndarray::{Array2, Array3};
+/// use crate::nabla::tensor::Tensor;
+/// use crate::training::CrossEntropyLoss;
+///
+/// // Create logits tensor with shape [batch_size=2, seq_len=1, vocab_size=3]
+/// let mut logits_data = Array3::<f32>::zeros((2, 1, 3));
+/// logits_data[[0, 0, 0]] = 1.0;
+/// logits_data[[0, 0, 1]] = 2.0;
+/// logits_data[[0, 0, 2]] = 0.5;
+/// logits_data[[1, 0, 0]] = 0.2;
+/// logits_data[[1, 0, 1]] = 0.1;
+/// logits_data[[1, 0, 2]] = 0.7;
+/// 
+/// let logits = Tensor::new_3d(logits_data);
+///
+/// // Target indices: first sample should predict class 1, second sample class 2
+/// let targets = Array2::from_shape_vec((2, 1), vec![1, 2]).unwrap();
+///
+/// // Compute loss and gradients
+/// let loss_fn = CrossEntropyLoss::new();
+/// let (loss, gradient) = loss_fn.forward(&logits, &targets, None);
+/// 
+/// // The loss value can be used for optimization
+/// assert!(loss > 0.0);
+/// ```
 pub struct CrossEntropyLoss;
 
 impl CrossEntropyLoss {
-    /// Crea una nuova istanza della funzione di loss
+    /// Creates a new instance of the loss function
     pub fn new() -> Self {
         Self {}
     }
     
-    /// Forward pass della Cross Entropy loss
+    /// Forward pass of the Cross Entropy loss
     /// 
+    /// Computes the cross entropy loss between predicted logits and target indices,
+    /// along with the gradient for backpropagation.
+    ///
     /// # Arguments
-    /// * `logits` - Tensore di shape [batch_size, seq_len, vocab_size] contenente i logits
-    /// * `targets` - Array di shape [batch_size, seq_len] contenente gli indici target
-    /// * `ignore_index` - Opzionale, indice da ignorare nel calcolo della loss (es. padding)
+    /// * `logits` - Tensor of shape [batch_size, seq_len, vocab_size] containing the logits
+    /// * `targets` - Array of shape [batch_size, seq_len] containing the target indices
+    /// * `ignore_index` - Optional, index to ignore in loss calculation (e.g., padding)
     /// 
     /// # Returns
-    /// * Loss media e gradiente rispetto ai logits
+    /// * Tuple containing (average_loss, gradient_tensor)
     pub fn forward(&self, logits: &Tensor, targets: &Array2<usize>, ignore_index: Option<usize>) -> (f32, Tensor) {
         let batch_size = logits.data.shape()[0];
         let seq_len = logits.data.shape()[1];
         let vocab_size = logits.data.shape()[2];
         
-        // Inizializza la loss a 0
+        // Initialize loss to 0
         let mut total_loss = 0.0;
         let mut total_tokens = 0;
         
-        // Crea un gradiente dello stesso shape dei logits
+        // Create gradient of the same shape as logits
         let mut grad_data = Array::zeros(logits.data.raw_dim());
         
-        // Per ogni elemento del batch e posizione nella sequenza
+        // For each element in the batch and position in the sequence
         for i in 0..batch_size {
             for j in 0..seq_len {
                 if j < targets.shape()[1] {
                     let target_id = targets[[i, j]];
                     
-                    // Ignora i token di padding o gli indici specificati
+                    // Ignore padding tokens or specified indices
                     if target_id != 0 && Some(target_id) != ignore_index {
                         if target_id < vocab_size {
-                            // Prendi i logits per questa posizione
+                            // Get logits for this position
                             let pos_logits = logits.data.slice(s![i, j, ..]).to_owned();
                             
-                            // Calcola softmax manualmente
+                            // Calculate softmax manually
                             let max_logit = pos_logits.fold(std::f32::NEG_INFINITY, |max, &v| max.max(v));
                             let exp_logits: Vec<f32> = pos_logits.iter().map(|&x| (x - max_logit).exp()).collect();
                             let sum_exp: f32 = exp_logits.iter().sum();
                             
-                            // Calcola probabilità per il token target
+                            // Calculate probability for the target token
                             let target_prob = exp_logits[target_id] / sum_exp;
                             
-                            // Calcola cross entropy loss: -log(target_prob)
+                            // Calculate cross entropy loss: -log(target_prob)
                             let loss_value = -target_prob.ln();
                             total_loss += loss_value;
                             total_tokens += 1;
                             
-                            // Calcola i gradienti (derivata della cross entropy)
+                            // Calculate gradients (derivative of cross entropy)
                             for k in 0..vocab_size {
                                 let prob = exp_logits[k] / sum_exp;
-                                // Il gradiente è (prob - 1) per il target e prob per gli altri
+                                // Gradient is (prob - 1) for the target and prob for others
                                 let grad_val = if k == target_id { prob - 1.0 } else { prob };
                                 grad_data[[i, j, k]] = grad_val;
                             }
@@ -112,40 +170,71 @@ impl CrossEntropyLoss {
             }
         }
         
-        // Calcola la loss media
+        // Calculate average loss
         let avg_loss = if total_tokens > 0 { total_loss / total_tokens as f32 } else { 0.0 };
         
-        // Restituisci la loss media e il gradiente
+        // Return average loss and gradient
         (avg_loss, Tensor::new_from_array(grad_data))
     }
 }
 
-/// Implementa l'ottimizzatore Adam per l'aggiornamento dei parametri
+/// Implements Adam optimizer for parameter updates
+///
+/// The Adam optimizer combines ideas from RMSProp and momentum
+/// to provide an adaptive learning rate method that works well
+/// in practice for many different neural network architectures.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use ndarray::Array2;
+/// use crate::nabla::tensor::Tensor;
+/// use crate::training::AdamOptimizer;
+///
+/// // Create an optimizer with standard hyperparameters
+/// let mut optimizer = AdamOptimizer::new(0.001, 0.9, 0.999, 1e-8);
+///
+/// // Create parameters and gradients
+/// let mut params = HashMap::new();
+/// let mut grads = HashMap::new();
+///
+/// // Create a parameter tensor
+/// let param = Tensor::new(Array2::<f32>::ones((2, 2)));
+/// params.insert("weights".to_string(), param);
+///
+/// // Create a gradient tensor
+/// let grad = Tensor::new(Array2::<f32>::from_elem((2, 2), 0.1));
+/// grads.insert("weights".to_string(), grad);
+///
+/// // Perform optimization step
+/// optimizer.step(&mut params, &grads);
+/// ```
 pub struct AdamOptimizer {
     /// Learning rate
     lr: f32,
-    /// Parametro beta1 per il momento
+    /// Beta1 parameter for first moment
     beta1: f32,
-    /// Parametro beta2 per il momento secondo
+    /// Beta2 parameter for second moment
     beta2: f32,
-    /// Epsilon per stabilità numerica
+    /// Epsilon for numerical stability
     epsilon: f32,
-    /// Momento primo
+    /// First moment
     m: HashMap<String, Tensor>,
-    /// Momento secondo
+    /// Second moment
     v: HashMap<String, Tensor>,
-    /// Passo di training
+    /// Training step
     t: usize,
 }
 
 impl AdamOptimizer {
-    /// Crea un nuovo ottimizzatore Adam
+    /// Creates a new Adam optimizer
     /// 
     /// # Arguments
     /// * `lr` - Learning rate
-    /// * `beta1` - Parametro beta1 per il momento primo (default: 0.9)
-    /// * `beta2` - Parametro beta2 per il momento secondo (default: 0.999)
-    /// * `epsilon` - Epsilon per stabilità numerica (default: 1e-8)
+    /// * `beta1` - Beta1 parameter for first moment (default: 0.9)
+    /// * `beta2` - Beta2 parameter for second moment (default: 0.999)
+    /// * `epsilon` - Epsilon for numerical stability (default: 1e-8)
     pub fn new(lr: f32, beta1: f32, beta2: f32, epsilon: f32) -> Self {
         Self {
             lr,
@@ -158,23 +247,25 @@ impl AdamOptimizer {
         }
     }
     
-    /// Esegue un passo di ottimizzazione
+    /// Performs an optimization step
     /// 
+    /// Updates all parameters based on their gradients using the Adam algorithm.
+    ///
     /// # Arguments
-    /// * `params` - Parametri da aggiornare
-    /// * `grads` - Gradienti corrispondenti
+    /// * `params` - Parameters to update
+    /// * `grads` - Corresponding gradients
     pub fn step(&mut self, params: &mut HashMap<String, Tensor>, grads: &HashMap<String, Tensor>) {
-        // Incrementa il passo di training
+        // Increment training step
         self.t += 1;
         
-        // Calcola i fattori di correzione del bias
+        // Calculate bias correction factors
         let m_corr = 1.0 / (1.0 - self.beta1.powi(self.t as i32));
         let v_corr = 1.0 / (1.0 - self.beta2.powi(self.t as i32));
         
-        // Aggiorna ogni parametro
+        // Update each parameter
         for (name, grad) in grads.iter() {
             if let Some(param) = params.get_mut(name) {
-                // Inizializza momenti se non esistono
+                // Initialize moments if they don't exist
                 if !self.m.contains_key(name) {
                     self.m.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
                 }
@@ -182,77 +273,125 @@ impl AdamOptimizer {
                     self.v.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
                 }
                 
-                // Ottieni i momenti
+                // Get moments
                 let m = self.m.get_mut(name).unwrap();
                 let v = self.v.get_mut(name).unwrap();
                 
-                // Aggiorna i momenti (inplace)
+                // Update moments (inplace)
                 for (((m_val, v_val), g_val), p_val) in m.data.iter_mut()
                     .zip(v.data.iter_mut())
                     .zip(grad.data.iter())
                     .zip(param.data.iter_mut()) {
-                    // Aggiorna momento primo: m = beta1 * m + (1 - beta1) * grad
+                    // Update first moment: m = beta1 * m + (1 - beta1) * grad
                     *m_val = self.beta1 * *m_val + (1.0 - self.beta1) * g_val;
                     
-                    // Aggiorna momento secondo: v = beta2 * v + (1 - beta2) * grad^2
+                    // Update second moment: v = beta2 * v + (1 - beta2) * grad^2
                     *v_val = self.beta2 * *v_val + (1.0 - self.beta2) * g_val * g_val;
                     
-                    // Calcola i momenti corretti
+                    // Calculate corrected moments
                     let m_hat = *m_val * m_corr;
                     let v_hat = *v_val * v_corr;
                     
-                    // Aggiorna i parametri: p = p - lr * m_hat / (sqrt(v_hat) + eps)
+                    // Update parameters: p = p - lr * m_hat / (sqrt(v_hat) + eps)
                     *p_val -= self.lr * m_hat / (v_hat.sqrt() + self.epsilon);
                 }
             }
         }
     }
     
-    /// Imposta il learning rate
+    /// Sets the learning rate
     pub fn set_learning_rate(&mut self, lr: f32) {
         self.lr = lr;
     }
     
-    /// Ottiene il learning rate corrente
+    /// Gets the current learning rate
     pub fn get_learning_rate(&self) -> f32 {
         self.lr
     }
 }
 
-/// Rappresenta il trainer per addestrare e utilizzare il modello
+/// Represents the trainer for training and using the model
+///
+/// The Trainer provides a high-level interface for training, evaluating, and 
+/// generating text with transformer-based language models. It manages the
+/// tokenizer, embedding layer, encoder stack, and output projection.
+///
+/// # Examples
+///
+/// ```
+/// use crate::tokenizer::basic_tokenizer::BasicTokenizer;
+/// use crate::training::Trainer;
+///
+/// // Create a tokenizer
+/// let mut tokenizer = BasicTokenizer::new();
+/// tokenizer.build_vocab("Example text for training", 1);
+///
+/// // Create a trainer with appropriate hyperparameters
+/// let model_dim = 64;
+/// let ff_dim = 256;
+/// let num_heads = 4;
+/// let num_layers = 2;
+/// let dropout_rate = 0.1;
+/// let learning_rate = 0.001;
+///
+/// let trainer = Trainer::new(
+///     Box::new(tokenizer),
+///     model_dim,
+///     ff_dim, 
+///     num_heads,
+///     num_layers,
+///     dropout_rate,
+///     learning_rate,
+/// );
+/// ```
 pub struct Trainer {
-    /// Tokenizer per il testo
+    /// Tokenizer for text
     tokenizer: Box<dyn Tokenizer>,
     /// Embedding layer
     embedding: TransformerEmbedding,
     /// Encoder stack
     encoder: EncoderStack,
-    /// Matrice di proiezione finale
+    /// Final projection matrix
     output_projection: Tensor,
-    /// Dimensione del modello
+    /// Model dimension
     model_dim: usize,
-    /// Dimensione del vocabolario
+    /// Vocabulary size
     vocab_size: usize,
-    /// Lunghezza massima della sequenza
+    /// Maximum sequence length
     max_seq_len: usize,
-    /// Dimensione del feed-forward network
+    /// Feed-forward network dimension
     ff_dim: usize,
-    /// Numero di teste di attenzione
+    /// Number of attention heads
     num_heads: usize,
-    /// Numero di layer encoder
+    /// Number of encoder layers
     num_layers: usize,
-    /// Funzione di loss
+    /// Loss function
     loss_fn: CrossEntropyLoss,
-    /// Ottimizzatore
+    /// Optimizer
     optimizer: AdamOptimizer,
-    /// Parametri del modello
+    /// Model parameters
     params: HashMap<String, Tensor>,
-    /// Metadati extra
+    /// Extra metadata
     metadata: HashMap<String, String>,
 }
 
 impl Trainer {
-    /// Crea un nuovo trainer con i parametri specificati
+    /// Creates a new trainer with the specified parameters
+    ///
+    /// Initializes all components of the transformer model including embeddings,
+    /// encoder stack, and output projection.
+    ///
+    /// # Arguments
+    /// * `tokenizer` - Tokenizer to use for text processing
+    /// * `model_dim` - Dimension of the model's hidden state
+    /// * `ff_dim` - Dimension of the feed-forward networks in transformer blocks
+    /// * `num_heads` - Number of attention heads in each transformer block
+    /// * `num_layers` - Number of transformer blocks in the encoder stack
+    /// * `dropout_rate` - Dropout rate for regularization
+    /// * `learning_rate` - Initial learning rate for the optimizer
+    ///
+    /// # Returns
+    /// A new Trainer instance with initialized components
     pub fn new(
         tokenizer: Box<dyn Tokenizer>,
         model_dim: usize,
@@ -262,22 +401,22 @@ impl Trainer {
         dropout_rate: f32,
         learning_rate: f32,
     ) -> Self {
-        // Valore minimo per evitare errori di divisione per zero
+        // Minimum value to avoid division by zero errors
         let min_value = 1;
         
-        // Valori sicuri: imposta almeno 1 per ogni dimensione
+        // Safe values: set at least 1 for each dimension
         let safe_model_dim = model_dim.max(min_value);
         let safe_ff_dim = ff_dim.max(min_value);
         let safe_num_heads = num_heads.max(min_value);
         let safe_num_layers = num_layers.max(min_value);
         
-        // Calcola la dimensione del vocabolario dal tokenizer
+        // Calculate vocabulary size from tokenizer
         let vocab_size = tokenizer.get_vocab().len();
         
-        // Lunghezza massima della sequenza
-        let max_seq_len = 256;  // Valore predefinito
+        // Maximum sequence length
+        let max_seq_len = 256;  // Default value
         
-        // Inizializza il TransformerEmbedding
+        // Initialize the TransformerEmbedding
         let embedding = TransformerEmbedding::new(
             vocab_size,
             safe_model_dim,
@@ -285,7 +424,7 @@ impl Trainer {
             dropout_rate
         );
         
-        // Inizializza l'EncoderStack
+        // Initialize the EncoderStack
         let encoder = EncoderStack::new(
             safe_model_dim,
             safe_ff_dim,
@@ -294,14 +433,14 @@ impl Trainer {
             dropout_rate
         );
         
-        println!("Inizializzazione output_projection: model_dim={}, vocab_size={}", safe_model_dim, vocab_size);
+        println!("Initializing output_projection: model_dim={}, vocab_size={}", safe_model_dim, vocab_size);
         
-        // Output projection inizializzato con valori casuali
-        // Matrice di proiezione dal model_dim al vocab_size per generare logits
+        // Output projection initialized with random values
+        // Projection matrix from model_dim to vocab_size to generate logits
         let output_proj_data = Array2::<f32>::zeros((safe_model_dim, vocab_size));
         let output_projection = Tensor::new(output_proj_data);
         
-        // Aggiungi i parametri iniziali
+        // Add initial parameters
         let mut params = HashMap::new();
         params.insert("output_projection".to_string(), output_projection.clone());
         
@@ -323,12 +462,23 @@ impl Trainer {
         }
     }
     
-    /// Esegue un forward pass del modello
+    /// Performs a forward pass of the model
+    ///
+    /// Processes input token sequences through the embedding layer, encoder stack,
+    /// and output projection to produce logits. If targets are provided, also
+    /// calculates the loss.
+    ///
+    /// # Arguments
+    /// * `input` - Batch of token sequences
+    /// * `target` - Optional target token sequences for calculating loss
+    ///
+    /// # Returns
+    /// A ModelOutput containing logits and optional loss
     pub fn forward(&self, input: &Vec<Vec<usize>>, target: Option<&Array2<usize>>) -> ModelOutput {
         let batch_size = input.len();
         
         if batch_size == 0 {
-            // Caso limite: batch vuoto
+            // Edge case: empty batch
             return ModelOutput {
                 logits: Tensor::new_from_array(Array::zeros((0, 0, 0)).into_dyn()),
                 loss: None
@@ -337,63 +487,63 @@ impl Trainer {
         
         let seq_len = input[0].len();
         
-        // Stampiamo informazioni di debug sulla forma dell'input
+        // Debug information about input shape
         // println!("Debug: forward - batch_size: {}, seq_len: {}", batch_size, seq_len);
         
-        // L'embedding ora ritorna direttamente un tensore 3D
+        // The embedding now directly returns a 3D tensor
         let encoder_input = self.embedding.forward_batch(input);
         
-        // println!("Debug: forward - shape dopo embedding: {:?}", encoder_input.data.shape());
+        // println!("Debug: forward - shape after embedding: {:?}", encoder_input.data.shape());
         
-        // Forward pass attraverso l'encoder con il tensore 3D
+        // Forward pass through the encoder with the 3D tensor
         let encoder_output = self.encoder.forward(&encoder_input, None);
         
-        // println!("Debug: forward - shape dopo encoder: {:?}", encoder_output.data.shape());
+        // println!("Debug: forward - shape after encoder: {:?}", encoder_output.data.shape());
         
-        // Utilizziamo matmul_with invece di dot per la proiezione nell'output space
+        // Use matmul_with instead of dot for projection into output space
         let logits = encoder_output.matmul_with(&self.output_projection);
         
-        // println!("Debug: forward - shape finale logits: {:?}", logits.data.shape());
+        // println!("Debug: forward - final logits shape: {:?}", logits.data.shape());
         
-        // Calcolo della loss se sono forniti i target
+        // Loss calculation if targets are provided
         let loss = if let Some(target_tokens) = target {
             let mut total_loss = 0.0;
             let mut total_tokens = 0;
             
-            // Implementazione corretta della cross-entropy loss
+            // Correct implementation of cross-entropy loss
             for i in 0..batch_size {
                 for j in 0..seq_len {
-                    if j < target_tokens.shape()[1] {  // Verifica che j sia nel range valido
+                    if j < target_tokens.shape()[1] {  // Verify that j is in valid range
                         let target_id = target_tokens[[i, j]];
-                        if target_id != 0 { // Ignora padding tokens
-                            // Verifica che target_id sia nel range valido
+                        if target_id != 0 { // Ignore padding tokens
+                            // Verify that target_id is in valid range
                             if target_id < logits.data.shape()[2] {
-                                // Calcola softmax per questa posizione
+                                // Calculate softmax for this position
                                 let logits_row = Array1::from_iter(
                                     (0..logits.data.shape()[2])
                                         .map(|k| logits.data[[i, j, k]])
                                 );
                                 
-                                // Trova il valore massimo per stabilità numerica
+                                // Find the maximum value for numerical stability
                                 let max_logit = logits_row.fold(f32::NEG_INFINITY, |a, &b| a.max(b));
                                 
-                                // Calcola l'exp di (logits - max_logit)
+                                // Calculate exp of (logits - max_logit)
                                 let exp_logits: Vec<f32> = logits_row
                                     .iter()
                                     .map(|&l| (l - max_logit).exp())
                                     .collect();
                                 
-                                // Calcola la somma degli exp
+                                // Calculate sum of exps
                                 let sum_exp: f32 = exp_logits.iter().sum();
                                 
-                                // Calcola la probabilità del target
+                                // Calculate target probability
                                 let target_prob = exp_logits[target_id] / sum_exp;
                                 
                                 // Cross-entropy loss: -log(p_target)
                                 total_loss -= target_prob.ln();
                                 total_tokens += 1;
                             } else {
-                                println!("Warning: target_id {} fuori range (max {})", 
+                                println!("Warning: target_id {} out of range (max {})", 
                                          target_id, logits.data.shape()[2]-1);
                             }
                         }
@@ -416,29 +566,39 @@ impl Trainer {
         }
     }
     
-    /// Esegue un passo di training
+    /// Performs a training step
+    ///
+    /// Executes a forward pass, calculates loss and gradients, and updates 
+    /// model parameters using the optimizer.
+    ///
+    /// # Arguments
+    /// * `batch` - Batch of token sequences for input
+    /// * `targets` - Target token sequences for loss calculation
+    ///
+    /// # Returns
+    /// The computed loss value
     pub fn train_step(&mut self, batch: &Vec<Vec<usize>>, targets: &Array2<usize>) -> f32 {
-        // 1. Eseguiamo il forward pass
+        // 1. Perform the forward pass
         let output = self.forward(batch, Some(targets));
         
-        // 2. Calcoliamo la loss e il gradiente
+        // 2. Calculate loss and gradient
         let (loss, logits_grad) = self.loss_fn.forward(&output.logits, targets, None);
         
-        // 3. Backpropagation: per semplicità, consideriamo solo il gradiente dell'output projection
-        // In una implementazione completa, calcoleremmo i gradienti per tutti i parametri
+        // 3. Backpropagation: for simplicity, we only consider the gradient of the output projection
+        // In a complete implementation, we would calculate gradients for all parameters
         
-        // Ottieni l'output dell'encoder (l'input dell'output projection)
+        // Get the encoder output (the input to the output projection)
         let encoder_output = self.encoder.forward(&self.embedding.forward_batch(batch), None);
         
-        // Calcola il gradiente dell'output projection usando la chain rule
-        // dL/dW = dL/dO * dO/dW = dL/dO * X^T dove O = XW
-        // Il gradiente rispetto ai pesi è il prodotto tra il gradiente dei logits 
-        // e il transpose dell'output dell'encoder
+        // Calculate the gradient of the output projection using the chain rule
+        // dL/dW = dL/dO * dO/dW = dL/dO * X^T where O = XW
+        // The gradient with respect to weights is the product between the gradient of logits
+        // and the transpose of the encoder output
         
-        // Reshape logits_grad per match con encoder_output
+        // Reshape logits_grad to match with encoder_output
         let mut grads = HashMap::new();
         
-        // Prepara gli input per il calcolo del gradiente
+        // Prepare inputs for gradient calculation
         let batch_size = encoder_output.data.shape()[0];
         let seq_len = encoder_output.data.shape()[1];
         let d_model = encoder_output.data.shape()[2];
@@ -450,7 +610,7 @@ impl Trainer {
         // Reshape logits grad: [batch_size*seq_len, vocab_size]
         let logits_grad_flat = logits_grad.data.clone().into_shape((batch_size * seq_len, vocab_size)).unwrap();
         
-        // Calcola il gradiente dell'output projection: [d_model, vocab_size]
+        // Calculate the gradient of the output projection: [d_model, vocab_size]
         let mut output_proj_grad = Array::zeros((d_model, vocab_size));
         
         for i in 0..batch_size * seq_len {
@@ -461,15 +621,15 @@ impl Trainer {
             }
         }
         
-        // Normalizza il gradiente per la dimensione del batch
+        // Normalize the gradient by batch size
         output_proj_grad /= (batch_size * seq_len) as f32;
         
         grads.insert("output_projection".to_string(), Tensor::new_from_array(output_proj_grad.into_dyn()));
         
-        // 4. Aggiorniamo i parametri con l'ottimizzatore
+        // 4. Update parameters with the optimizer
         self.optimizer.step(&mut self.params, &grads);
         
-        // 5. Aggiorniamo il riferimento a output_projection con il valore aggiornato
+        // 5. Update the reference to output_projection with the updated value
         if let Some(updated_output_proj) = self.params.get("output_projection") {
             self.output_projection = updated_output_proj.clone();
         }
@@ -477,28 +637,34 @@ impl Trainer {
         loss
     }
     
-    /// Restituisce la lunghezza massima della sequenza
+    /// Returns the maximum sequence length
     pub fn get_max_seq_len(&self) -> usize {
         self.max_seq_len
     }
     
-    /// Restituisce la dimensione del vocabolario
+    /// Returns the vocabulary size
     pub fn get_vocab_size(&self) -> usize {
         self.vocab_size
     }
     
-    /// Restituisce il numero totale di parametri nel modello
+    /// Returns the total number of parameters in the model
     pub fn get_parameter_count(&self) -> usize {
-        // ... Implementazione invariata
+        // ... Unchanged implementation
         0  // Placeholder
     }
     
-    /// Restituisce i tensori del modello
+    /// Returns the model tensors
     pub fn tensors(&self) -> &HashMap<String, Tensor> {
         &self.params
     }
     
-    /// Salva il modello in formato binario
+    /// Saves the model in binary format
+    ///
+    /// # Arguments
+    /// * `path` - Path where to save the model
+    ///
+    /// # Returns
+    /// A result indicating success or error
     pub fn save_model<P: AsRef<Path>>(&self, path: P) -> ModelResult<()> {
         crate::export::save_model(
             path,
@@ -513,24 +679,32 @@ impl Trainer {
         )
     }
     
-    /// Carica un modello da un file binario
+    /// Loads a model from a binary file
+    ///
+    /// # Arguments
+    /// * `path` - Path to the model file
+    /// * `tokenizer` - Tokenizer to use with the model
+    /// * `learning_rate` - Optional learning rate to use for the optimizer
+    ///
+    /// # Returns
+    /// A result containing the loaded trainer or an error
     pub fn load_model<P: AsRef<Path>, T: Tokenizer + Clone + 'static>(
         path: P, 
         tokenizer: &mut T,
         learning_rate: Option<f32>
     ) -> ModelResult<Self> {
-        // Crea un nuovo trainer con valori iniziali
+        // Create a new trainer with initial values
         let mut trainer = Self::new(
             Box::new(tokenizer.clone()),
             0, 0, 0, 0, 0.0, 
             learning_rate.unwrap_or(0.001)
         );
         
-        // Carica il modello utilizzando il modulo export e passa il tokenizer direttamente
+        // Load the model using the export module and pass the tokenizer directly
         let (model_dim, ff_dim, num_heads, num_layers, max_seq_len, params, metadata) = 
             crate::export::load_model(path, tokenizer)?;
         
-        // Aggiorna i parametri del trainer
+        // Update trainer parameters
         trainer.model_dim = model_dim;
         trainer.ff_dim = ff_dim;
         trainer.num_heads = num_heads;
@@ -540,7 +714,7 @@ impl Trainer {
         trainer.params = params;
         trainer.metadata = metadata;
         
-        // Ricrea gli altri componenti
+        // Recreate other components
         trainer.embedding = TransformerEmbedding::new(
             trainer.vocab_size,
             trainer.model_dim,
@@ -556,18 +730,18 @@ impl Trainer {
             0.1  // dropout_rate
         );
         
-        // Imposta l'output projection o lo prende dai parametri se disponibile
+        // Set output projection or take it from parameters if available
         if let Some(output_proj) = trainer.params.get("output_projection") {
             trainer.output_projection = output_proj.clone();
         }
         
-        // Aggiorna il tokenizer del trainer con quello fornito
+        // Update trainer's tokenizer with the provided one
         trainer.tokenizer = Box::new(tokenizer.clone());
         
         Ok(trainer)
     }
 }
 
-// Include i moduli aggiuntivi
+// Include additional modules
 pub mod tests;
 pub mod evaluate; 

@@ -1,4 +1,3 @@
-use ndarray::{Array3, Axis};
 use crate::attention::EncoderLayer;
 use crate::nabla::tensor::Tensor;
 
@@ -76,7 +75,6 @@ impl EncoderStack {
 mod tests {
     use super::*;
     use ndarray_rand::{RandomExt, rand_distr::Uniform};
-    use crate::attention::create_causal_mask;
     use ndarray::Array3;
     
     #[test]

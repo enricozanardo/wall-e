@@ -4,7 +4,7 @@ use crate::nabla::tensor::Tensor;
 use crate::tokenizer::Tokenizer;
 use crate::training::ModelOutput;
 
-/// Valuta il modello su un set di dati di test
+/// Evaluates the model on a test dataset
 pub fn evaluate<M, F>(
     model: &M,
     forward_fn: F,
@@ -21,16 +21,16 @@ where
     let mut total_tokens = 0;
     
     for batch in test_data {
-        // Prepara i target: ogni token predice il successivo
+        // Prepare targets: each token predicts the next one
         let targets = prepare_targets(batch);
         
         // Forward pass
         let output = forward_fn(model, batch, None);
         
-        // Accumulazione della loss
+        // Loss accumulation
         total_loss += output.loss.unwrap_or(0.0);
         
-        // Calcolo dell'accuratezza
+        // Accuracy calculation
         let (correct, tokens) = count_correct_predictions(
             &output.logits,
             &targets,
@@ -47,7 +47,7 @@ where
     (avg_loss, accuracy)
 }
 
-/// Prepara i target per la valutazione
+/// Prepares targets for evaluation
 fn prepare_targets(batch: &Vec<Vec<usize>>) -> Array2<usize> {
     let batch_size = batch.len();
     let max_seq_len = batch.iter().map(|seq| seq.len()).max().unwrap_or(0);
@@ -65,16 +65,16 @@ fn prepare_targets(batch: &Vec<Vec<usize>>) -> Array2<usize> {
     targets
 }
 
-/// Conta le predizioni corrette nel batch
+/// Counts correct predictions in the batch
 fn count_correct_predictions(
     logits: &Tensor,
     targets: &Array2<usize>,
     padding_idx: Option<usize>,
 ) -> (usize, usize) {
-    // Ottieni le dimensioni
+    // Get dimensions
     let shape = logits.data.shape();
     if shape.len() != 3 {
-        return (0, 0); // Forma non valida
+        return (0, 0); // Invalid shape
     }
     
     let batch_size = shape[0];
@@ -87,14 +87,14 @@ fn count_correct_predictions(
         for j in 0..seq_len {
             let target_idx = targets[[i, j]];
             
-            // Ignora i token di padding
+            // Ignore padding tokens
             if let Some(pad_idx) = padding_idx {
                 if target_idx == pad_idx {
                     continue;
                 }
             }
             
-            // Trova l'indice del valore massimo nelle logits per questa posizione
+            // Find the index with the maximum value in the logits for this position
             let mut max_idx = 0;
             let mut max_val = f32::MIN;
             
@@ -107,7 +107,7 @@ fn count_correct_predictions(
                 }
             }
             
-            // Controlla se la predizione è corretta
+            // Check if the prediction is correct
             if max_idx == target_idx {
                 correct += 1;
             }
@@ -119,7 +119,7 @@ fn count_correct_predictions(
     (correct, total)
 }
 
-/// Stampa esempi di testo generato
+/// Prints examples of generated text
 pub fn print_generated_samples<M, F>(
     model: &M,
     forward_fn: F,
@@ -134,11 +134,11 @@ pub fn print_generated_samples<M, F>(
     for prompt in prompts {
         println!("Prompt: {}", prompt);
         
-        // Tokenizza il prompt
+        // Tokenize the prompt
         let tokens = tokenizer.encode(prompt);
         let token_batch = vec![tokens.clone()];
         
-        // Genera testo
+        // Generate text
         let generated = generate_text(
             model,
             forward_fn,
@@ -148,13 +148,13 @@ pub fn print_generated_samples<M, F>(
             temperature,
         );
         
-        // Decodifica e stampa il risultato
+        // Decode and print the result
         let generated_text = tokenizer.decode(&generated[0]);
-        println!("Generato: {}\n", generated_text);
+        println!("Generated: {}\n", generated_text);
     }
 }
 
-/// Genera testo a partire da un input
+/// Generates text from an input
 pub fn generate_text<M, F>(
     model: &M,
     forward_fn: F,
@@ -170,15 +170,15 @@ where
     let mut result = token_batch.clone();
     
     for _ in 0..max_tokens {
-        // Forward pass per ottenere le probabilità del prossimo token
+        // Forward pass to get probabilities of the next token
         let output = forward_fn(model, &token_batch, None);
         
-        // Per ogni sequenza nel batch
+        // For each sequence in the batch
         for (i, seq) in token_batch.iter_mut().enumerate() {
-            // Ottieni le probabilità dell'ultimo token
+            // Get probabilities of the last token
             let last_pos = seq.len() - 1;
             
-            // Estrai logits dell'ultimo token
+            // Extract logits of the last token
             let shape = output.logits.data.shape();
             let vocab_size = shape[2];
             
@@ -191,22 +191,22 @@ where
                 }
             }
             
-            // Applica la temperatura
+            // Apply temperature
             let scaled_logits = if temperature > 0.0 {
                 last_token_logits.iter().map(|&x| x / temperature).collect::<Vec<f32>>()
             } else {
                 last_token_logits
             };
             
-            // Converti in probabilità usando softmax
+            // Convert to probabilities using softmax
             let probs = softmax(&scaled_logits);
             
-            // Campiona il prossimo token (implementazione semplice)
+            // Sample the next token (simple implementation)
             let next_token = if temperature > 0.0 {
-                // Campionamento proporzionale alle probabilità
+                // Sampling proportional to probabilities
                 sample_from_probs(&probs)
             } else {
-                // Greedy sampling (prendi il token con la probabilità più alta)
+                // Greedy sampling (take the token with highest probability)
                 probs.iter()
                     .enumerate()
                     .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
@@ -214,7 +214,7 @@ where
                     .unwrap_or(0)
             };
             
-            // Aggiungi il token alla sequenza
+            // Add the token to the sequence
             seq.push(next_token);
             result[i].push(next_token);
         }
@@ -223,28 +223,28 @@ where
     result
 }
 
-/// Implementazione semplice del softmax per array 1D
+/// Simple implementation of softmax for 1D arrays
 fn softmax(logits: &[f32]) -> Vec<f32> {
-    // Per stabilità numerica, sottrai il massimo
+    // For numerical stability, subtract the maximum
     let max_logit = logits.iter().cloned().fold(f32::MIN, f32::max);
     
-    // Calcola l'exp e la somma
+    // Calculate exp and sum
     let exp_logits: Vec<f32> = logits.iter()
         .map(|&x| (x - max_logit).exp())
         .collect();
     
     let sum: f32 = exp_logits.iter().sum();
     
-    // Normalizza
+    // Normalize
     exp_logits.iter().map(|&x| x / sum).collect()
 }
 
-/// Campionamento da un vettore di probabilità
+/// Sampling from a probability vector
 fn sample_from_probs(probs: &[f32]) -> usize {
-    // Genera un numero casuale tra 0 e 1
+    // Generate a random number between 0 and 1
     let r: f32 = rand::random();
     
-    // Seleziona l'indice basato sulla distribuzione cumulativa
+    // Select the index based on the cumulative distribution
     let mut cumsum = 0.0;
     for (i, &p) in probs.iter().enumerate() {
         cumsum += p;
@@ -253,6 +253,6 @@ fn sample_from_probs(probs: &[f32]) -> usize {
         }
     }
     
-    // In caso di errori di arrotondamento, restituisce l'ultimo indice
+    // In case of rounding errors, return the last index
     probs.len() - 1
 } 
