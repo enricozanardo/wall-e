@@ -291,7 +291,7 @@ mod tests {
         // Forward pass with batch
         let output = embedding.forward_batch(&batch_token_ids);
         
-        // Check output shape: should be [batch_size, seq_len * embedding_dim]
-        assert_eq!(output.data.shape(), &[2, 3 * 64]);
+        // Check output shape: should be [batch_size, seq_len, embedding_dim]
+        assert_eq!(output.data.shape(), &[2, 3, 64]);
     }
 } 
