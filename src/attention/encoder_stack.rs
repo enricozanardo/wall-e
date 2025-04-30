@@ -3,6 +3,7 @@ use crate::nabla::tensor::Tensor;
 
 /// Implementation of the Transformer encoder stack (DistilBERT style)
 /// Composed of multiple encoder layers connected in sequence
+#[allow(dead_code)]
 pub struct EncoderStack {
     // Vector of EncoderLayers
     layers: Vec<EncoderLayer>,
