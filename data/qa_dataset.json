@@ -1,41 +1,1204 @@
 {
   "train_data": [
     {
-      "context": "Il linguaggio di programmazione Rust è stato sviluppato da Mozilla Research. Rust è stato progettato per essere un linguaggio di programmazione sicuro, concorrente e pratico. Rust è sinteticamente simile a C++, ma è progettato per fornire un migliore controllo della memoria senza l'uso di un garbage collector. Rust è stato votato come 'linguaggio di programmazione più amato' nei sondaggi annuali degli sviluppatori Stack Overflow dal 2016 al 2022.",
+      "context": "Il GDPR (General Data Protection Regulation) è il regolamento europeo sulla protezione dei dati personali, entrato in vigore il 25 maggio 2018. Il GDPR rafforza i diritti dei cittadini dell'UE in materia di privacy e impone obblighi significativi alle organizzazioni che trattano dati personali. Tra i suoi principi fondamentali ci sono la trasparenza, la limitazione delle finalità, la minimizzazione dei dati, l'esattezza, la limitazione della conservazione, l'integrità e la riservatezza. Il regolamento introduce inoltre il concetto di 'responsabilità' del titolare del trattamento e prevede sanzioni fino al 4% del fatturato globale annuo.",
       "questions": [
-        {"question": "Chi ha sviluppato Rust?", "answer": "Mozilla Research"},
-        {"question": "Per cosa è stato progettato Rust?", "answer": "Per essere un linguaggio di programmazione sicuro, concorrente e pratico"},
-        {"question": "A quale linguaggio è simile Rust?", "answer": "C++"},
-        {"question": "Come gestisce Rust la memoria?", "answer": "Fornisce un migliore controllo della memoria senza l'uso di un garbage collector"},
-        {"question": "Quale riconoscimento ha ottenuto Rust nei sondaggi di Stack Overflow?", "answer": "È stato votato come 'linguaggio di programmazione più amato' dal 2016 al 2022"}
+        {
+          "question": "Cosa significa GDPR?",
+          "answer": "General Data Protection Regulation"
+        },
+        {
+          "question": "Quando è entrato in vigore il GDPR?",
+          "answer": "Il 25 maggio 2018"
+        },
+        {
+          "question": "Di quale materia si occupa il GDPR?",
+          "answer": "Della protezione dei dati personali"
+        },
+        {
+          "question": "Quale ambito geografico copre il GDPR?",
+          "answer": "L'Unione Europea"
+        },
+        {
+          "question": "Cosa rafforza il GDPR per i cittadini dell'UE?",
+          "answer": "I diritti in materia di privacy"
+        },
+        {
+          "question": "A chi si applicano gli obblighi previsti dal GDPR?",
+          "answer": "Alle organizzazioni che trattano dati personali"
+        },
+        {
+          "question": "Qual è uno dei principi fondamentali del GDPR?",
+          "answer": "La trasparenza"
+        },
+        {
+          "question": "Cosa implica il principio di minimizzazione dei dati?",
+          "answer": "Raccogliere solo i dati necessari"
+        },
+        {
+          "question": "Cosa significa integrità nel contesto del GDPR?",
+          "answer": "Protezione dei dati da accessi non autorizzati o modifiche"
+        },
+        {
+          "question": "Che cos'è la limitazione della conservazione secondo il GDPR?",
+          "answer": "Conservare i dati solo per il tempo necessario"
+        },
+        {
+          "question": "Qual è la percentuale massima di sanzione prevista dal GDPR?",
+          "answer": "Fino al 4% del fatturato globale annuo"
+        },
+        {
+          "question": "Che cos'è la 'responsabilità' del titolare del trattamento?",
+          "answer": "L'obbligo di garantire e dimostrare la conformità al GDPR"
+        },
+        {
+          "question": "Che obbligo ha un'organizzazione secondo il GDPR?",
+          "answer": "Proteggere i dati personali che tratta"
+        },
+        {
+          "question": "Cosa significa esattezza secondo il GDPR?",
+          "answer": "I dati devono essere aggiornati e corretti"
+        },
+        {
+          "question": "Qual è l'obiettivo principale del GDPR?",
+          "answer": "Proteggere i dati personali dei cittadini dell'UE"
+        },
+        {
+          "question": "Come viene garantita la riservatezza dei dati nel GDPR?",
+          "answer": "Attraverso misure di sicurezza appropriate"
+        },
+        {
+          "question": "Cosa comporta il principio di limitazione delle finalità?",
+          "answer": "Utilizzare i dati solo per gli scopi dichiarati"
+        },
+        {
+          "question": "Perché il GDPR è stato introdotto?",
+          "answer": "Per rafforzare i diritti sulla privacy dei cittadini"
+        },
+        {
+          "question": "Chi è il titolare del trattamento?",
+          "answer": "Chi determina finalità e mezzi del trattamento dei dati"
+        },
+        {
+          "question": "Quali diritti rafforza il GDPR?",
+          "answer": "I diritti dei cittadini in materia di privacy"
+        },
+        {
+          "question": "Qual è la sigla del regolamento europeo sulla protezione dei dati?",
+          "answer": "GDPR"
+        },
+        {
+          "question": "Qual è l'acronimo di General Data Protection Regulation?",
+          "answer": "GDPR"
+        },
+        {
+          "question": "Chi sono i soggetti tutelati dal GDPR?",
+          "answer": "I cittadini dell'Unione Europea"
+        },
+        {
+          "question": "Quale diritto viene rafforzato dal GDPR?",
+          "answer": "Il diritto alla privacy"
+        },
+        {
+          "question": "Che obbligo ha un'organizzazione secondo il GDPR?",
+          "answer": "Proteggere i dati personali trattati"
+        },
+        {
+          "question": "Qual è la data di applicazione del GDPR?",
+          "answer": "25 maggio 2018"
+        },
+        {
+          "question": "Il GDPR riguarda solo le aziende europee?",
+          "answer": "No, anche quelle che trattano dati di cittadini UE"
+        },
+        {
+          "question": "Che cosa si intende per minimizzazione dei dati?",
+          "answer": "Raccogliere solo i dati strettamente necessari"
+        },
+        {
+          "question": "Cos'è la trasparenza nel contesto del GDPR?",
+          "answer": "Fornire informazioni chiare sul trattamento dei dati"
+        },
+        {
+          "question": "Che cos'è l'esattezza dei dati secondo il GDPR?",
+          "answer": "Mantenere i dati aggiornati e corretti"
+        },
+        {
+          "question": "Quanto può arrivare a costare una violazione del GDPR?",
+          "answer": "Fino al 4% del fatturato globale annuo"
+        },
+        {
+          "question": "Cosa prevede il principio di responsabilità del titolare?",
+          "answer": "Deve dimostrare la conformità al GDPR"
+        },
+        {
+          "question": "Cosa succede se un'organizzazione non rispetta il GDPR?",
+          "answer": "Può essere soggetta a sanzioni"
+        },
+        {
+          "question": "Cos'è la limitazione delle finalità nel GDPR?",
+          "answer": "Utilizzare i dati solo per scopi specifici"
+        },
+        {
+          "question": "Cosa deve fare il titolare del trattamento?",
+          "answer": "Assicurare la protezione dei dati personali"
+        },
+        {
+          "question": "Chi determina le finalità e i mezzi del trattamento?",
+          "answer": "Il titolare del trattamento"
+        },
+        {
+          "question": "Cosa significa integrità dei dati?",
+          "answer": "Prevenire modifiche non autorizzate"
+        },
+        {
+          "question": "Il GDPR si applica anche ai dati cartacei?",
+          "answer": "Sì, se fanno parte di un archivio strutturato"
+        },
+        {
+          "question": "Cosa si intende per limitazione della conservazione?",
+          "answer": "Non conservare i dati più del necessario"
+        },
+        {
+          "question": "Chi vigila sull'applicazione del GDPR nei singoli Stati?",
+          "answer": "Le autorità garanti nazionali"
+        },
+        {
+          "question": "Il GDPR è un regolamento o una direttiva?",
+          "answer": "Un regolamento"
+        },
+        {
+          "question": "Il consenso è sempre obbligatorio nel GDPR?",
+          "answer": "Solo in determinati casi"
+        },
+        {
+          "question": "Cos'è un trattamento di dati personali?",
+          "answer": "Qualsiasi operazione su dati personali"
+        },
+        {
+          "question": "Che cosa sono i dati personali?",
+          "answer": "Informazioni relative a una persona fisica identificabile"
+        },
+        {
+          "question": "Chi può essere considerato responsabile del trattamento?",
+          "answer": "Chi tratta dati per conto del titolare"
+        },
+        {
+          "question": "Cosa deve fare un'azienda in caso di violazione dei dati?",
+          "answer": "Notificarlo all'autorità entro 72 ore"
+        },
+        {
+          "question": "Cosa prevede il GDPR per i minori?",
+          "answer": "Richiede il consenso dei genitori sotto i 16 anni"
+        },
+        {
+          "question": "Qual è il ruolo del DPO?",
+          "answer": "Supervisionare la conformità al GDPR"
+        },
+        {
+          "question": "Quando è obbligatorio nominare un DPO?",
+          "answer": "Se si trattano dati su larga scala"
+        },
+        {
+          "question": "Cos'è la pseudonimizzazione?",
+          "answer": "Tecnica per proteggere i dati rendendoli non direttamente identificabili"
+        },
+        {
+          "question": "I dati anonimizzati rientrano nel GDPR?",
+          "answer": "No, se non sono più riconducibili a un individuo"
+        },
+        {
+          "question": "Qual è la base giuridica per il trattamento dei dati?",
+          "answer": "Consenso, obbligo legale, legittimo interesse, ecc."
+        },
+        {
+          "question": "Come deve essere fornita l'informativa sul trattamento?",
+          "answer": "In modo chiaro e comprensibile"
+        },
+        {
+          "question": "Quali misure devono essere adottate per proteggere i dati?",
+          "answer": "Misure tecniche e organizzative adeguate"
+        },
+        {
+          "question": "Che diritto ha l'interessato secondo il GDPR?",
+          "answer": "Accedere, rettificare, cancellare i propri dati"
+        },
+        {
+          "question": "Cosa prevede il diritto all'oblio?",
+          "answer": "La cancellazione dei dati su richiesta"
+        },
+        {
+          "question": "Cos'è la portabilità dei dati?",
+          "answer": "Il diritto di ricevere i propri dati in formato leggibile"
+        },
+        {
+          "question": "Il GDPR si applica anche alle PMI?",
+          "answer": "Sì, ma con alcune semplificazioni"
+        },
+        {
+          "question": "Cosa significa accountability?",
+          "answer": "Responsabilità proattiva nella gestione dei dati"
+        },
+        {
+          "question": "Chi può richiedere l'accesso ai dati personali?",
+          "answer": "L'interessato"
+        },
+        {
+          "question": "Cosa deve contenere il registro dei trattamenti?",
+          "answer": "Informazioni dettagliate sui trattamenti svolti"
+        },
+        {
+          "question": "Quando è necessario effettuare una DPIA?",
+          "answer": "In caso di trattamenti ad alto rischio"
+        },
+        {
+          "question": "Cos'è una DPIA?",
+          "answer": "Valutazione d'impatto sulla protezione dei dati"
+        },
+        {
+          "question": "Quali sono i diritti fondamentali garantiti dal GDPR?",
+          "answer": "Privacy, sicurezza, controllo dei dati"
+        },
+        {
+          "question": "Cosa significa data breach?",
+          "answer": "Violazione della sicurezza dei dati"
+        },
+        {
+          "question": "Come si possono conservare i dati in modo sicuro?",
+          "answer": "Attraverso backup, crittografia, controlli accesso"
+        },
+        {
+          "question": "Quali sono le sanzioni previste dal GDPR?",
+          "answer": "Ammende fino al 4% del fatturato globale"
+        },
+        {
+          "question": "Cosa implica il principio di liceità?",
+          "answer": "Il trattamento deve avere una base legale"
+        },
+        {
+          "question": "Quando si può trattare un dato sensibile?",
+          "answer": "Solo in casi specifici previsti dal GDPR"
+        },
+        {
+          "question": "Cosa si intende per dato sensibile?",
+          "answer": "Dati su salute, opinioni politiche, religione, ecc."
+        },
+        {
+          "question": "Chi è l'interessato?",
+          "answer": "La persona a cui si riferiscono i dati"
+        },
+        {
+          "question": "Come deve essere dato il consenso?",
+          "answer": "In modo libero, specifico, informato e inequivocabile"
+        },
+        {
+          "question": "Cosa comporta la revoca del consenso?",
+          "answer": "Il trattamento deve cessare"
+        },
+        {
+          "question": "Che cos'è un trattamento lecito?",
+          "answer": "Un trattamento con base giuridica valida"
+        },
+        {
+          "question": "Che differenza c'è tra anonimizzazione e pseudonimizzazione?",
+          "answer": "L'anonimizzazione è irreversibile, la pseudonimizzazione no"
+        },
+        {
+          "question": "Cos'è il principio di proporzionalità?",
+          "answer": "Utilizzare solo i dati necessari rispetto allo scopo"
+        },
+        {
+          "question": "Cosa significa informativa multilivello?",
+          "answer": "Informazione strutturata per gradi di dettaglio"
+        },
+        {
+          "question": "Che ruolo ha il garante della privacy?",
+          "answer": "Controllare e far rispettare il GDPR"
+        },
+        {
+          "question": "È possibile trasferire dati fuori dall'UE?",
+          "answer": "Solo con garanzie adeguate"
+        },
+        {
+          "question": "Quali strumenti usa il GDPR per la conformità?",
+          "answer": "Codici di condotta, certificazioni, DPIA"
+        },
+        {
+          "question": "Cos'è il principio di limitazione del trattamento?",
+          "answer": "Trattare i dati solo quando necessario"
+        },
+        {
+          "question": "Chi è responsabile della protezione dei dati in azienda?",
+          "answer": "Il titolare o il DPO"
+        },
+        {
+          "question": "Qual è la durata massima di conservazione dei dati?",
+          "answer": "Solo quella necessaria allo scopo"
+        },
+        {
+          "question": "Quali categorie di dati copre il GDPR?",
+          "answer": "Dati personali e dati particolari"
+        },
+        {
+          "question": "Cos'è un'azienda conforme al GDPR?",
+          "answer": "Un'azienda che applica tutte le misure richieste dal regolamento"
+        },
+        {
+          "question": "Cosa deve fare un'azienda per essere conforme?",
+          "answer": "Avere policy, registro, misure tecniche, informativa"
+        },
+        {
+          "question": "Cosa si intende per controllo del dato?",
+          "answer": "Capacità dell'interessato di gestire i propri dati"
+        },
+        {
+          "question": "Come si prova la conformità al GDPR?",
+          "answer": "Attraverso documentazione e registro dei trattamenti"
+        },
+        {
+          "question": "Il GDPR vieta il trattamento automatizzato?",
+          "answer": "No, ma impone garanzie"
+        },
+        {
+          "question": "Cosa significa trattamento trasparente?",
+          "answer": "Che l'interessato è sempre informato"
+        },
+        {
+          "question": "Chi deve tenere il registro dei trattamenti?",
+          "answer": "Tutti i titolari salvo rare eccezioni"
+        },
+        {
+          "question": "In quale lingua va scritta l'informativa?",
+          "answer": "In modo comprensibile per l'interessato"
+        },
+        {
+          "question": "Il GDPR si applica anche ai liberi professionisti?",
+          "answer": "Sì, se trattano dati personali"
+        },
+        {
+          "question": "Cosa significa dati aggregati?",
+          "answer": "Dati combinati che non permettono l'identificazione"
+        },
+        {
+          "question": "Cos'è un'informazione identificabile?",
+          "answer": "Un dato che permette di riconoscere una persona"
+        },
+        {
+          "question": "Cosa fa l'autorità di controllo?",
+          "answer": "Supervisiona e applica il GDPR"
+        },
+        {
+          "question": "Chi può richiedere un risarcimento per violazione GDPR?",
+          "answer": "L'interessato danneggiato"
+        },
+        {
+          "question": "Cosa prevede il principio di equità?",
+          "answer": "Trattamento dei dati leale verso l'interessato"
+        },
+        {
+          "question": "Cosa si intende per profilazione nel GDPR?",
+          "answer": "Trattamento automatizzato per valutare aspetti personali"
+        },
+        {
+          "question": "Quando è lecito usare la profilazione?",
+          "answer": "Con consenso o base legittima"
+        },
+        {
+          "question": "Cosa comporta la violazione del principio di minimizzazione?",
+          "answer": "Trattamento eccessivo o non pertinente dei dati"
+        }
       ]
     },
     {
-      "context": "L'Italia è un paese situato nell'Europa meridionale, con una popolazione di circa 60 milioni di abitanti. Roma è la capitale dell'Italia e una delle città più antiche e storicamente ricche del mondo. L'Italia è conosciuta per la sua cucina, arte, moda, storia e bellissimi paesaggi. La lingua ufficiale è l'italiano, una lingua romanza derivata dal latino. L'Italia è una repubblica parlamentare dal 2 giugno 1946, quando la monarchia fu abolita tramite un referendum popolare.",
+      "context": "La norma UNI ISO/IEC 27001 è uno standard internazionale che definisce i requisiti per un sistema di gestione della sicurezza delle informazioni (SGSI). È progettata per aiutare le organizzazioni a proteggere le proprie informazioni in modo sistematico e costante attraverso l'adozione di un processo basato sul rischio. Lo standard si fonda sul ciclo PDCA (Plan-Do-Check-Act) e include misure organizzative, tecniche e fisiche. La ISO 27001 richiede la valutazione dei rischi, l'implementazione di controlli di sicurezza e la continua revisione e miglioramento del sistema. Lo scopo principale è assicurare la riservatezza, l'integrità e la disponibilità delle informazioni.",
       "questions": [
-        {"question": "Qual è la popolazione dell'Italia?", "answer": "Circa 60 milioni di abitanti"},
-        {"question": "Qual è la capitale dell'Italia?", "answer": "Roma"},
-        {"question": "Per cosa è conosciuta l'Italia?", "answer": "Per la sua cucina, arte, moda, storia e bellissimi paesaggi"},
-        {"question": "Qual è la lingua ufficiale dell'Italia?", "answer": "L'italiano"},
-        {"question": "Che tipo di governo ha l'Italia?", "answer": "Una repubblica parlamentare"}
+        {
+          "question": "Qual è lo scopo principale della ISO 27001?",
+          "answer": "Proteggere la riservatezza, integrità e disponibilità delle informazioni"
+        },
+        {
+          "question": "Su quale ciclo si basa la ISO 27001?",
+          "answer": "Ciclo PDCA (Plan-Do-Check-Act)"
+        },
+        {
+          "question": "Cosa richiede la ISO 27001 riguardo ai rischi?",
+          "answer": "Una valutazione regolare dei rischi e l'implementazione di controlli adeguati"
+        },
+        {
+          "question": "Cosa dimostra la certificazione ISO 27001?",
+          "answer": "L'impegno di un'organizzazione nella sicurezza delle informazioni"
+        },
+        {
+          "question": "Quali sono i tre pilastri della sicurezza delle informazioni secondo ISO 27001?",
+          "answer": "Riservatezza, integrità, disponibilità"
+        },
+        {
+          "question": "Qual è il primo passo del ciclo PDCA?",
+          "answer": "Plan (Pianificare)"
+        },
+        {
+          "question": "A quale ambito è applicabile la ISO 27001?",
+          "answer": "A qualsiasi organizzazione, indipendentemente dalle dimensioni o dal settore"
+        },
+        {
+          "question": "Quale documento è essenziale per l'implementazione di un SGSI?",
+          "answer": "La Dichiarazione di Applicabilità (SoA)"
+        },
+        {
+          "question": "Cosa include la fase 'Do' del ciclo PDCA?",
+          "answer": "L'implementazione dei controlli e delle politiche di sicurezza"
+        },
+        {
+          "question": "Quale organismo rilascia la certificazione ISO 27001?",
+          "answer": "Un ente di certificazione accreditato"
+        },
+        {
+          "question": "Quanto dura tipicamente un ciclo di certificazione ISO 27001?",
+          "answer": "Tre anni, con audit di sorveglianza annuali"
+        },
+        {
+          "question": "Cosa si intende per 'controllo' nella ISO 27001?",
+          "answer": "Misure per mitigare i rischi identificati"
+        },
+        {
+          "question": "Qual è il ruolo della leadership nella ISO 27001?",
+          "answer": "Garantire impegno e risorse per il SGSI"
+        },
+        {
+          "question": "Cosa viene valutato durante un audit interno?",
+          "answer": "La conformità del SGSI ai requisiti della norma"
+        },
+        {
+          "question": "Cosa accade se un'organizzazione non supera l'audit di certificazione?",
+          "answer": "Deve affrontare non conformità e correggerle prima di riprovare"
+        },
+        {
+          "question": "Quale documento descrive gli obiettivi di sicurezza?",
+          "answer": "La Politica della Sicurezza delle Informazioni"
+        },
+        {
+          "question": "Cosa si intende per 'parti interessate' nella ISO 27001?",
+          "answer": "Soggetti interni o esterni con impatto sul SGSI"
+        },
+        {
+          "question": "Perché è importante il miglioramento continuo nella ISO 27001?",
+          "answer": "Per adattarsi a cambiamenti e minacce emergenti"
+        },
+        {
+          "question": "Cosa include l'ambito del SGSI?",
+          "answer": "I confini e l'applicabilità del sistema di gestione"
+        },
+        {
+          "question": "Quale rischio può essere escluso dalla valutazione?",
+          "answer": "Nessuno; tutti i rischi rilevanti devono essere valutati"
+        },
+        {
+          "question": "Qual è l'obiettivo della fase 'Check' del PDCA?",
+          "answer": "Verificare l'efficacia dei controlli implementati"
+        },
+        {
+          "question": "Cosa si intende per 'valutazione del rischio'?",
+          "answer": "Identificare e analizzare le minacce alle informazioni"
+        },
+        {
+          "question": "Quale documento elenca i controlli selezionati?",
+          "answer": "La Dichiarazione di Applicabilità (SoA)"
+        },
+        {
+          "question": "Cosa è necessario per mantenere la certificazione?",
+          "answer": "Audit di sorveglianza annuali e rinnovo triennale"
+        },
+        {
+          "question": "Cosa regola l'Annex A della ISO 27001?",
+          "answer": "Un elenco di controlli di sicurezza raccomandati"
+        },
+        {
+          "question": "Chi approva la Politica della Sicurezza delle Informazioni?",
+          "answer": "La leadership dell'organizzazione"
+        },
+        {
+          "question": "Cosa si intende per 'disponibilità' delle informazioni?",
+          "answer": "Garantire l'accesso alle informazioni quando necessario"
+        },
+        {
+          "question": "Quale fase del PDCA include la revisione del SGSI?",
+          "answer": "Act (Agire)"
+        },
+        {
+          "question": "Cosa è un 'asset' nella ISO 27001?",
+          "answer": "Qualsiasi risorsa di valore per l'organizzazione"
+        },
+        {
+          "question": "Qual è lo scopo della valutazione del rischio?",
+          "answer": "Determinare la probabilità e l'impatto delle minacce"
+        },
+        {
+          "question": "Cosa si intende per 'trattamento del rischio'?",
+          "answer": "Applicare controlli per ridurre i rischi a livelli accettabili"
+        },
+        {
+          "question": "Chi è responsabile della gestione del SGSI?",
+          "answer": "Il team di gestione della sicurezza delle informazioni"
+        },
+        {
+          "question": "Qual è la differenza tra rischio residuo e rischio iniziale?",
+          "answer": "Il rischio residuo è ciò che rimane dopo l'applicazione dei controlli"
+        },
+        {
+          "question": "Cosa include un piano di trattamento del rischio?",
+          "answer": "Azioni per mitigare i rischi identificati"
+        },
+        {
+          "question": "Quale strumento aiuta a mappare i rischi ai controlli?",
+          "answer": "La matrice del rischio"
+        },
+        {
+          "question": "Cosa si intende per 'controllo preventivo'?",
+          "answer": "Misure per evitare il verificarsi di un rischio"
+        },
+        {
+          "question": "Quale documento registra gli incidenti di sicurezza?",
+          "answer": "Il registro degli incidenti"
+        },
+        {
+          "question": "Cosa è un 'obiettivo di sicurezza'?",
+          "answer": "Un traguardo specifico per migliorare la sicurezza"
+        },
+        {
+          "question": "Qual è lo scopo della formazione del personale?",
+          "answer": "Aumentare la consapevolezza sulla sicurezza delle informazioni"
+        },
+        {
+          "question": "Cosa si verifica durante un audit esterno?",
+          "answer": "La conformità alla norma ISO 27001 da parte di un ente terzo"
+        },
+        {
+          "question": "Cosa è il 'risk appetite'?",
+          "answer": "La quantità di rischio che un'organizzazione è disposta ad accettare"
+        },
+        {
+          "question": "Quale fase del PDCA include la raccolta di dati?",
+          "answer": "Check (Verificare)"
+        },
+        {
+          "question": "Cosa si intende per 'non conformità'?",
+          "answer": "Deviazioni dai requisiti della norma ISO 27001"
+        },
+        {
+          "question": "Quale documento definisce i ruoli e le responsabilità?",
+          "answer": "La Politica della Sicurezza delle Informazioni"
+        },
+        {
+          "question": "Cosa è necessario per correggere una non conformità?",
+          "answer": "Azioni correttive e preventive"
+        },
+        {
+          "question": "Qual è lo scopo della revisione della direzione?",
+          "answer": "Valutare l'efficacia complessiva del SGSI"
+        },
+        {
+          "question": "Cosa si intende per 'controllo correttivo'?",
+          "answer": "Misure per eliminare le cause di una non conformità"
+        },
+        {
+          "question": "Quale termine descrive la protezione dei dati personali?",
+          "answer": "Privacy"
+        },
+        {
+          "question": "Cosa è un 'fornitore esterno' nel contesto ISO 27001?",
+          "answer": "Un'entità esterna che fornisce servizi all'organizzazione"
+        },
+        {
+          "question": "Quale controllo riguarda la sicurezza fisica?",
+          "answer": "Controlli per proteggere infrastrutture e hardware"
+        },
+        {
+          "question": "Cosa si intende per 'continuità operativa'?",
+          "answer": "Garantire il ripristino delle attività dopo un incidente"
+        },
+        {
+          "question": "Quale documento descrive le procedure di emergenza?",
+          "answer": "Il piano di continuità operativa"
+        },
+        {
+          "question": "Cosa è un 'penetration test'?",
+          "answer": "Una simulazione di attacchi per valutare la sicurezza"
+        },
+        {
+          "question": "Qual è lo scopo della crittografia?",
+          "answer": "Proteggere la riservatezza e l'integrità dei dati"
+        },
+        {
+          "question": "Cosa si intende per 'autenticazione a due fattori'?",
+          "answer": "Un metodo di verifica dell'identità con due elementi distinti"
+        },
+        {
+          "question": "Quale controllo previene l'accesso non autorizzato?",
+          "answer": "Politiche di gestione degli accessi"
+        },
+        {
+          "question": "Cosa è un 'firewall' nel contesto ISO 27001?",
+          "answer": "Un dispositivo per proteggere le reti da accessi non autorizzati"
+        },
+        {
+          "question": "Quale documento definisce le regole per l'uso delle email?",
+          "answer": "La politica di utilizzo accettabile"
+        },
+        {
+          "question": "Cosa si intende per 'backup'?",
+          "answer": "Una copia di sicurezza dei dati per prevenire perdite"
+        },
+        {
+          "question": "Qual è la frequenza minima per i backup secondo ISO 27001?",
+          "answer": "Non specificata; dipende dalla valutazione del rischio"
+        },
+        {
+          "question": "Cosa è un 'disaster recovery plan'?",
+          "answer": "Un piano per ripristinare sistemi dopo un disastro"
+        },
+        {
+          "question": "Quale controllo riguarda la gestione delle password?",
+          "answer": "Politiche per password complesse e cambio periodico"
+        },
+        {
+          "question": "Cosa si intende per 'social engineering'?",
+          "answer": "Tecniche per manipolare le persone a rivelare informazioni sensibili"
+        },
+        {
+          "question": "Quale controllo mitiga il rischio di phishing?",
+          "answer": "Formazione del personale e filtri anti-phishing"
+        },
+        {
+          "question": "Cosa è un 'IDS' (Intrusion Detection System)?",
+          "answer": "Un sistema per rilevare attività sospette nelle reti"
+        },
+        {
+          "question": "Quale documento regola l'uso dei dispositivi mobili?",
+          "answer": "La politica di sicurezza per dispositivi mobili"
+        },
+        {
+          "question": "Cosa si intende per 'patch management'?",
+          "answer": "Aggiornamento regolare del software per correggere vulnerabilità"
+        },
+        {
+          "question": "Qual è lo scopo della segmentazione di rete?",
+          "answer": "Limitare la propagazione di attacchi informatici"
+        },
+        {
+          "question": "Cosa è un 'VPN' nel contesto ISO 27001?",
+          "answer": "Una rete privata virtuale per comunicazioni sicure"
+        },
+        {
+          "question": "Quale controllo si applica alla sicurezza fisica dei server?",
+          "answer": "Accesso limitato tramite badge o biometrico"
+        },
+        {
+          "question": "Cosa si intende per 'asset inventory'?",
+          "answer": "Un registro dettagliato di tutte le risorse critiche"
+        },
+        {
+          "question": "Quale controllo previene la perdita di dati (DLP)?",
+          "answer": "Monitoraggio e blocco del trasferimento non autorizzato"
+        },
+        {
+          "question": "Cosa è un 'SIEM' (Security Information and Event Management)?",
+          "answer": "Un sistema per analizzare e gestire gli eventi di sicurezza"
+        },
+        {
+          "question": "Quale documento descrive le procedure di risposta agli incidenti?",
+          "answer": "Il piano di risposta agli incidenti"
+        },
+        {
+          "question": "Cosa si intende per 'zero-day exploit'?",
+          "answer": "Un attacco che sfrutta vulnerabilità sconosciute"
+        },
+        {
+          "question": "Quale controllo riduce il rischio di malware?",
+          "answer": "Antivirus aggiornati e restrizioni sull'esecuzione di software"
+        },
+        {
+          "question": "Cosa è un 'honeypot'?",
+          "answer": "Un sistema trappola per attirare e studiare gli aggressori"
+        },
+        {
+          "question": "Quale principio garantisce che solo gli autorizzati accedano ai dati?",
+          "answer": "Principio del minimo privilegio"
+        },
+        {
+          "question": "Cosa si intende per 'due diligence' nella sicurezza?",
+          "answer": "Valutazione approfondita dei rischi prima di collaborazioni"
+        },
+        {
+          "question": "Quale controllo si applica alla cancellazione sicura dei dati?",
+          "answer": "Utilizzo di strumenti di wiping certificati"
+        },
+        {
+          "question": "Cosa è un 'SLA' (Service Level Agreement)?",
+          "answer": "Un accordo che definisce i livelli di servizio attesi"
+        },
+        {
+          "question": "Quale documento regola la gestione dei contratti con i fornitori?",
+          "answer": "La politica di gestione dei fornitori"
+        },
+        {
+          "question": "Cosa si intende per 'business impact analysis'?",
+          "answer": "Valutazione degli effetti di un'interruzione sulle attività"
+        },
+        {
+          "question": "Quale controllo garantisce la tracciabilità delle azioni?",
+          "answer": "Registri di audit (log) dettagliati"
+        },
+        {
+          "question": "Cosa è un 'token' di sicurezza?",
+          "answer": "Dispositivo fisico o software per l'autenticazione"
+        },
+        {
+          "question": "Quale controllo previene l'intercettazione delle comunicazioni?",
+          "answer": "Crittografia end-to-end"
+        },
+        {
+          "question": "Cosa si intende per 'security by design'?",
+          "answer": "Integrare la sicurezza fin dalla progettazione dei sistemi"
+        },
+        {
+          "question": "Quale documento descrive le procedure di accesso remoto?",
+          "answer": "La politica di accesso remoto"
+        },
+        {
+          "question": "Cosa è un 'RPO' (Recovery Point Objective)?",
+          "answer": "Il massimo data loss accettabile dopo un incidente"
+        },
+        {
+          "question": "Quale controllo riguarda la gestione delle vulnerabilità?",
+          "answer": "Scansioni periodiche e patch tempestive"
+        },
+        {
+          "question": "Cosa si intende per 'security awareness'?",
+          "answer": "La consapevolezza dei dipendenti sulle minacce alla sicurezza"
+        },
+        {
+          "question": "Quale documento definisce i tempi di ripristino dei sistemi?",
+          "answer": "Il piano di disaster recovery"
+        },
+        {
+          "question": "Cosa è un 'RTO' (Recovery Time Objective)?",
+          "answer": "Il tempo massimo per ripristinare un servizio dopo un incidente"
+        },
+        {
+          "question": "Quale controllo previene gli attacchi DDoS?",
+          "answer": "Utilizzo di sistemi di mitigazione e filtraggio del traffico"
+        },
+        {
+          "question": "Cosa si intende per 'hardening' dei sistemi?",
+          "answer": "Riduzione delle superfici di attacco tramite configurazioni sicure"
+        },
+        {
+          "question": "Quale documento regola l'uso dei social media?",
+          "answer": "La politica di utilizzo dei social media"
+        },
+        {
+          "question": "Cosa è un 'CSIRT' (Computer Security Incident Response Team)?",
+          "answer": "Un team dedicato alla gestione degli incidenti di sicurezza"
+        },
+        {
+          "question": "Quale controllo si applica alla protezione dei dati in transito?",
+          "answer": "Crittografia delle comunicazioni (es. TLS/SSL)"
+        }
+      ]
+    },
+    {
+      "context": "Le Software Defined Networks (SDN) sono un'architettura di rete che separa il piano di controllo dal piano dati, permettendo una gestione centralizzata e programmabile della rete. Il controller SDN, come OpenDaylight o ONOS, comunica con gli switch tramite protocolli come OpenFlow. Le SDN offrono vantaggi come flessibilità, automazione, riduzione dei costi e supporto per reti dinamiche. Applicazioni comuni includono il bilanciamento del traffico, la sicurezza centralizzata e l'ottimizzazione del QoS. Le sfide includono sicurezza, scalabilità e interoperabilità tra dispositivi.",
+      "questions": [
+        {
+          "question": "Qual è lo scopo di OpenFlow?",
+          "answer": "Comunicazione tra controller e switch nelle SDN"
+        },
+        {
+          "question": "Cosa contiene la tabella dei flussi?",
+          "answer": "Regole per indirizzare i pacchetti"
+        },
+        {
+          "question": "Cosa permettono le SDN di definire via software?",
+          "answer": "L'intera configurazione della rete"
+        },
+        {
+          "question": "Quale architettura integra le SDN per virtualizzare funzioni?",
+          "answer": "NFV (Network Functions Virtualization)"
+        },
+        {
+          "question": "Quale tipo di messaggio OpenFlow modifica le regole degli switch?",
+          "answer": "FlowMod"
+        },
+        {
+          "question": "Cosa raccoglie OpenFlow tramite messaggi StatisticsRequest?",
+          "answer": "Dati sul traffico e utilizzo delle porte"
+        },
+        {
+          "question": "Come vengono identificati i flussi nella tabella dei flussi?",
+          "answer": "Tramite campi come IP, porta e protocollo"
+        },
+        {
+          "question": "Cosa succede se un pacchetto non corrisponde a nessuna regola?",
+          "answer": "Viene inviato al controller per una decisione"
+        },
+        {
+          "question": "Quale vantaggio offre NFV insieme alle SDN?",
+          "answer": "Virtualizzazione di firewall, router e altri servizi"
+        },
+        {
+          "question": "Come si adattano le SDN a carichi variabili?",
+          "answer": "Ricalibrando dinamicamente le regole di flusso"
+        },
+        {
+          "question": "Cosa separa l'architettura SDN?",
+          "answer": "Il piano di controllo dal piano dati"
+        },
+        {
+          "question": "Quali sono esempi di controller SDN?",
+          "answer": "OpenDaylight o ONOS"
+        },
+        {
+          "question": "Con quale protocollo comunica il controller SDN con gli switch?",
+          "answer": "OpenFlow"
+        },
+        {
+          "question": "Quali vantaggi offrono le SDN?",
+          "answer": "Flessibilità, automazione, riduzione dei costi e supporto per reti dinamiche"
+        },
+        {
+          "question": "Quali sono applicazioni comuni delle SDN?",
+          "answer": "Bilanciamento del traffico, sicurezza centralizzata e ottimizzazione del QoS"
+        },
+        {
+          "question": "Quali sfide affrontano le SDN?",
+          "answer": "Sicurezza, scalabilità e interoperabilità tra dispositivi"
+        },
+        {
+          "question": "Come vengono gestiti gli aggiornamenti di rete nelle SDN?",
+          "answer": "Tramite aggiornamenti software centralizzati"
+        },
+        {
+          "question": "Cosa si intende per 'orchestrazione' nelle SDN?",
+          "answer": "Coordinamento automatizzato di servizi di rete"
+        },
+        {
+          "question": "Quale componente SDN gestisce le politiche di sicurezza?",
+          "answer": "Il controller centralizzato"
+        },
+        {
+          "question": "Come migliorano le SDN l'efficienza energetica?",
+          "answer": "Spegnendo dispositivi non utilizzati tramite regole dinamiche"
+        },
+        {
+          "question": "Cosa definisce il piano di controllo?",
+          "answer": "La logica di decisione del percorso dei pacchetti"
+        },
+        {
+          "question": "Quale strumento analizza il traffico in SDN?",
+          "answer": "sFlow o NetFlow integrato con il controller"
+        },
+        {
+          "question": "Cosa sono le 'regole di flusso'?",
+          "answer": "Istruzioni negli switch per gestire i pacchetti"
+        },
+        {
+          "question": "Come si previene il loop nelle SDN?",
+          "answer": "Con algoritmi come STP (Spanning Tree Protocol) migliorati"
+        },
+        {
+          "question": "Quale ruolo ha REST API nelle SDN?",
+          "answer": "Comunicare con applicazioni esterne per politiche di rete"
+        },
+        {
+          "question": "Cosa si intende per 'overlay network'?",
+          "answer": "Rete virtuale costruita sopra l'infrastruttura fisica"
+        },
+        {
+          "question": "Come funziona il failover in SDN?",
+          "answer": "Reindirizzando il traffico a controller o switch di backup"
+        },
+        {
+          "question": "Cosa sono i 'servizi chain' in SDN?",
+          "answer": "Sequenze di funzioni di rete applicate ai flussi (es: firewall -> VPN)"
+        },
+        {
+          "question": "Quale standard supporta la comunicazione east-west tra controller?",
+          "answer": "BGP (Border Gateway Protocol) per SDN"
+        },
+        {
+          "question": "Come si ottiene la visibilità end-to-end in SDN?",
+          "answer": "Tramite mappe di rete generate dal controller"
+        }
       ]
     }
   ],
   "test_data": [
     {
-      "context": "La programmazione in Rust utilizza un sistema di proprietà (ownership) per gestire la memoria. Ogni valore ha una variabile che è il suo 'proprietario'. Può esserci un solo proprietario alla volta. Quando il proprietario esce dall'ambito, il valore viene eliminato. Rust verifica queste regole in fase di compilazione, quindi non c'è overhead durante l'esecuzione. Rust non ha un garbage collector, ma garantisce comunque la sicurezza della memoria.",
+      "context": "Il GDPR (General Data Protection Regulation) è il regolamento europeo sulla protezione dei dati personali, entrato in vigore il 25 maggio 2018. Il GDPR rafforza i diritti dei cittadini dell'UE in materia di privacy e impone obblighi significativi alle organizzazioni che trattano dati personali. Tra i suoi principi fondamentali ci sono la trasparenza, la limitazione delle finalità, la minimizzazione dei dati, l'esattezza, la limitazione della conservazione, l'integrità e la riservatezza. Il regolamento introduce inoltre il concetto di 'responsabilità' del titolare del trattamento e prevede sanzioni fino al 4% del fatturato globale annuo.",
       "questions": [
-        {"question": "Come gestisce Rust la memoria?", "answer": "Utilizza un sistema di proprietà (ownership)"},
-        {"question": "Quanti proprietari può avere un valore in Rust?", "answer": "Un solo proprietario alla volta"},
-        {"question": "Quando viene eliminato un valore in Rust?", "answer": "Quando il proprietario esce dall'ambito"},
-        {"question": "In quale fase Rust verifica le regole di proprietà?", "answer": "In fase di compilazione"}
+        {
+          "question": "Quando è diventato applicabile il GDPR?",
+          "answer": "Il 25 maggio 2018"
+        },
+        {
+          "question": "Che tipo di regolamento è il GDPR?",
+          "answer": "Un regolamento europeo sulla protezione dei dati personali"
+        },
+        {
+          "question": "Quali diritti rafforza il GDPR per i cittadini dell'UE?",
+          "answer": "I diritti in materia di privacy"
+        },
+        {
+          "question": "Chi è soggetto al GDPR?",
+          "answer": "Le organizzazioni che trattano dati personali di cittadini UE"
+        },
+        {
+          "question": "Qual è uno dei principi fondamentali del GDPR?",
+          "answer": "La trasparenza"
+        },
+        {
+          "question": "Che obbligo ha un titolare del trattamento?",
+          "answer": "Garantire la protezione dei dati e dimostrare la conformità"
+        },
+        {
+          "question": "Cos'è la limitazione della conservazione?",
+          "answer": "Conservare i dati solo per il tempo necessario"
+        },
+        {
+          "question": "Quali sono le possibili sanzioni per la violazione del GDPR?",
+          "answer": "Fino al 4% del fatturato globale annuo"
+        },
+        {
+          "question": "Cosa implica la responsabilità del titolare?",
+          "answer": "Deve garantire e dimostrare la conformità al GDPR"
+        },
+        {
+          "question": "Cosa si intende per integrità dei dati?",
+          "answer": "Protezione da accessi o modifiche non autorizzate"
+        },
+        {
+          "question": "Chi è il titolare del trattamento?",
+          "answer": "Chi determina finalità e mezzi del trattamento"
+        },
+        {
+          "question": "Cosa significa minimizzazione dei dati?",
+          "answer": "Raccogliere solo i dati necessari allo scopo"
+        },
+        {
+          "question": "Cosa comporta il principio di esattezza?",
+          "answer": "I dati devono essere corretti e aggiornati"
+        },
+        {
+          "question": "Chi può imporre sanzioni per violazione del GDPR?",
+          "answer": "Le autorità di controllo nazionali"
+        },
+        {
+          "question": "Cosa si intende per trattamento dei dati personali?",
+          "answer": "Qualsiasi operazione compiuta sui dati personali"
+        },
+        {
+          "question": "Che tipo di dati protegge il GDPR?",
+          "answer": "I dati personali dei cittadini dell'UE"
+        },
+        {
+          "question": "Cos'è la pseudonimizzazione?",
+          "answer": "Tecnica che rende i dati non direttamente identificabili"
+        },
+        {
+          "question": "Cosa garantisce il principio di riservatezza?",
+          "answer": "Che i dati non siano accessibili a soggetti non autorizzati"
+        },
+        {
+          "question": "Cosa deve fare un'organizzazione in caso di data breach?",
+          "answer": "Notificarlo entro 72 ore all'autorità competente"
+        },
+        {
+          "question": "Cosa richiede il GDPR per trattare dati di minori?",
+          "answer": "Il consenso dei genitori o tutori legali"
+        },
+        {
+          "question": "Quale concetto introduce il GDPR per il titolare del trattamento?",
+          "answer": "Responsabilità (accountability)"
+        },
+        {
+          "question": "Quando è necessario nominare un responsabile della protezione dei dati?",
+          "answer": "Quando si trattano dati su larga scala"
+        },
+        {
+          "question": "Che obbligo ha il responsabile del trattamento?",
+          "answer": "Trattare i dati solo secondo istruzioni del titolare"
+        },
+        {
+          "question": "Il GDPR si applica solo all'interno dell'UE?",
+          "answer": "No, anche a soggetti che trattano dati di cittadini UE"
+        },
+        {
+          "question": "Cosa prevede il principio di limitazione delle finalità?",
+          "answer": "Utilizzare i dati solo per scopi specifici e legittimi"
+        },
+        {
+          "question": "Il GDPR vieta la profilazione?",
+          "answer": "No, ma richiede specifiche condizioni e tutele"
+        },
+        {
+          "question": "Cos'è una DPIA?",
+          "answer": "Una valutazione d'impatto sulla protezione dei dati"
+        },
+        {
+          "question": "Cosa si intende per portabilità dei dati?",
+          "answer": "Il diritto di ricevere e trasferire i propri dati"
+        },
+        {
+          "question": "Chi è responsabile della sicurezza dei dati?",
+          "answer": "Il titolare del trattamento"
+        },
+        {
+          "question": "Cosa rappresenta la base giuridica nel GDPR?",
+          "answer": "Il fondamento legale per trattare i dati personali"
+        }
+      ]
+    },
+    {
+      "context": "La norma UNI ISO/IEC 27001 è uno standard internazionale che definisce i requisiti per un sistema di gestione della sicurezza delle informazioni (SGSI). È progettata per aiutare le organizzazioni a proteggere le proprie informazioni in modo sistematico e costante attraverso l'adozione di un processo basato sul rischio. Lo standard si fonda sul ciclo PDCA (Plan-Do-Check-Act) e include misure organizzative, tecniche e fisiche. La ISO 27001 richiede la valutazione dei rischi, l'implementazione di controlli di sicurezza e la continua revisione e miglioramento del sistema. Lo scopo principale è assicurare la riservatezza, l'integrità e la disponibilità delle informazioni.",
+      "questions": [
+        {
+          "question": "Quanti controlli sono presenti nell'Annex A della ISO 27001?",
+          "answer": "114 controlli"
+        },
+        {
+          "question": "Quale approccio è richiesto per la gestione dei rischi?",
+          "answer": "Approccio basato sul rischio"
+        },
+        {
+          "question": "Quali categorie sono incluse nell'Annex A?",
+          "answer": "Sicurezza fisica, gestione degli accessi, continuità operativa e altre 11 categorie"
+        },
+        {
+          "question": "Come viene verificata la conformità alla ISO 27001?",
+          "answer": "Tramite audit interni ed esterni"
+        },
+        {
+          "question": "Cosa deve fare un'organizzazione dopo aver valutato i rischi?",
+          "answer": "Selezionare controlli appropriati dall'Annex A"
+        },
+        {
+          "question": "Qual è lo scopo dei controlli dell'Annex A?",
+          "answer": "Mitigare i rischi identificati"
+        },
+        {
+          "question": "Chi conduce gli audit esterni per la certificazione?",
+          "answer": "Un ente di certificazione accreditato"
+        },
+        {
+          "question": "Cosa succede se un controllo dell'Annex A non è applicabile?",
+          "answer": "Deve essere giustificato nella Dichiarazione di Applicabilità (SoA)"
+        },
+        {
+          "question": "Quale fase segue l'identificazione dei rischi?",
+          "answer": "Analisi e valutazione dei rischi"
+        },
+        {
+          "question": "Quante categorie ha l'Annex A?",
+          "answer": "14 categorie"
+        }
+      ]
+    },
+    {
+      "context": [
+        "Le Software Defined Networks (SDN) sono un'architettura di rete che separa il piano di controllo dal piano dati, permettendo una gestione centralizzata e programmabile della rete. Il controller SDN, come OpenDaylight o ONOS, comunica con gli switch tramite protocolli come OpenFlow. Le SDN offrono vantaggi come flessibilità, automazione, riduzione dei costi e supporto per reti dinamiche. Applicazioni comuni includono il bilanciamento del traffico, la sicurezza centralizzata e l'ottimizzazione del QoS. Le sfide includono sicurezza, scalabilità e interoperabilità tra dispositivi."
+      ],
+      "questions": [
+        {
+          "question": "Come si migliora la tolleranza ai guasti nelle SDN?",
+          "answer": "Utilizzando controller distribuiti"
+        },
+        {
+          "question": "Cosa gestisce l'API southbound?",
+          "answer": "Comunicazione tra controller e switch"
+        },
+        {
+          "question": "Quale strumento simula reti SDN?",
+          "answer": "Mininet"
+        },
+        {
+          "question": "Quali misure di sicurezza sono usate nelle SDN?",
+          "answer": "Autenticazione dei controller e crittografia dei canali"
+        },
+        {
+          "question": "Cosa fa l'API northbound?",
+          "answer": "Interagisce con le applicazioni per definire politiche"
+        },
+        {
+          "question": "Perché è utile una simulazione con Mininet?",
+          "answer": "Testare configurazioni senza hardware fisico"
+        },
+        {
+          "question": "Come viene garantita l'integrità dei dati nelle SDN?",
+          "answer": "Tramite crittografia TLS/SSL"
+        },
+        {
+          "question": "Cosa accade se un controller distribuito fallisce?",
+          "answer": "Un altro controller assume il controllo"
+        },
+        {
+          "question": "Quale protocollo è associato all'API southbound?",
+          "answer": "OpenFlow"
+        },
+        {
+          "question": "Come si prevengono attacchi Man-in-the-Middle nelle SDN?",
+          "answer": "Autenticazione mutua e certificati digitali"
+        },
+        {
+          "question": "Cosa è un 'control cluster' in SDN?",
+          "answer": "Gruppo di controller che collaborano per alta disponibilità"
+        },
+        {
+          "question": "Quale ruolo ha il protocollo NETCONF nelle SDN?",
+          "answer": "Configurazione avanzata di dispositivi tramite XML"
+        },
+        {
+          "question": "Come si ottimizza il QoS per il video streaming in SDN?",
+          "answer": "Prioritizzando i flussi multimediali nel controller"
+        },
+        {
+          "question": "Cosa è il 'load balancing basato su SDN'?",
+          "answer": "Distribuzione dinamica del traffico tra server"
+        },
+        {
+          "question": "Quale problema risolve il meccanismo 'Fast Failover'?",
+          "answer": "Riduzione del downtime in caso di guasti"
+        },
+        {
+          "question": "Come si integra SDN con il cloud computing?",
+          "answer": "Tramite API per gestire reti virtualizzate on-demand"
+        },
+        {
+          "question": "Cosa è un 'SD-WAN'?",
+          "answer": "WAN gestita tramite principi SDN per ottimizzazione"
+        },
+        {
+          "question": "Quale tecnica previene il congestionamento in SDN?",
+          "answer": "Dynamic rerouting basato su statistiche in tempo reale"
+        },
+        {
+          "question": "Cosa è il 'network slicing' in SDN?",
+          "answer": "Creazione di reti virtuali dedicate per servizi specifici"
+        },
+        {
+          "question": "Come si verifica la conformità alle policy in SDN?",
+          "answer": "Tramite audit automatizzati dal controller"
+        }
       ]
     }
   ],
   "prompts": [
-    "Come gestisce Rust la memoria?",
-    "Qual è la capitale dell'Italia?",
-    "Che tipo di governo ha l'Italia?"
+    "Qual è lo scopo principale della ISO 27001?",
+    "Su quale ciclo si basa la ISO 27001?",
+    "Quanti controlli sono presenti nell'Annex A?",
+    "Cosa significa GDPR?",
+    "Cosa fa il controller SDN?",
+    "Qual è il protocollo standard per SDN?",
+    "Qual è la data di applicazione del GDPR?"
   ],
   "model_params": {
     "d_model": 96,
@@ -46,4 +1209,4 @@
     "dropout_rate": 0.15,
     "learning_rate": 0.0005
   }
-} 
+}

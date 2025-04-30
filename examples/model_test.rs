@@ -126,7 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("-----------------------------");
     
     // Prompt di esempio
-    let prompt = "Qual è la capitale dell'Italia?";
+    let prompt = "Cosa è una Software Defined Network?";
     
     // Genera testo (max 30 token aggiuntivi)
     let generated_text = generate_text(&trainer, &tokenizer, prompt, 30);

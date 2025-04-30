@@ -171,7 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Batch delle sequenze - Utilizziamo Rayon per processare i batch in parallelo
     println!("Preparazione dei batch in parallelo...");
-    let batch_size = 2; // Ridotto a 1 per evitare problemi di compatibilità di forma
+    let batch_size = 16; // Ridotto a 1 per evitare problemi di compatibilità di forma
     
     // Crea range di indici
     let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
@@ -243,8 +243,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
-    println!("\nNOTA: Usando batch size di {} compatibilità con l'implementazione attuale di attention.", batch_size);
-    let epochs = 3; // Aumentiamo a 3 epoche
+    println!("\nNOTA: Usando batch size di {}.", batch_size);
+    let epochs = 20; // Aumentiamo a 3 epoche
     
     for epoch in 1..=epochs {
         // Utilizziamo Mutex per aggiornare in modo sicuro i contatori di loss
