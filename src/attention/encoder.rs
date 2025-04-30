@@ -86,6 +86,7 @@ pub fn layer_norm(x: &Tensor, eps: f32) -> Tensor {
 }
 
 /// Implementation of an Encoder Layer as described in the paper "Attention is All You Need"
+#[allow(dead_code)]
 pub struct EncoderLayer {
     /// Multi-head attention
     attention: MultiHeadAttention,

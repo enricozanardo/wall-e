@@ -7,6 +7,7 @@ use rayon::prelude::*;
 ///
 /// The feed-forward network consists of two linear transformations with a ReLU function in between:
 /// FFN(x) = max(0, xW₁ + b₁)W₂ + b₂
+#[allow(dead_code)]
 pub struct FeedForward {
     /// Model dimension (d_model)
     d_model: usize,
