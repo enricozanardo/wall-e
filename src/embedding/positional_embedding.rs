@@ -5,31 +5,79 @@ use rayon::prelude::*;
 
 use super::Embedding;
 
-/// Embedding posizionale che aggiunge informazione sulla posizione ai token
-/// Implementa il positional encoding del paper "Attention Is All You Need"
+/// Positional embedding that adds position information to tokens.
+///
+/// This struct implements the positional encoding described in the paper 
+/// "Attention Is All You Need" by Vaswani et al. Positional embeddings
+/// enable transformer models to incorporate sequence order information
+/// despite their inherently parallelized architecture.
+///
+/// The positional encoding uses sine and cosine functions of different frequencies:
+/// PE(pos, 2i) = sin(pos / 10000^(2i/d_model))
+/// PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
+///
+/// # Examples
+///
+/// ```
+/// use wall_e1::embedding::positional_embedding::PositionalEmbedding;
+///
+/// // Create a positional embedding for sequences up to length 512 with dimension 64
+/// let embedding = PositionalEmbedding::new(512, 64);
+///
+/// // Get positional embeddings for a sequence of 10 tokens
+/// let token_ids = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+/// let positional_embeddings = embedding.forward(&token_ids);
+/// ```
 #[derive(Clone)]
 pub struct PositionalEmbedding {
-    /// Matrice di embedding posizionale: [max_len, d_model]
+    /// Positional embedding matrix: [max_len, d_model]
     embedding_matrix: Tensor,
+    /// Maximum sequence length supported
     max_len: usize,
+    /// Dimensionality of the embeddings
     embedding_dim: usize,
 }
 
 impl PositionalEmbedding {
-    /// Crea un nuovo embedding posizionale usando la funzione sinusoidale
+    /// Creates a new positional embedding using the sinusoidal function.
+    ///
+    /// Initializes the positional embedding matrix according to the formula from
+    /// "Attention Is All You Need" paper:
+    /// PE(pos, 2i) = sin(pos / 10000^(2i/d_model))
+    /// PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
+    ///
+    /// This implementation uses parallel processing to efficiently compute the values.
+    ///
+    /// # Arguments
+    ///
+    /// * `max_len` - Maximum sequence length that will be supported
+    /// * `embedding_dim` - Dimensionality of the embedding vectors
+    ///
+    /// # Returns
+    ///
+    /// A new `PositionalEmbedding` instance with a pre-computed embedding matrix
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::positional_embedding::PositionalEmbedding;
+    ///
+    /// // Create a positional embedding for sequences up to length 512 with dimension 64
+    /// let embedding = PositionalEmbedding::new(512, 64);
+    /// ```
     pub fn new(max_len: usize, embedding_dim: usize) -> Self {
-        // Usiamo la formula del paper:
+        // We use the formula from the paper:
         // PE(pos, 2i) = sin(pos / 10000^(2i/d_model))
         // PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
         
         let mut embedding_data = Array::zeros((max_len, embedding_dim));
         
-        // Crea un vettore di tutte le posizioni e dimensioni
+        // Create a vector of all positions and dimensions
         let indices: Vec<(usize, usize)> = (0..max_len)
             .flat_map(|pos| (0..embedding_dim/2).map(move |i| (pos, i)))
             .collect();
         
-        // Calcola i valori in parallelo
+        // Calculate values in parallel
         let results: Vec<(usize, usize, f32, f32)> = indices.par_iter()
             .map(|&(pos, i)| {
                 let denominator = 10000_f32.powf(2.0 * i as f32 / embedding_dim as f32);
@@ -40,7 +88,7 @@ impl PositionalEmbedding {
             })
             .collect();
         
-        // Assegna i valori calcolati alla matrice
+        // Assign calculated values to the matrix
         for (pos, i, sin_val, cos_val) in results {
             embedding_data[[pos, 2 * i]] = sin_val;
             if 2 * i + 1 < embedding_dim {
@@ -55,26 +103,64 @@ impl PositionalEmbedding {
         }
     }
     
-    /// Restituisce l'embedding matrix
+    /// Returns the underlying embedding matrix.
+    ///
+    /// # Returns
+    ///
+    /// A reference to the pre-computed positional embedding matrix tensor.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::positional_embedding::PositionalEmbedding;
+    ///
+    /// let embedding = PositionalEmbedding::new(512, 64);
+    /// let matrix = embedding.embedding_matrix();
+    /// assert_eq!(matrix.data.shape(), &[512, 64]);
+    /// ```
     pub fn embedding_matrix(&self) -> &Tensor {
         &self.embedding_matrix
     }
 
-    /// Forward pass con supporto per batch
-    /// Output: Tensor con forma [batch_size, seq_len, embedding_dim]
+    /// Performs forward pass with batch support, returning a 2D tensor.
+    ///
+    /// This method takes a batch size and sequence length as input and returns
+    /// positional embeddings for the entire batch in a flattened 2D format.
+    ///
+    /// # Arguments
+    ///
+    /// * `batch_size` - Number of sequences in the batch
+    /// * `seq_len` - Length of each sequence
+    ///
+    /// # Returns
+    ///
+    /// A tensor with shape [batch_size, seq_len * embedding_dim] containing
+    /// positional embeddings for each position in each sequence of the batch.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::positional_embedding::PositionalEmbedding;
+    ///
+    /// let embedding = PositionalEmbedding::new(512, 64);
+    /// let batch_size = 2;
+    /// let seq_len = 10;
+    /// let batch_embeddings = embedding.forward_batch(batch_size, seq_len);
+    /// assert_eq!(batch_embeddings.data.shape(), &[batch_size, seq_len * 64]);
+    /// ```
     pub fn forward_batch(&self, batch_size: usize, seq_len: usize) -> Tensor {
         let effective_len = std::cmp::min(seq_len, self.max_len);
         
-        // Ottieni gli embedding posizionali standard
+        // Get the standard positional embeddings
         let pos_embeddings = self.embedding_matrix.data.slice(
             ndarray::s![0..effective_len, ..],
         ).to_owned();
         
-        // Crea una matrice 3D per memorizzare i risultati [batch_size, seq_len, embedding_dim]
+        // Create a 3D matrix to store results [batch_size, seq_len, embedding_dim]
         let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, effective_len, self.embedding_dim));
         
-        // Replica gli stessi embedding posizionali per ogni elemento del batch
-        // Questo metodo è sequenziale, ma funziona con tutte le implementazioni di Tensor
+        // Replicate the same positional embeddings for each batch element
+        // This method is sequential, but works with all Tensor implementations
         for b in 0..batch_size {
             for i in 0..effective_len {
                 for j in 0..self.embedding_dim {
@@ -83,25 +169,51 @@ impl PositionalEmbedding {
             }
         }
         
-        // Converti il tensore 3D in un tensore 2D con forma [batch_size, seq_len * embedding_dim]
+        // Convert the 3D tensor to a 2D tensor with shape [batch_size, seq_len * embedding_dim]
         let flattened = result_data.into_shape((batch_size, effective_len * self.embedding_dim)).unwrap();
         Tensor::new(flattened)
     }
 
-    /// Forward pass con supporto per batch
-    /// Output: Tensor con forma [batch_size, seq_len, embedding_dim]
+    /// Performs forward pass with batch support, returning a 3D tensor.
+    ///
+    /// This method takes a batch size and sequence length as input and returns
+    /// positional embeddings for the entire batch in a 3D format, which is more
+    /// suitable for operations like attention that need to preserve the sequence
+    /// dimension.
+    ///
+    /// # Arguments
+    ///
+    /// * `batch_size` - Number of sequences in the batch
+    /// * `seq_len` - Length of each sequence
+    ///
+    /// # Returns
+    ///
+    /// A tensor with shape [batch_size, seq_len, embedding_dim] containing
+    /// positional embeddings for each position in each sequence of the batch.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::positional_embedding::PositionalEmbedding;
+    ///
+    /// let embedding = PositionalEmbedding::new(512, 64);
+    /// let batch_size = 2;
+    /// let seq_len = 10;
+    /// let batch_embeddings = embedding.forward_batch_3d(batch_size, seq_len);
+    /// assert_eq!(batch_embeddings.data.shape(), &[batch_size, seq_len, 64]);
+    /// ```
     pub fn forward_batch_3d(&self, batch_size: usize, seq_len: usize) -> Tensor {
         let effective_len = std::cmp::min(seq_len, self.max_len);
         
-        // Ottieni gli embedding posizionali standard
+        // Get the standard positional embeddings
         let pos_embeddings = self.embedding_matrix.data.slice(
             ndarray::s![0..effective_len, ..],
         ).to_owned();
         
-        // Crea una matrice 3D per memorizzare i risultati [batch_size, seq_len, embedding_dim]
+        // Create a 3D matrix to store results [batch_size, seq_len, embedding_dim]
         let mut result_data = ndarray::Array3::<f32>::zeros((batch_size, effective_len, self.embedding_dim));
         
-        // Replica gli stessi embedding posizionali per ogni elemento del batch
+        // Replicate the same positional embeddings for each batch element
         for b in 0..batch_size {
             for i in 0..effective_len {
                 for j in 0..self.embedding_dim {
@@ -110,30 +222,58 @@ impl PositionalEmbedding {
             }
         }
         
-        // Restituisci direttamente il tensore 3D
+        // Return the 3D tensor directly
         Tensor::new_3d(result_data)
     }
 }
 
 impl Embedding for PositionalEmbedding {
-    /// Forward pass: restituisce gli embedding posizionali per una sequenza
-    /// Input: token_ids - array di token IDs (non usato, serve solo la lunghezza)
-    /// Output: Tensor [seq_len, embedding_dim]
+    /// Performs the forward pass to generate positional embeddings for a sequence.
+    ///
+    /// This method implements the `Embedding` trait's forward method. It extracts
+    /// positional embeddings from the pre-computed matrix based on the length of
+    /// the input sequence.
+    ///
+    /// # Arguments
+    ///
+    /// * `token_ids` - A slice of token IDs. The actual values are not used, only the
+    ///   length matters as positional embeddings depend solely on position.
+    ///
+    /// # Returns
+    ///
+    /// A tensor with shape [seq_len, embedding_dim] containing positional embeddings
+    /// for each position in the sequence.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::{Embedding, positional_embedding::PositionalEmbedding};
+    ///
+    /// let embedding = PositionalEmbedding::new(512, 64);
+    /// let token_ids = vec![1, 2, 3, 4, 5]; // 5 tokens
+    /// let embeddings = embedding.forward(&token_ids);
+    /// assert_eq!(embeddings.data.shape(), &[5, 64]);
+    /// ```
     fn forward(&self, token_ids: &[usize]) -> Tensor {
         let seq_len = token_ids.len();
         let effective_len = std::cmp::min(seq_len, self.max_len);
         
-        // Prende le prime `effective_len` righe dalla matrice di embedding
+        // Takes the first `effective_len` rows from the embedding matrix
         let slice = self.embedding_matrix.data.slice(
             ndarray::s![0..effective_len, ..],
         );
         
-        // Se la sequenza è più corta di max_len, prendi solo i primi elementi
+        // If the sequence is shorter than max_len, only take the first elements
         let result_data = slice.to_owned();
         
         Tensor::new(result_data)
     }
     
+    /// Returns the embedding dimension.
+    ///
+    /// # Returns
+    ///
+    /// The dimension of the embedding vectors.
     fn embedding_dim(&self) -> usize {
         self.embedding_dim
     }
@@ -157,18 +297,18 @@ mod tests {
         let embedding = PositionalEmbedding::new(10, 8);
         let matrix = &embedding.embedding_matrix().data;
         
-        // Test di alcuni valori specifici per verificare la formula
-        // Per position=4, dim=0 (sin)
+        // Test some specific values to verify the formula
+        // For position=4, dim=0 (sin)
         let pos = 4;
         let dim = 0;
-        let i = dim / 2; // i = 0 per dim = 0
+        let i = dim / 2; // i = 0 for dim = 0
         let denominator = 10000_f32.powf(2.0 * i as f32 / 8.0);
         let expected = (pos as f32 / denominator).sin();
         assert!((matrix[[pos, dim]] - expected).abs() < 1e-5);
         
-        // Per position=4, dim=1 (cos)
+        // For position=4, dim=1 (cos)
         let dim = 1;
-        let i = dim / 2; // i = 0 per dim = 1 (primo coseno)
+        let i = dim / 2; // i = 0 for dim = 1 (first cosine)
         let denominator = 10000_f32.powf(2.0 * i as f32 / 8.0);
         let expected = (pos as f32 / denominator).cos();
         assert!((matrix[[pos, dim]] - expected).abs() < 1e-5);
@@ -178,16 +318,16 @@ mod tests {
     fn test_positional_embedding_forward() {
         let embedding = PositionalEmbedding::new(10, 64);
         
-        // Token IDs (non usati, ma necessari per l'interfaccia)
+        // Token IDs (not used, but required for the interface)
         let token_ids = vec![0, 0, 0, 0, 0]; // 5 tokens
         
         // Forward pass
         let output = embedding.forward(&token_ids);
         
-        // Verifica la forma: [5, 64]
+        // Verify shape: [5, 64]
         assert_eq!(output.data.shape(), &[5, 64]);
         
-        // Verifica che i valori corrispondano alla matrice di embedding
+        // Verify that values match the embedding matrix
         for i in 0..5 {
             for j in 0..64 {
                 assert_eq!(
@@ -200,19 +340,19 @@ mod tests {
     
     #[test]
     fn test_positional_embedding_too_long() {
-        // Crea un embedding con max_len piccolo
+        // Create an embedding with small max_len
         let embedding = PositionalEmbedding::new(5, 16);
         
-        // Prova con una sequenza più lunga di max_len
+        // Try with a sequence longer than max_len
         let token_ids = vec![0; 10]; // 10 tokens
         
         // Forward pass
         let output = embedding.forward(&token_ids);
         
-        // Dovrebbe troncare a max_len (5)
+        // Should truncate to max_len (5)
         assert_eq!(output.data.shape(), &[5, 16]);
         
-        // Verifica che i valori corrispondano alla matrice di embedding
+        // Verify that values match the embedding matrix
         for i in 0..5 {
             for j in 0..16 {
                 assert_eq!(
@@ -227,32 +367,32 @@ mod tests {
     fn test_positional_embedding_forward_batch() {
         let embedding = PositionalEmbedding::new(10, 32);
         
-        // Parametri di batch
+        // Batch parameters
         let batch_size = 2;
         let seq_len = 4;
         
-        // Forward pass con batch
+        // Forward pass with batch
         let output = embedding.forward_batch(batch_size, seq_len);
         
-        // Verifica la forma [batch_size, seq_len * embedding_dim]
+        // Verify shape [batch_size, seq_len * embedding_dim]
         assert_eq!(output.data.shape(), &[2, 4 * 32]);
         
-        // Verifica che gli embedding posizionali siano stati replicati per ogni batch
-        // Gli embedding della prima e seconda sequenza nel batch dovrebbero essere identici
-        // perché gli embedding posizionali dipendono solo dalla posizione, non dal batch
+        // Verify that positional embeddings were replicated for each batch
+        // The embeddings of the first and second sequence in the batch should be identical
+        // because positional embeddings depend only on position, not on the batch
         for j in 0..seq_len * 32 {
             assert_eq!(
-                output.data[[0, j]],  // primo batch
-                output.data[[1, j]]   // secondo batch
+                output.data[[0, j]],  // first batch
+                output.data[[1, j]]   // second batch
             );
         }
         
-        // Verifica che i valori corrispondano alla matrice di embedding originale
+        // Verify that values match the original embedding matrix
         for i in 0..seq_len {
             for j in 0..32 {
                 assert_eq!(
                     embedding.embedding_matrix().data[[i, j]],
-                    output.data[[0, i * 32 + j]]  // nel formato flattened
+                    output.data[[0, i * 32 + j]]  // in flattened format
                 );
             }
         }

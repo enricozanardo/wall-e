@@ -244,7 +244,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di {}.", batch_size);
-    let epochs = 20; // Aumentiamo a 3 epoche
+    let epochs = 2; // Aumentiamo a 3 epoche
     
     for epoch in 1..=epochs {
         // Utilizziamo Mutex per aggiornare in modo sicuro i contatori di loss

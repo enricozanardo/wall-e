@@ -4,35 +4,89 @@ pub mod positional_embedding;
 use crate::nabla::tensor::Tensor;
 use crate::tokenizer::Vocab;
 
-/// Trait che definisce le operazioni comuni per gli embedding
+/// Trait that defines common operations for embeddings
+///
+/// This trait provides the interface for converting token IDs into vector
+/// representations (embeddings) and retrieving the embedding dimension.
 pub trait Embedding {
-    /// Converte gli ID dei token in embedding (rappresentazioni vettoriali)
+    /// Converts token IDs into embeddings (vector representations)
+    ///
+    /// # Arguments
+    ///
+    /// * `token_ids` - A slice of token IDs to convert into embeddings
+    ///
+    /// # Returns
+    ///
+    /// A Tensor containing the embeddings with shape [seq_len, embedding_dim]
     fn forward(&self, token_ids: &[usize]) -> Tensor;
     
-    /// Dimensione dell'embedding (d_model)
+    /// Returns the embedding dimension (d_model)
+    ///
+    /// # Returns
+    ///
+    /// The size of the embedding vectors
     fn embedding_dim(&self) -> usize;
 }
 
-/// Trait che definisce operazioni con supporto per batch
+/// Trait that defines operations with batch support
+///
+/// This trait extends the basic embedding functionality to handle
+/// batches of token sequences efficiently.
 pub trait BatchEmbedding {
-    /// Converte i batch di token IDs in embedding
+    /// Converts batches of token IDs into embeddings
+    ///
+    /// # Arguments
+    ///
+    /// * `batch_token_ids` - A slice of vectors, where each vector contains the token IDs for one sequence
+    ///
+    /// # Returns
+    ///
+    /// A Tensor containing the batch embeddings
     fn forward_batch(&self, batch_token_ids: &[Vec<usize>]) -> Tensor;
 }
 
-/// Struct che combina word embedding e positional embedding
+/// A struct that combines word embedding and positional embedding
+///
+/// TransformerEmbedding combines token embeddings and positional embeddings
+/// to create the input representation for transformer models, as described in
+/// the "Attention Is All You Need" paper.
 pub struct TransformerEmbedding {
-    /// Embedding dei token
+    /// Token embeddings
     token_emb: token_embedding::TokenEmbedding,
-    /// Embedding posizionali
+    /// Positional embeddings
     pos_emb: positional_embedding::PositionalEmbedding,
-    /// Dimensione dell'embedding
+    /// Embedding dimension
     embedding_dim: usize,
-    /// Tasso di dropout
+    /// Dropout rate
     dropout_rate: f32,
 }
 
 impl TransformerEmbedding {
-    /// Crea un nuovo transformer embedding
+    /// Creates a new transformer embedding
+    ///
+    /// # Arguments
+    ///
+    /// * `vocab_size` - Size of the vocabulary
+    /// * `embedding_dim` - Dimension of the embedding vectors
+    /// * `max_seq_len` - Maximum sequence length
+    /// * `dropout_rate` - Rate for dropout regularization
+    ///
+    /// # Returns
+    ///
+    /// A new TransformerEmbedding instance
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::TransformerEmbedding;
+    ///
+    /// let embedding = TransformerEmbedding::new(
+    ///     1000,   // vocab_size
+    ///     128,    // embedding_dim
+    ///     512,    // max_seq_len
+    ///     0.1,    // dropout_rate
+    /// );
+    /// ```
     pub fn new(
         vocab_size: usize,
         embedding_dim: usize,
@@ -47,7 +101,33 @@ impl TransformerEmbedding {
         }
     }
     
-    /// Costruisce un embedding da un vocabolario esistente
+    /// Builds an embedding from an existing vocabulary
+    ///
+    /// # Arguments
+    ///
+    /// * `vocab` - Reference to a vocabulary
+    /// * `embedding_dim` - Dimension of the embedding vectors
+    /// * `max_seq_len` - Maximum sequence length
+    /// * `dropout_rate` - Rate for dropout regularization
+    ///
+    /// # Returns
+    ///
+    /// A new TransformerEmbedding instance initialized with the provided vocabulary
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::TransformerEmbedding;
+    /// use wall_e1::tokenizer::Vocab;
+    ///
+    /// let vocab = Vocab::new(); // Create a vocabulary
+    /// let embedding = TransformerEmbedding::from_vocab(
+    ///     &vocab,
+    ///     128,    // embedding_dim
+    ///     512,    // max_seq_len
+    ///     0.1,    // dropout_rate
+    /// );
+    /// ```
     pub fn from_vocab(
         vocab: &Vocab,
         embedding_dim: usize,
@@ -62,7 +142,26 @@ impl TransformerEmbedding {
         }
     }
     
-    /// Applica il forward pass per convertire token IDs in embedding con posizioni
+    /// Applies the forward pass to convert token IDs into embeddings with positions
+    ///
+    /// # Arguments
+    ///
+    /// * `token_ids` - A slice of token IDs
+    ///
+    /// # Returns
+    ///
+    /// A Tensor containing the combined token and positional embeddings
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::TransformerEmbedding;
+    ///
+    /// let embedding = TransformerEmbedding::new(1000, 64, 512, 0.1);
+    /// let token_ids = vec![1, 2, 3];
+    /// let output = embedding.forward(&token_ids);
+    /// assert_eq!(output.data.shape(), &[3, 64]);
+    /// ```
     pub fn forward(&self, token_ids: &[usize]) -> Tensor {
         // Get token embeddings
         let token_embeddings = self.token_emb.forward(token_ids);
@@ -80,9 +179,33 @@ impl TransformerEmbedding {
         embeddings
     }
     
-    /// Forward pass con supporto per batch di token IDs
-    /// Input: batch_token_ids - array di batch di token IDs
-    /// Output: Tensor con forma [batch_size, seq_len, embedding_dim]
+    /// Forward pass with support for batches of token IDs
+    ///
+    /// # Arguments
+    ///
+    /// * `batch_token_ids` - A slice of vectors containing token IDs, where each vector represents a sequence
+    ///
+    /// # Returns
+    ///
+    /// A Tensor with shape [batch_size, seq_len, embedding_dim]
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wall_e1::embedding::TransformerEmbedding;
+    ///
+    /// let embedding = TransformerEmbedding::new(1000, 64, 512, 0.1);
+    /// 
+    /// // Batch of sequences: [batch_size=2, seq_len=3]
+    /// let batch_token_ids = vec![
+    ///     vec![1, 2, 3],   // first sequence
+    ///     vec![4, 5, 6],   // second sequence
+    /// ];
+    /// 
+    /// let output = embedding.forward_batch(&batch_token_ids);
+    /// // Check the shape is correct
+    /// assert_eq!(output.data.shape()[0], 2); // batch_size
+    /// ```
     pub fn forward_batch(&self, batch_token_ids: &[Vec<usize>]) -> Tensor {
         if batch_token_ids.is_empty() {
             return Tensor::new_3d(ndarray::Array3::<f32>::zeros((0, 0, 0)));
@@ -91,11 +214,11 @@ impl TransformerEmbedding {
         let batch_size = batch_token_ids.len();
         let seq_len = batch_token_ids[0].len();
         
-        // Get token embeddings con dimensione batch
+        // Get token embeddings with batch dimension
         let token_embeddings = self.token_emb.forward_batch(batch_token_ids);
         
-        // Get positional embeddings con dimensione batch
-        // Assicuriamoci che anche gli embedding posizionali siano 3D
+        // Get positional embeddings with batch dimension
+        // Ensure the positional embeddings are also 3D
         let positional_embeddings = self.pos_emb.forward_batch_3d(batch_size, seq_len);
         
         // println!("Debug: TransformerEmbedding - token_embeddings shape: {:?}", token_embeddings.data.shape());
@@ -159,13 +282,13 @@ mod tests {
             0.1,    // dropout_rate
         );
         
-        // Batch di sequenze: [batch_size=2, seq_len=3]
+        // Batch of sequences: [batch_size=2, seq_len=3]
         let batch_token_ids = vec![
-            vec![1, 2, 3],   // prima sequenza
-            vec![4, 5, 6],   // seconda sequenza
+            vec![1, 2, 3],   // first sequence
+            vec![4, 5, 6],   // second sequence
         ];
         
-        // Forward pass con batch
+        // Forward pass with batch
         let output = embedding.forward_batch(&batch_token_ids);
         
         // Check output shape: should be [batch_size, seq_len * embedding_dim]

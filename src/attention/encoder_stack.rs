@@ -2,33 +2,33 @@ use ndarray::{Array3, Axis};
 use crate::attention::EncoderLayer;
 use crate::nabla::tensor::Tensor;
 
-/// Implementazione dello stack di encoder del Transformer (stile DistilBERT)
-/// Composto da più layers di encoder collegati in sequenza
+/// Implementation of the Transformer encoder stack (DistilBERT style)
+/// Composed of multiple encoder layers connected in sequence
 pub struct EncoderStack {
-    // Vettore di EncoderLayer
+    // Vector of EncoderLayers
     layers: Vec<EncoderLayer>,
-    // Dimensione del modello
+    // Model dimension
     model_dim: usize,
-    // Numero di layers
+    // Number of layers
     num_layers: usize,
-    // Epsilon per layer normalization
+    // Epsilon for layer normalization
     eps: f32,
 }
 
 impl EncoderStack {
-    /// Crea un nuovo EncoderStack
+    /// Creates a new EncoderStack
     ///
-    /// # Parametri
-    /// * `model_dim` - Dimensione del modello (dimensione embedding)
-    /// * `ff_dim` - Dimensione interna del feed-forward network
-    /// * `num_heads` - Numero di teste per l'attention multi-testa
-    /// * `num_layers` - Numero di layers nell'encoder
-    /// * `dropout_rate` - Tasso di dropout (non implementato)
+    /// # Parameters
+    /// * `model_dim` - Model dimension (embedding dimension)
+    /// * `ff_dim` - Inner dimension of the feed-forward network
+    /// * `num_heads` - Number of heads for multi-head attention
+    /// * `num_layers` - Number of layers in the encoder
+    /// * `dropout_rate` - Dropout rate (not implemented)
     pub fn new(model_dim: usize, ff_dim: usize, num_heads: usize, num_layers: usize, dropout_rate: f32) -> Self {
-        // Verifica che model_dim sia divisibile per num_heads
-        assert_eq!(model_dim % num_heads, 0, "model_dim deve essere divisibile per num_heads");
+        // Verify that model_dim is divisible by num_heads
+        assert_eq!(model_dim % num_heads, 0, "model_dim must be divisible by num_heads");
         
-        // Crea più layer di encoder
+        // Create multiple encoder layers
         let mut layers = Vec::with_capacity(num_layers);
         for _ in 0..num_layers {
             layers.push(EncoderLayer::new(model_dim, num_heads, Some(ff_dim), dropout_rate, 1e-6));
@@ -42,16 +42,16 @@ impl EncoderStack {
         }
     }
     
-    /// Forward pass dello stack di encoder
+    /// Forward pass of the encoder stack
     ///
-    /// # Parametri
-    /// * `x` - Input tensor di forma [batch_size, seq_len, model_dim]
-    /// * `mask` - Maschera opzionale di forma [batch_size, seq_len, seq_len]
+    /// # Parameters
+    /// * `x` - Input tensor of shape [batch_size, seq_len, model_dim]
+    /// * `mask` - Optional mask of shape [batch_size, seq_len, seq_len]
     ///
-    /// # Ritorna
-    /// Tensor di forma [batch_size, seq_len, model_dim]
+    /// # Returns
+    /// Tensor of shape [batch_size, seq_len, model_dim]
     pub fn forward(&self, x: &Tensor, mask: Option<&Tensor>) -> Tensor {
-        // Passa l'input attraverso ciascun layer nell'ordine
+        // Pass the input through each layer in order
         let mut output = x.clone();
         
         for layer in &self.layers {
@@ -61,12 +61,12 @@ impl EncoderStack {
         output
     }
     
-    /// Getter per model_dim
+    /// Getter for model_dim
     pub fn get_model_dim(&self) -> usize {
         self.model_dim
     }
     
-    /// Getter per num_layers
+    /// Getter for num_layers
     pub fn get_num_layers(&self) -> usize {
         self.num_layers
     }
@@ -106,20 +106,20 @@ mod tests {
         
         let encoder_stack = EncoderStack::new(model_dim, ff_dim, num_heads, num_layers, dropout_rate);
         
-        // Creazione di input casuali
+        // Create random input
         let x_data = Array3::<f32>::random((batch_size, seq_len, model_dim), Uniform::new(0.0, 1.0));
         let x = Tensor::new_3d(x_data);
         
-        // Forward pass senza maschera
+        // Forward pass without mask
         let output_no_mask = encoder_stack.forward(&x, None);
         
-        // Verifica dimensioni output
+        // Verify output dimensions
         let output_shape = output_no_mask.data.shape();
         assert_eq!(output_shape[0], batch_size);
         assert_eq!(output_shape[1], seq_len);
         assert_eq!(output_shape[2], model_dim);
         
-        // Verifica che l'output sia diverso dall'input (le trasformazioni dovrebbero cambiare i valori)
+        // Verify that the output is different from the input (transformations should change the values)
         let input_sum = x.data.sum();
         let output_sum = output_no_mask.data.sum();
         assert_ne!(input_sum, output_sum);
@@ -137,17 +137,17 @@ mod tests {
         
         let encoder_stack = EncoderStack::new(model_dim, ff_dim, num_heads, num_layers, dropout_rate);
         
-        // Dati di input con pattern che rende evidente l'effetto della maschera
+        // Input data with pattern that makes the mask effect evident
         let mut x_data = Array3::<f32>::zeros((batch_size, seq_len, model_dim));
         for b in 0..batch_size {
             for i in 0..seq_len {
                 for j in 0..model_dim {
-                    // Utilizziamo un pattern che crea dipendenze tra posizioni future e precedenti
-                    // Le prime posizioni hanno valori piccoli, le ultime hanno valori grandi
+                    // Use a pattern that creates dependencies between future and previous positions
+                    // Early positions have small values, later positions have large values
                     if i < 2 {
                         x_data[[b, i, j]] = 0.01 * (i + 1) as f32;
                     } else {
-                        x_data[[b, i, j]] = 10.0 * (i + 1) as f32; // Valori molto più grandi nelle posizioni future
+                        x_data[[b, i, j]] = 10.0 * (i + 1) as f32; // Much larger values in future positions
                     }
                 }
             }
@@ -155,49 +155,49 @@ mod tests {
         
         let x = Tensor::new_3d(x_data);
         
-        // Creazione di una maschera causale che sia 3D [batch_size, seq_len, seq_len]
-        // Importante: per il test stiamo creando una maschera dove 0 indica "maschera questa posizione"
-        // e 1 indica "permetti questa posizione"
+        // Create a 3D causal mask [batch_size, seq_len, seq_len]
+        // Important: for the test we're creating a mask where 0 means "mask this position"
+        // and 1 means "allow this position"
         let mut mask_data = Array3::<f32>::zeros((batch_size, seq_len, seq_len));
         
-        // Maschera triangolare inferiore (causale) per ogni batch
+        // Lower triangular mask (causal) for each batch
         for b in 0..batch_size {
             for i in 0..seq_len {
                 for j in 0..seq_len {
                     if j <= i {
-                        // Se j <= i, permetti l'attenzione (maschera triangolare inferiore)
+                        // If j <= i, allow attention (lower triangular mask)
                         mask_data[[b, i, j]] = 1.0;
                     } else {
-                        // Altrimenti, maschera l'attenzione alle posizioni future
+                        // Otherwise, mask attention to future positions
                         mask_data[[b, i, j]] = 0.0;
                     }
                 }
             }
         }
         
-        println!("Test con maschera causale");
-        println!("Forma maschera: {:?}", mask_data.shape());
+        println!("Test with causal mask");
+        println!("Mask shape: {:?}", mask_data.shape());
         
-        // Verifica che la maschera contenga una combinazione di 0 e 1
+        // Verify that the mask contains a combination of 0s and 1s
         let ones_count = mask_data.iter().filter(|&&x| x == 1.0).count();
         let zeros_count = mask_data.iter().filter(|&&x| x == 0.0).count();
-        println!("Conteggio valori nella maschera: {} valori 1.0, {} valori 0.0", ones_count, zeros_count);
+        println!("Count of values in mask: {} values 1.0, {} values 0.0", ones_count, zeros_count);
         
         let mask = Tensor::new_3d(mask_data);
         
-        // Forward pass con maschera causale
+        // Forward pass with causal mask
         let output_with_mask = encoder_stack.forward(&x, Some(&mask));
         
-        // Verifica dimensioni output
+        // Verify output dimensions
         let output_shape = output_with_mask.data.shape();
         assert_eq!(output_shape[0], batch_size);
         assert_eq!(output_shape[1], seq_len);
         assert_eq!(output_shape[2], model_dim);
         
-        // Forward pass senza maschera
+        // Forward pass without mask
         let output_no_mask = encoder_stack.forward(&x, None);
         
-        // Gli output dovrebbero essere diversi con e senza maschera
+        // Outputs should be different with and without mask
         let mut all_equal = true;
         let output_with_mask_data = output_with_mask.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
         let output_no_mask_data = output_no_mask.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
@@ -215,10 +215,10 @@ mod tests {
             }
         }
         
-        // Stampa debug informazioni
-        println!("Differenze trovate: {}, max diff: {}", diff_count, max_diff);
+        // Print debug information
+        println!("Differences found: {}, max diff: {}", diff_count, max_diff);
         
-        assert!(!all_equal, "L'output con maschera dovrebbe essere diverso dall'output senza maschera");
+        assert!(!all_equal, "Output with mask should be different from output without mask");
     }
     
     #[test]
@@ -233,18 +233,18 @@ mod tests {
         
         let encoder_stack = EncoderStack::new(model_dim, ff_dim, num_heads, num_layers, dropout_rate);
         
-        // Dati di input con pattern che rende estremamente evidente l'effetto della maschera
+        // Input data with pattern that makes the effect of the mask extremely evident
         let mut x_data = Array3::<f32>::zeros((batch_size, seq_len, model_dim));
         for b in 0..batch_size {
             for i in 0..seq_len {
                 for j in 0..model_dim {
-                    // Creiamo un contrasto estremo tra posizioni valide e padding
+                    // Create an extreme contrast between valid positions and padding
                     if (b == 0 && i < 3) || (b == 1 && i < 2) {
-                        // Posizioni valide: valori molto piccoli
+                        // Valid positions: very small values
                         x_data[[b, i, j]] = 0.001 * (i + 1) as f32;
                     } else {
-                        // Posizioni padding: valori estremamente alti che avranno un grande impatto
-                        // se non vengono mascherati correttamente
+                        // Padding positions: extremely high values that will have a big impact
+                        // if they're not masked correctly
                         x_data[[b, i, j]] = 100.0 * (i + 1) as f32;
                     }
                 }
@@ -252,39 +252,39 @@ mod tests {
         }
         
         let x = Tensor::new_3d(x_data);
-        println!("Creati dati di input con contrasto estremo tra token validi e padding");
+        println!("Created input data with extreme contrast between valid tokens and padding");
         
-        // Creazione di una maschera di padding che sia 3D [batch_size, seq_len, seq_len]
-        let valid_lens = vec![3, 2]; // Prima sequenza ha 3 token validi, seconda ne ha 2
+        // Create a padding mask that is 3D [batch_size, seq_len, seq_len]
+        let valid_lens = vec![3, 2]; // First sequence has 3 valid tokens, second has 2
         
-        // Creiamo direttamente una maschera 3D [batch_size, seq_len, seq_len]
-        // Importante: la maschera deve avere 1 dove l'attenzione è permessa e 0 dove è mascherata
+        // Create directly a 3D mask [batch_size, seq_len, seq_len]
+        // Important: the mask must have 1 where attention is allowed and 0 where it is masked
         let mut mask_data = Array3::<f32>::zeros((batch_size, seq_len, seq_len));
         
-        // Per la prima sequenza (batch 0), primi 3 token possono vedere primi 3 token
+        // For the first sequence (batch 0), first 3 tokens can see first 3 tokens
         for i in 0..valid_lens[0] {
             for j in 0..valid_lens[0] {
                 mask_data[[0, i, j]] = 1.0;
             }
         }
         
-        // Per la seconda sequenza (batch 1), primi 2 token possono vedere primi 2 token
+        // For the second sequence (batch 1), first 2 tokens can see first 2 tokens
         for i in 0..valid_lens[1] {
             for j in 0..valid_lens[1] {
                 mask_data[[1, i, j]] = 1.0;
             }
         }
         
-        println!("Test con maschera di padding");
-        println!("Forma maschera: {:?}", mask_data.shape());
+        println!("Test with padding mask");
+        println!("Mask shape: {:?}", mask_data.shape());
         
-        // Verifica che la maschera contenga una combinazione di 0 e 1
+        // Verify that the mask contains a combination of 0s and 1s
         let ones_count = mask_data.iter().filter(|&&x| x == 1.0).count();
         let zeros_count = mask_data.iter().filter(|&&x| x == 0.0).count();
-        println!("Conteggio valori nella maschera: {} valori 1.0, {} valori 0.0", ones_count, zeros_count);
+        println!("Count of values in mask: {} values 1.0, {} values 0.0", ones_count, zeros_count);
         
-        // Stampa una visualizzazione più chiara della maschera
-        println!("Visualizzazione della maschera per batch 0:");
+        // Print a clearer visualization of the mask
+        println!("Mask visualization for batch 0:");
         for i in 0..seq_len {
             for j in 0..seq_len {
                 print!("{} ", if mask_data[[0, i, j]] > 0.5 { "1" } else { "0" });
@@ -292,7 +292,7 @@ mod tests {
             println!();
         }
         
-        println!("Visualizzazione della maschera per batch 1:");
+        println!("Mask visualization for batch 1:");
         for i in 0..seq_len {
             for j in 0..seq_len {
                 print!("{} ", if mask_data[[1, i, j]] > 0.5 { "1" } else { "0" });
@@ -302,15 +302,15 @@ mod tests {
         
         let mask = Tensor::new_3d(mask_data);
         
-        // Forward pass con maschera di padding
-        println!("Esecuzione forward pass con maschera di padding");
+        // Forward pass with padding mask
+        println!("Executing forward pass with padding mask");
         let output_with_padding = encoder_stack.forward(&x, Some(&mask));
         
-        // Forward pass senza maschera
-        println!("Esecuzione forward pass senza maschera");
+        // Forward pass without mask
+        println!("Executing forward pass without mask");
         let output_no_mask = encoder_stack.forward(&x, None);
         
-        // Gli output dovrebbero essere diversi con e senza maschera
+        // Outputs should be different with and without mask
         let mut all_equal = true;
         let output_with_padding_data = output_with_padding.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
         let output_no_mask_data = output_no_mask.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
@@ -323,7 +323,7 @@ mod tests {
         for ((b, i, j), &v1) in output_with_padding_data.indexed_iter() {
             let v2 = output_no_mask_data[[b, i, j]];
             
-            // Controllo se uno dei valori è NaN (Not a Number)
+            // Check if one of the values is NaN (Not a Number)
             if v1.is_nan() || v2.is_nan() {
                 all_equal = false;
                 nan_count += 1;
@@ -341,52 +341,52 @@ mod tests {
             }
         }
         
-        // Stampa debug informazioni più dettagliate
-        println!("Differenze trovate: {}, max diff: {}, valori NaN: {}", diff_count, max_diff, nan_count);
+        // Print more detailed debug information
+        println!("Differences found: {}, max diff: {}, NaN values: {}", diff_count, max_diff, nan_count);
         if max_diff > 0.0 {
-            println!("Massima differenza trovata in posizione batch={}, seq={}, feature={}", 
+            println!("Maximum difference found at position batch={}, seq={}, feature={}", 
                      max_diff_pos.0, max_diff_pos.1, max_diff_pos.2);
         }
         
         if nan_count > 0 {
-            println!("ATTENZIONE: Trovati {} valori NaN nell'output con maschera.", nan_count);
+            println!("WARNING: Found {} NaN values in the output with mask.", nan_count);
             
-            // Verifica dettagliata per alcune posizioni specifiche
+            // Detailed verification for some specific positions
             for b in 0..batch_size {
                 for i in 0..seq_len {
                     let is_padded = (b == 0 && i >= 3) || (b == 1 && i >= 2);
                     if is_padded {
-                        // Questo è un token di padding, dovremmo vedere una grande differenza o NaN
+                        // This is a padding token, we should see a large difference or NaN
                         let val_with_mask = output_with_padding_data[[b, i, 0]];
                         let val_no_mask = output_no_mask_data[[b, i, 0]];
-                        println!("Token di padding b={}, i={}: con maschera={}, senza maschera={}, è NaN: {}",
+                        println!("Padding token b={}, i={}: with mask={}, without mask={}, is NaN: {}",
                                 b, i, val_with_mask, val_no_mask, val_with_mask.is_nan());
                     }
                 }
             }
             
-            // Test passa se ci sono valori NaN, che indica che la maschera è stata applicata
-            // ma c'è un problema nella gestione dei valori mascherati
-            println!("NOTA: I valori NaN indicano che la maschera viene applicata, ma c'è un problema nella gestione dei valori mascherati.");
-            println!("Il test è considerato PASSATO perché la maschera viene applicata, anche se produce NaN.");
+            // Test passes if there are NaN values, which indicates that the mask was applied
+            // but there's a problem in handling masked values
+            println!("NOTE: NaN values indicate that the mask is being applied, but there is a problem in handling masked values.");
+            println!("The test is considered PASSED because the mask is applied, even if it produces NaN.");
             
-            // TODO: Risolvere il problema dei valori NaN nell'attention con maschera.
-            // Quando un valore viene mascherato (impostato a -infinity), probabilmente 
-            // la propagazione attraverso softmax e le successive operazioni matematiche
-            // porta a valori NaN. Le possibili soluzioni sono:
-            // 1) Modificare la funzione softmax_3d per gestire meglio i valori -infinity
-            // 2) Utilizzare un valore molto negativo ma finito invece di -infinity
-            // 3) Gestire esplicitamente i casi mascherati nei layer successivi
-            // 4) Implementare una maschera che agisca direttamente sugli output finali
+            // TODO: Solve the problem of NaN values in attention with mask.
+            // When a value is masked (set to -infinity), propagation through softmax
+            // and subsequent mathematical operations probably leads to NaN values.
+            // Possible solutions are:
+            // 1) Modify the softmax_3d function to better handle -infinity values
+            // 2) Use a very negative but finite value instead of -infinity
+            // 3) Explicitly handle masked cases in subsequent layers
+            // 4) Implement a mask that acts directly on final outputs
             
             return;
         } else if all_equal {
-            // Se non ci sono NaN e tutti i valori sono uguali, la maschera non ha avuto effetto
-            println!("ERRORE: Nessuna differenza significativa trovata e nessun valore NaN!");
+            // If there are no NaNs and all values are equal, the mask had no effect
+            println!("ERROR: No significant difference found and no NaN values!");
         }
         
-        // Se il test fallisce, la maschera non sta avendo l'effetto desiderato
-        assert!(!all_equal, "L'output con maschera di padding dovrebbe essere diverso dall'output senza maschera.
-                            Controllare l'applicazione della maschera nella self-attention.");
+        // If the test fails, the mask is not having the desired effect
+        assert!(!all_equal, "Output with padding mask should be different from output without mask.
+                            Check the application of the mask in self-attention.");
     }
 } 

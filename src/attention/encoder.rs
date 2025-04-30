@@ -2,47 +2,47 @@ use ndarray::{Array, Array2, Array3, Axis};
 use crate::nabla::tensor::Tensor;
 use super::{Attention, MultiHeadAttention, FeedForward};
 
-/// Implementa il Layer Normalization come descritto nel paper "Attention is All You Need"
+/// Implements Layer Normalization as described in the paper "Attention is All You Need"
 /// 
 /// # Arguments
 /// 
-/// * `x` - Tensore di input
-/// * `eps` - Epsilon per stabilità numerica
+/// * `x` - Input tensor
+/// * `eps` - Epsilon for numerical stability
 /// 
 /// # Returns
 /// 
-/// Il tensore normalizzato
+/// The normalized tensor
 pub fn layer_norm(x: &Tensor, eps: f32) -> Tensor {
-    // Ottiene le dimensioni del tensore
+    // Get tensor dimensions
     let shape = x.data.shape();
     
-    // Verifica se il tensore è 2D o 3D
+    // Check if tensor is 2D or 3D
     let dimensionality = shape.len();
     
     if dimensionality == 2 {
-        // Implementa Layer Normalization lungo l'ultima dimensione per tensori 2D
+        // Implement Layer Normalization along the last dimension for 2D tensors
         let last_dim = shape[1];
         
-        // Prepara il tensore risultato
+        // Prepare result tensor
         let mut norm_data = x.data.clone();
         
-        // Per ogni riga nel tensore 2D
+        // For each row in the 2D tensor
         for i in 0..shape[0] {
-            // Calcola la media per questa riga
+            // Calculate mean for this row
             let mut sum = 0.0;
             for j in 0..last_dim {
                 sum += x.data[[i, j]];
             }
             let mean = sum / (last_dim as f32);
             
-            // Calcola la varianza per questa riga
+            // Calculate variance for this row
             let mut variance = 0.0;
             for j in 0..last_dim {
                 variance += (x.data[[i, j]] - mean).powi(2);
             }
             variance /= last_dim as f32;
             
-            // Normalizza questa riga
+            // Normalize this row
             for j in 0..last_dim {
                 norm_data[[i, j]] = (x.data[[i, j]] - mean) / (variance + eps).sqrt();
             }
@@ -50,30 +50,30 @@ pub fn layer_norm(x: &Tensor, eps: f32) -> Tensor {
         
         return Tensor::new(norm_data.into_dimensionality::<ndarray::Ix2>().unwrap());
     } else if dimensionality == 3 {
-        // Implementa Layer Normalization lungo l'ultima dimensione per tensori 3D
+        // Implement Layer Normalization along the last dimension for 3D tensors
         let last_dim = shape[2];
         
-        // Prepara il tensore risultato
+        // Prepare result tensor
         let mut norm_data = x.data.clone();
         
-        // Per ogni batch e per ogni riga nel tensore 3D
+        // For each batch and for each row in the 3D tensor
         for b in 0..shape[0] {
             for i in 0..shape[1] {
-                // Calcola la media per questa slice
+                // Calculate mean for this slice
                 let mut sum = 0.0;
                 for j in 0..last_dim {
                     sum += x.data[[b, i, j]];
                 }
                 let mean = sum / (last_dim as f32);
                 
-                // Calcola la varianza per questa slice
+                // Calculate variance for this slice
                 let mut variance = 0.0;
                 for j in 0..last_dim {
                     variance += (x.data[[b, i, j]] - mean).powi(2);
                 }
                 variance /= last_dim as f32;
                 
-                // Normalizza questa slice
+                // Normalize this slice
                 for j in 0..last_dim {
                     norm_data[[b, i, j]] = (x.data[[b, i, j]] - mean) / (variance + eps).sqrt();
                 }
@@ -82,38 +82,38 @@ pub fn layer_norm(x: &Tensor, eps: f32) -> Tensor {
         
         return Tensor::new_3d(norm_data.into_dimensionality::<ndarray::Ix3>().unwrap());
     } else {
-        panic!("layer_norm supporta solo tensori 2D o 3D, ricevuto: {}-D", dimensionality);
+        panic!("layer_norm only supports 2D or 3D tensors, received: {}-D", dimensionality);
     }
 }
 
-/// Implementazione di un Encoder Layer come descritto nel paper "Attention is All You Need"
+/// Implementation of an Encoder Layer as described in the paper "Attention is All You Need"
 pub struct EncoderLayer {
     /// Multi-head attention
     attention: MultiHeadAttention,
     /// Feed-forward network
     feed_forward: FeedForward,
-    /// Dimensione del modello
+    /// Model dimension
     d_model: usize,
-    /// Epsilon per layer normalization
+    /// Epsilon for layer normalization
     eps: f32,
     /// Dropout rate
     dropout_rate: f32,
 }
 
 impl EncoderLayer {
-    /// Crea un nuovo encoder layer
+    /// Creates a new encoder layer
     /// 
     /// # Arguments
     /// 
-    /// * `d_model` - Dimensione del modello
-    /// * `num_heads` - Numero di teste di attenzione
-    /// * `d_ff` - Dimensione del layer feed-forward (default: 4 * d_model)
-    /// * `dropout_rate` - Tasso di dropout
-    /// * `eps` - Epsilon per layer normalization
+    /// * `d_model` - Model dimension
+    /// * `num_heads` - Number of attention heads
+    /// * `d_ff` - Feed-forward layer dimension (default: 4 * d_model)
+    /// * `dropout_rate` - Dropout rate
+    /// * `eps` - Epsilon for layer normalization
     /// 
     /// # Returns
     /// 
-    /// Un nuovo encoder layer
+    /// A new encoder layer
     pub fn new(d_model: usize, num_heads: usize, d_ff: Option<usize>, dropout_rate: f32, eps: f32) -> Self {
         let d_ff = d_ff.unwrap_or(4 * d_model);
         
@@ -126,36 +126,36 @@ impl EncoderLayer {
         }
     }
     
-    /// Forward pass attraverso l'encoder layer
+    /// Forward pass through the encoder layer
     /// 
     /// # Arguments
     /// 
-    /// * `x` - Tensore di input [batch_size, seq_len, d_model]
-    /// * `mask` - Maschera per l'attenzione (opzionale)
+    /// * `x` - Input tensor [batch_size, seq_len, d_model]
+    /// * `mask` - Attention mask (optional)
     /// 
     /// # Returns
     /// 
-    /// Tensore di output [batch_size, seq_len, d_model]
+    /// Output tensor [batch_size, seq_len, d_model]
     pub fn forward(&self, x: &Tensor, mask: Option<&Tensor>) -> Tensor {
-        // 1. Layer Normalization prima dell'attenzione
+        // 1. Layer Normalization before attention
         let norm1 = layer_norm(x, self.eps);
         
         // 2. Multi-head attention
         let attn_output = self.attention.forward(&norm1, &norm1, &norm1, mask);
         
-        // 3. Residual connection con l'input
+        // 3. Residual connection with input
         let residual1 = Tensor::add(x, &attn_output);
         
-        // 4. Layer Normalization prima del feed-forward
+        // 4. Layer Normalization before feed-forward
         let norm2 = layer_norm(&residual1, self.eps);
         
         // 5. Feed-forward network
-        // Dobbiamo rimappare il tensore 3D a 2D per il feed-forward
+        // We need to reshape the 3D tensor to 2D for the feed-forward
         let shape = norm2.data.shape();
         let batch_size = shape[0];
         let seq_len = shape[1];
         
-        // Reshape da [batch, seq_len, d_model] a [batch*seq_len, d_model]
+        // Reshape from [batch, seq_len, d_model] to [batch*seq_len, d_model]
         let reshaped_data = norm2.data.clone()
             .into_dimensionality::<ndarray::Ix3>().unwrap()
             .into_shape((batch_size * seq_len, self.d_model)).unwrap();
@@ -165,17 +165,17 @@ impl EncoderLayer {
         // Forward pass feed-forward
         let ff_output = self.feed_forward.forward(&reshaped_tensor);
         
-        // Reshape back da [batch*seq_len, d_model] a [batch, seq_len, d_model]
+        // Reshape back from [batch*seq_len, d_model] to [batch, seq_len, d_model]
         let ff_output_reshaped = ff_output.data.clone()
             .into_shape((batch_size, seq_len, self.d_model)).unwrap();
         
         let ff_output_tensor = Tensor::new_3d(ff_output_reshaped);
         
-        // 6. Residual connection con l'output dell'attenzione
+        // 6. Residual connection with attention output
         Tensor::add(&residual1, &ff_output_tensor)
     }
     
-    /// Restituisce la dimensione del modello
+    /// Returns the model dimension
     pub fn model_dim(&self) -> usize {
         self.d_model
     }
@@ -209,14 +209,14 @@ mod tests {
         
         let encoder = EncoderLayer::new(d_model, num_heads, None, 0.1, 1e-6);
         
-        // Crea input di test
+        // Create test input
         let x_data = Array3::<f32>::zeros((batch_size, seq_len, d_model));
         let x = Tensor::new_3d(x_data);
         
-        // Forward pass senza maschera
+        // Forward pass without mask
         let output = encoder.forward(&x, None);
         
-        // Verifica le dimensioni dell'output
+        // Verify output dimensions
         let output_shape = output.data.shape();
         assert_eq!(output_shape[0], batch_size);
         assert_eq!(output_shape[1], seq_len);
@@ -225,27 +225,27 @@ mod tests {
     
     #[test]
     fn test_layer_norm() {
-        // Crea un tensore di test con valori conosciuti
+        // Create a test tensor with known values
         let data = Array2::<f32>::from_shape_vec((2, 3), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]).unwrap();
         let x = Tensor::new(data);
         
-        // Normalizza
+        // Normalize
         let normalized = layer_norm(&x, 1e-6);
         
-        // Calcola la media e la varianza dell'output
+        // Calculate mean and variance of the output
         let mean: f32 = normalized.data.mean().unwrap();
         
-        // La media dovrebbe essere approssimativamente zero
-        assert!(mean.abs() < 1e-5, "La media dovrebbe essere zero, ma è {}", mean);
+        // Mean should be approximately zero
+        assert!(mean.abs() < 1e-5, "Mean should be zero, but is {}", mean);
         
-        // La varianza dovrebbe essere approssimativamente 1
+        // Variance should be approximately 1
         let mut variance = 0.0;
         for &val in normalized.data.iter() {
             variance += (val - mean).powi(2);
         }
         variance /= normalized.data.len() as f32;
         
-        assert!((variance - 1.0).abs() < 1e-5, "La varianza dovrebbe essere 1, ma è {}", variance);
+        assert!((variance - 1.0).abs() < 1e-5, "Variance should be 1, but is {}", variance);
     }
     
     #[test]
@@ -257,19 +257,19 @@ mod tests {
         
         let encoder = EncoderLayer::new(d_model, num_heads, None, 0.1, 1e-6);
         
-        // Creiamo dati di input con un pattern che rende evidente la maschera causale
+        // Create input data with a pattern that makes the causal mask effect evident
         let mut x_data = Array3::<f32>::zeros((batch_size, seq_len, d_model));
         for b in 0..batch_size {
             for i in 0..seq_len {
                 for j in 0..d_model {
-                    // Utilizziamo un pattern che crea dipendenze tra posizioni future e precedenti
-                    // Le prime posizioni (1, 2) hanno valori piccoli
-                    // Le ultime posizioni (3, 4, 5) hanno valori grandi
-                    // Questo renderà più evidente l'effetto della maschera causale
+                    // Use a pattern that creates dependencies between future and previous positions
+                    // Early positions (1, 2) have small values
+                    // Later positions (3, 4, 5) have large values
+                    // This will make the effect of the causal mask more evident
                     if i < 2 {
                         x_data[[b, i, j]] = 0.01 * (i + 1) as f32;
                     } else {
-                        x_data[[b, i, j]] = 10.0 * (i + 1) as f32; // Valori molto più grandi nelle posizioni future
+                        x_data[[b, i, j]] = 10.0 * (i + 1) as f32; // Much larger values in future positions
                     }
                 }
             }
@@ -277,13 +277,13 @@ mod tests {
         
         let x = Tensor::new_3d(x_data);
         
-        // Crea una maschera 3D [batch_size, seq_len, seq_len]
+        // Create a 3D mask [batch_size, seq_len, seq_len]
         let mut mask_data = Array3::<f32>::zeros((batch_size, seq_len, seq_len));
         
-        // Maschera triangolare inferiore (causale) per ogni batch
+        // Lower triangular mask (causal) for each batch
         for b in 0..batch_size {
             for i in 0..seq_len {
-                for j in 0..=i {  // j <= i (triangolare inferiore)
+                for j in 0..=i {  // j <= i (lower triangular)
                     mask_data[[b, i, j]] = 1.0;
                 }
             }
@@ -291,13 +291,13 @@ mod tests {
         
         let mask = Tensor::new_3d(mask_data);
         
-        // Forward pass con maschera
+        // Forward pass with mask
         let output_with_mask = encoder.forward(&x, Some(&mask));
         
-        // Forward pass senza maschera
+        // Forward pass without mask
         let output_no_mask = encoder.forward(&x, None);
         
-        // Le due output dovrebbero essere diverse
+        // The two outputs should be different
         let mut all_equal = true;
         let output_with_mask_data = output_with_mask.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
         let output_no_mask_data = output_no_mask.data.clone().into_dimensionality::<ndarray::Ix3>().unwrap();
@@ -315,13 +315,13 @@ mod tests {
             }
         }
         
-        // Stampa debug informazioni
-        println!("Differenze trovate nel test encoder: {}, max diff: {}", diff_count, max_diff);
+        // Print debug information
+        println!("Differences found in encoder test: {}, max diff: {}", diff_count, max_diff);
         
-        // Ci aspettiamo che l'output con maschera sia diverso dall'output senza maschera
-        // Se il test fallisce, significa che la maschera non sta avendo alcun effetto
-        assert!(!all_equal, "L'output con maschera dovrebbe essere diverso dall'output senza maschera. 
-                             Questo potrebbe accadere se la maschera non viene applicata correttamente
-                             o se i valori di input sono tali che la maschera non fa differenza.");
+        // We expect that the output with mask is different from the output without mask
+        // If the test fails, it means the mask is not having any effect
+        assert!(!all_equal, "Output with mask should be different from output without mask. 
+                             This could happen if the mask is not being applied correctly
+                             or if the input values are such that the mask makes no difference.");
     }
 } 

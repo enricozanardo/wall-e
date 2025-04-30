@@ -5,54 +5,54 @@ use ndarray_rand::rand_distr::Normal;
 use crate::nabla::tensor::Tensor;
 use crate::attention::{Attention, create_weight_matrix, softmax_3d};
 
-/// Implementazione di Multi-Head Attention come descritto nel paper "Attention is All You Need"
+/// Implementation of Multi-Head Attention as described in the paper "Attention is All You Need"
 pub struct MultiHeadAttention {
-    /// Dimensione del modello (d_model)
+    /// Model dimension (d_model)
     model_dimension: usize,
     
-    /// Numero di teste di attenzione
+    /// Number of attention heads
     num_heads: usize,
     
-    /// Dimensione di ciascuna testa (d_k)
+    /// Dimension of each head (d_k)
     head_dimension: usize,
     
-    /// Fattore di scala per l'attenzione (1/sqrt(d_k))
+    /// Scale factor for attention (1/sqrt(d_k))
     scale_factor: f32,
     
-    /// Matrici di proiezione per le query (una per testa)
+    /// Projection matrices for queries (one per head)
     w_queries: Vec<Array2<f32>>,
     
-    /// Matrici di proiezione per le chiavi (una per testa)
+    /// Projection matrices for keys (one per head)
     w_keys: Vec<Array2<f32>>,
     
-    /// Matrici di proiezione per i valori (una per testa)
+    /// Projection matrices for values (one per head)
     w_values: Vec<Array2<f32>>,
     
-    /// Matrice di proiezione per l'output combinato
+    /// Projection matrix for the combined output
     w_output: Array2<f32>,
 }
 
 impl MultiHeadAttention {
-    /// Crea una nuova istanza di MultiHeadAttention
+    /// Creates a new MultiHeadAttention instance
     /// 
     /// # Arguments
     /// 
-    /// * `model_dimension` - Dimensione del modello (d_model)
-    /// * `num_heads` - Numero di teste di attenzione
-    /// * `std` - Deviazione standard per l'inizializzazione dei pesi
+    /// * `model_dimension` - Model dimension (d_model)
+    /// * `num_heads` - Number of attention heads
+    /// * `std` - Standard deviation for weight initialization
     /// 
     /// # Returns
     /// 
-    /// * Una nuova istanza di MultiHeadAttention
+    /// * A new MultiHeadAttention instance
     pub fn new(model_dimension: usize, num_heads: usize, std: f32) -> Self {
         assert!(model_dimension % num_heads == 0, 
-                "La dimensione del modello ({}) deve essere divisibile per il numero di teste ({})", 
+                "Model dimension ({}) must be divisible by the number of heads ({})", 
                 model_dimension, num_heads);
         
         let head_dimension = model_dimension / num_heads;
         let scale_factor = 1.0 / (head_dimension as f32).sqrt();
         
-        // Inizializza le matrici di proiezione per ogni testa
+        // Initialize projection matrices for each head
         let mut w_queries = Vec::with_capacity(num_heads);
         let mut w_keys = Vec::with_capacity(num_heads);
         let mut w_values = Vec::with_capacity(num_heads);
@@ -63,7 +63,7 @@ impl MultiHeadAttention {
             w_values.push(create_weight_matrix(model_dimension, head_dimension, std));
         }
         
-        // Matrice di proiezione per l'output combinato
+        // Projection matrix for the combined output
         let w_output = create_weight_matrix(model_dimension, model_dimension, std);
         
         MultiHeadAttention {
@@ -78,20 +78,20 @@ impl MultiHeadAttention {
         }
     }
     
-    /// Calcola i punteggi di attenzione per una singola testa
+    /// Computes attention scores for a single head
     /// 
     /// # Arguments
     /// 
-    /// * `q` - Tensore delle query
-    /// * `k` - Tensore delle chiavi
-    /// * `mask` - Maschera di attenzione opzionale
+    /// * `q` - Query tensor
+    /// * `k` - Key tensor
+    /// * `mask` - Optional attention mask
     /// 
     /// # Returns
     /// 
-    /// * Tensore dei punteggi di attenzione
+    /// * Tensor of attention scores
     fn compute_attention_scores(&self, q: &Array3<f32>, k: &Array3<f32>, mask: Option<&Array3<f32>>) -> Array3<f32> {
-        // Trasposizione delle chiavi per il prodotto matrice-matrice
-        // k_transposed sarà di forma [batch_size, d_k, seq_len]
+        // Transpose keys for matrix-matrix product
+        // k_transposed will be of shape [batch_size, d_k, seq_len]
         let mut k_transposed = Array3::<f32>::zeros((k.shape()[0], k.shape()[2], k.shape()[1]));
         
         for b in 0..k.shape()[0] {
@@ -102,8 +102,8 @@ impl MultiHeadAttention {
             }
         }
         
-        // Calcola il prodotto matrice-matrice q * k_t
-        // Risultato sarà di forma [batch_size, seq_len_q, seq_len_k]
+        // Calculate matrix-matrix product q * k_t
+        // Result will be of shape [batch_size, seq_len_q, seq_len_k]
         let mut scores = Array3::<f32>::zeros((q.shape()[0], q.shape()[1], k_transposed.shape()[2]));
         
         for b in 0..q.shape()[0] {
@@ -118,20 +118,20 @@ impl MultiHeadAttention {
             }
         }
         
-        // Applica la maschera se presente
+        // Apply mask if present
         if let Some(mask) = mask {
-            // Verifica la forma della maschera e adattala se necessario
+            // Verify mask shape and adapt if necessary
             if mask.shape().len() == 3 {
                 let mask_shape = mask.shape();
                 
-                // Se la maschera ha forma [batch_size, seq_len, seq_len], 
-                // applicala direttamente ai punteggi di attenzione
+                // If the mask has shape [batch_size, seq_len, seq_len], 
+                // apply it directly to the attention scores
                 if mask_shape.len() == 3 && mask_shape[0] == scores.shape()[0] &&
                    mask_shape[1] == scores.shape()[1] && mask_shape[2] == scores.shape()[2] {
                     
                     // Print debug info for mask application
-                    // println!("Applicazione della maschera in compute_attention_scores");
-                    // println!("Forma maschera: {:?}, Forma scores: {:?}", mask_shape, scores.shape());
+                    // println!("Applying mask in compute_attention_scores");
+                    // println!("Mask shape: {:?}, Scores shape: {:?}", mask_shape, scores.shape());
                     
                     let mut neg_inf_count = 0;
                     for b in 0..scores.shape()[0] {
@@ -145,34 +145,34 @@ impl MultiHeadAttention {
                         }
                     }
                     
-                    // println!("Numero di valori impostati a NEG_INFINITY: {}", neg_inf_count);
+                    // println!("Number of values set to NEG_INFINITY: {}", neg_inf_count);
                     if neg_inf_count == 0 {
-                        println!("ATTENZIONE: Nessun valore della maschera è 0.0, quindi nessun valore è stato mascherato!");
+                        println!("WARNING: No mask value is 0.0, so no value was masked!");
                     }
                     
                 } else {
-                    panic!("La maschera ha una forma incompatibile: {:?}, attesa: {:?}", 
+                    panic!("Mask has incompatible shape: {:?}, expected: {:?}", 
                            mask_shape, scores.shape());
                 }
             } else {
-                panic!("La maschera deve essere un tensore 3D, ricevuto: {}-D", mask.shape().len());
+                panic!("Mask must be a 3D tensor, received: {}-D", mask.shape().len());
             }
         }
         
-        // Applica softmax per ottenere i pesi di attenzione
+        // Apply softmax to get attention weights
         softmax_3d(&scores, 2)
     }
     
-    /// Applica i pesi di attenzione ai valori per una singola testa
+    /// Applies attention weights to values for a single head
     /// 
     /// # Arguments
     /// 
-    /// * `attention_weights` - Pesi di attenzione
-    /// * `v` - Tensore dei valori
+    /// * `attention_weights` - Attention weights
+    /// * `v` - Value tensor
     /// 
     /// # Returns
     /// 
-    /// * Tensore dell'output ponderato
+    /// * Weighted output tensor
     fn apply_attention(&self, attention_weights: &Array3<f32>, v: &Array3<f32>) -> Array3<f32> {
         // attention_weights: [batch_size, seq_len_q, seq_len_k]
         // v: [batch_size, seq_len_k, d_v]
@@ -202,28 +202,28 @@ impl MultiHeadAttention {
 
 impl Attention for MultiHeadAttention {
     fn forward(&self, q: &Tensor, k: &Tensor, v: &Tensor, mask: Option<&Tensor>) -> Tensor {
-        // Ottieni i dati come Array3
+        // Get data as Array3
         let q_data = q.data.clone().into_dimensionality::<Ix3>().unwrap();
         
         let k_data = k.data.clone().into_dimensionality::<Ix3>().unwrap();
         
         let v_data = v.data.clone().into_dimensionality::<Ix3>().unwrap();
         
-        // Converti la maschera se presente
+        // Convert mask if present
         let mask_data = mask.map(|m| {
             m.data.clone().into_dimensionality::<Ix3>().unwrap()
         });
         
-        // Crea un tensore per l'output concatenato di tutte le teste
+        // Create a tensor for the concatenated output of all heads
         let mut concatenated_heads = Array3::<f32>::zeros((
             q_data.shape()[0],         // batch_size
             q_data.shape()[1],         // seq_len
             self.model_dimension,      // d_model (= num_heads * head_dimension)
         ));
         
-        // Elabora ogni testa separatamente
+        // Process each head separately
         for h in 0..self.num_heads {
-            // Proietta query, key e value per questa testa
+            // Project query, key, and value for this head
             let mut q_proj = Array3::<f32>::zeros((
                 q_data.shape()[0],         // batch_size
                 q_data.shape()[1],         // seq_len
@@ -242,7 +242,7 @@ impl Attention for MultiHeadAttention {
                 self.head_dimension,       // d_v
             ));
             
-            // Applica le proiezioni
+            // Apply projections
             for b in 0..q_data.shape()[0] {
                 for i in 0..q_data.shape()[1] {
                     for j in 0..self.head_dimension {
@@ -263,11 +263,11 @@ impl Attention for MultiHeadAttention {
                 }
             }
             
-            // Calcola i punteggi di attenzione e applica l'attenzione per questa testa
+            // Calculate attention scores and apply attention for this head
             let attention_weights = self.compute_attention_scores(&q_proj, &k_proj, mask_data.as_ref());
             let head_output = self.apply_attention(&attention_weights, &v_proj);
             
-            // Concatena l'output di questa testa
+            // Concatenate the output of this head
             let head_offset = h * self.head_dimension;
             for b in 0..head_output.shape()[0] {
                 for i in 0..head_output.shape()[1] {
@@ -278,7 +278,7 @@ impl Attention for MultiHeadAttention {
             }
         }
         
-        // Proietta l'output concatenato
+        // Project the concatenated output
         let mut output = Array3::<f32>::zeros((
             concatenated_heads.shape()[0],  // batch_size
             concatenated_heads.shape()[1],  // seq_len
@@ -297,7 +297,7 @@ impl Attention for MultiHeadAttention {
             }
         }
         
-        // Converti il risultato in un Tensor
+        // Convert the result to a Tensor
         Tensor::new_3d(output)
     }
     
@@ -313,13 +313,13 @@ mod tests {
     
     #[test]
     fn test_multi_head_attention_creation() {
-        // Verifica che la creazione fallisca se model_dimension non è divisibile per num_heads
+        // Verify that creation fails if model_dimension is not divisible by num_heads
         let result = std::panic::catch_unwind(|| {
             MultiHeadAttention::new(10, 3, 0.1);
         });
         assert!(result.is_err());
         
-        // Verifica che la creazione abbia successo se model_dimension è divisibile per num_heads
+        // Verify that creation succeeds if model_dimension is divisible by num_heads
         let mha = MultiHeadAttention::new(12, 3, 0.1);
         assert_eq!(mha.model_dimension, 12);
         assert_eq!(mha.num_heads, 3);
@@ -328,12 +328,12 @@ mod tests {
     
     #[test]
     fn test_multi_head_attention_forward() {
-        // Crea una istanza di MultiHeadAttention
+        // Create a MultiHeadAttention instance
         let model_dim = 12;
         let num_heads = 3;
         let attention = MultiHeadAttention::new(model_dim, num_heads, 0.1);
         
-        // Crea tensori di input di esempio
+        // Create example input tensors
         let batch_size = 2;
         let seq_len = 4;
         
@@ -345,16 +345,16 @@ mod tests {
         let k = Tensor::new_3d(k_data);
         let v = Tensor::new_3d(v_data);
         
-        // Calcola l'output dell'attenzione
+        // Calculate attention output
         let output = attention.forward(&q, &k, &v, None);
         
-        // Verifica le dimensioni dell'output
+        // Verify output dimensions
         let output_data = output.data.clone().into_dimensionality::<Ix3>().unwrap();
         assert_eq!(output_data.shape()[0], batch_size);
         assert_eq!(output_data.shape()[1], seq_len);
         assert_eq!(output_data.shape()[2], model_dim);
         
-        // Verifica che tutti i valori siano numeri validi (non NaN o infiniti)
+        // Verify that all values are valid numbers (not NaN or infinite)
         for v in output_data.iter() {
             assert!(!v.is_nan() && !v.is_infinite());
         }
@@ -362,37 +362,37 @@ mod tests {
     
     #[test]
     fn test_multi_head_attention_with_mask() {
-        // Crea una istanza di MultiHeadAttention
+        // Create a MultiHeadAttention instance
         let model_dim = 12;
         let num_heads = 3;
         let attention = MultiHeadAttention::new(model_dim, num_heads, 0.1);
         
-        // Crea tensori di input di esempio
+        // Create example input tensors
         let batch_size = 2;
         let seq_len = 4;
         
-        // Creiamo input non uniformi per rendere più evidente l'effetto della maschera
+        // Create non-uniform inputs to make the effect of the mask more evident
         let mut q_data = Array3::<f32>::zeros((batch_size, seq_len, model_dim));
         let mut k_data = Array3::<f32>::zeros((batch_size, seq_len, model_dim));
         let mut v_data = Array3::<f32>::zeros((batch_size, seq_len, model_dim));
         
-        // Inizializziamo i dati con valori che creano una forte dipendenza sulle posizioni future
-        // Nel caso di q_data, valori crescenti nella dimensione della sequenza
-        // Nel caso di k_data, valori decrescenti nella dimensione della sequenza
+        // Initialize data with values that create a strong dependency on future positions
+        // For q_data, increasing values in the sequence dimension
+        // For k_data, decreasing values in the sequence dimension
         for i in 0..batch_size {
             for j in 0..seq_len {
                 for k in 0..model_dim {
-                    q_data[[i, j, k]] = (j + 1) as f32;                    // Valori crescenti nella seq
-                    k_data[[i, j, k]] = (seq_len - j) as f32;              // Valori decrescenti nella seq
-                    v_data[[i, j, k]] = (j + 1) as f32 * (seq_len - j) as f32; // Prodotti dei due
+                    q_data[[i, j, k]] = (j + 1) as f32;                    // Increasing values in seq
+                    k_data[[i, j, k]] = (seq_len - j) as f32;              // Decreasing values in seq
+                    v_data[[i, j, k]] = (j + 1) as f32 * (seq_len - j) as f32; // Products of both
                 }
             }
         }
         
-        // Crea una maschera causale (ogni posizione può vedere solo le posizioni precedenti)
+        // Create a causal mask (each position can only see previous positions)
         let mut mask_data = Array3::<f32>::ones((batch_size, seq_len, seq_len));
         
-        // Maschera causale: posizione i può vedere solo posizioni j <= i
+        // Causal mask: position i can only see positions j <= i
         for b in 0..batch_size {
             for i in 0..seq_len {
                 for j in (i+1)..seq_len {
@@ -406,13 +406,13 @@ mod tests {
         let v = Tensor::new_3d(v_data);
         let mask = Tensor::new_3d(mask_data);
         
-        // Calcola l'output dell'attenzione con maschera
+        // Calculate attention output with mask
         let output_with_mask = attention.forward(&q, &k, &v, Some(&mask));
         
-        // Calcola l'output dell'attenzione senza maschera
+        // Calculate attention output without mask
         let output_no_mask = attention.forward(&q, &k, &v, None);
         
-        // Verifica che l'output con maschera sia diverso dall'output senza maschera
+        // Verify that output with mask is different from output without mask
         let output_with_mask_data = output_with_mask.data.clone().into_dimensionality::<Ix3>().unwrap();
         let output_no_mask_data = output_no_mask.data.clone().into_dimensionality::<Ix3>().unwrap();
         
@@ -430,10 +430,10 @@ mod tests {
             }
         }
         
-        // Stampiamo informazioni sulla differenza
-        println!("Differenze trovate: {}, max diff: {}", diff_count, max_diff);
+        // Print information about the difference
+        println!("Differences found: {}, max diff: {}", diff_count, max_diff);
         
-        // L'output con maschera dovrebbe essere diverso dall'output senza maschera
-        assert!(!all_equal, "L'output con maschera dovrebbe essere diverso dall'output senza maschera");
+        // Output with mask should be different from output without mask
+        assert!(!all_equal, "Output with mask should be different from output without mask");
     }
 } 
