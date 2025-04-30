@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::training::{CrossEntropyLoss, AdamOptimizer, Trainer, ModelOutput, evaluate};
     use crate::nabla::tensor::Tensor;
     use crate::tokenizer::basic_tokenizer::BasicTokenizer;
