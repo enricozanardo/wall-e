@@ -14,6 +14,161 @@ use ndarray_parallel::prelude::*;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
+use std::fmt;
+
+// Struttura per rappresentare un parametro del modello
+struct ModelParam {
+    name: String,
+    shape: Vec<usize>,
+    param_count: usize,
+}
+
+impl fmt::Display for ModelParam {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:<30} {:<25} {:>12}", 
+               self.name, 
+               format!("{:?}", self.shape), 
+               format!("{}", self.param_count))
+    }
+}
+
+// Funzione per calcolare i parametri del modello
+fn calculate_model_parameters(
+    vocab_size: usize,
+    d_model: usize,
+    ff_dim: usize,
+    num_heads: usize,
+    num_layers: usize,
+    max_seq_len: usize
+) -> Vec<ModelParam> {
+    let mut params = Vec::new();
+    
+    // Token embeddings
+    params.push(ModelParam {
+        name: "Token Embeddings".to_string(),
+        shape: vec![vocab_size, d_model],
+        param_count: vocab_size * d_model,
+    });
+    
+    // Positional embeddings
+    params.push(ModelParam {
+        name: "Positional Embeddings".to_string(),
+        shape: vec![max_seq_len, d_model],
+        param_count: max_seq_len * d_model,
+    });
+    
+    // Embedding Layer Norm
+    params.push(ModelParam {
+        name: "Embedding LayerNorm".to_string(),
+        shape: vec![d_model],
+        param_count: d_model * 2, // gamma e beta
+    });
+    
+    // Encoder layers
+    for i in 0..num_layers {
+        // Self-attention
+        // Query, Key, Value projections
+        params.push(ModelParam {
+            name: format!("Encoder {}/Self-Attention/Query", i),
+            shape: vec![d_model, d_model],
+            param_count: d_model * d_model,
+        });
+        
+        params.push(ModelParam {
+            name: format!("Encoder {}/Self-Attention/Key", i),
+            shape: vec![d_model, d_model],
+            param_count: d_model * d_model,
+        });
+        
+        params.push(ModelParam {
+            name: format!("Encoder {}/Self-Attention/Value", i),
+            shape: vec![d_model, d_model],
+            param_count: d_model * d_model,
+        });
+        
+        // Output projection
+        params.push(ModelParam {
+            name: format!("Encoder {}/Self-Attention/Output", i),
+            shape: vec![d_model, d_model],
+            param_count: d_model * d_model,
+        });
+        
+        // Layer normalization 1
+        params.push(ModelParam {
+            name: format!("Encoder {}/LayerNorm 1", i),
+            shape: vec![d_model],
+            param_count: d_model * 2, // gamma e beta
+        });
+        
+        // Feed-forward network
+        params.push(ModelParam {
+            name: format!("Encoder {}/FFN/Linear 1", i),
+            shape: vec![d_model, ff_dim],
+            param_count: d_model * ff_dim,
+        });
+        
+        params.push(ModelParam {
+            name: format!("Encoder {}/FFN/Linear 2", i),
+            shape: vec![ff_dim, d_model],
+            param_count: ff_dim * d_model,
+        });
+        
+        // Layer normalization 2
+        params.push(ModelParam {
+            name: format!("Encoder {}/LayerNorm 2", i),
+            shape: vec![d_model],
+            param_count: d_model * 2, // gamma e beta
+        });
+    }
+    
+    // Output projection
+    params.push(ModelParam {
+        name: "Output Projection".to_string(),
+        shape: vec![d_model, vocab_size],
+        param_count: d_model * vocab_size,
+    });
+    
+    params
+}
+
+// Funzione per visualizzare il sommario del modello
+fn print_model_summary(
+    params: &Vec<ModelParam>,
+    d_model: usize,
+    ff_dim: usize,
+    num_heads: usize,
+    num_layers: usize,
+    vocab_size: usize,
+    max_seq_len: usize
+) {
+    println!("\n{}", "=".repeat(70));
+    println!("                     MODELLO TRANSFORMER QA WALL-E1");
+    println!("{}", "=".repeat(70));
+    println!("Architettura del modello:");
+    println!("  - Dimensione del vocabolario: {}", vocab_size);
+    println!("  - Dimensione del modello (d_model): {}", d_model);
+    println!("  - Dimensione feed-forward (ff_dim): {}", ff_dim);
+    println!("  - Numero di teste di attenzione: {}", num_heads);
+    println!("  - Numero di layer transformer: {}", num_layers);
+    println!("  - Lunghezza massima sequenza: {}", max_seq_len);
+    println!("{}", "-".repeat(70));
+    println!("{:<30} {:<25} {:<12}", "Layer", "Shape", "Params");
+    println!("{}", "-".repeat(70));
+    
+    let mut total_params = 0;
+    for param in params {
+        println!("{}", param);
+        total_params += param.param_count;
+    }
+    
+    println!("{}", "=".repeat(70));
+    println!("Parametri totali: {}", total_params);
+    
+    // Stampa dimensione approssimativa del modello
+    let model_size_mb = (total_params * 4) as f64 / (1024.0 * 1024.0); // 4 bytes per float32
+    println!("Dimensione approssimativa del modello: {:.2} MB", model_size_mb);
+    println!("{}", "=".repeat(70));
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Addestramento modello QA Wall-E1");
@@ -45,6 +200,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let num_layers = model_params["num_layers"].as_u64().unwrap_or(3) as usize;
     let dropout_rate = model_params["dropout_rate"].as_f64().unwrap_or(0.15) as f32;
     let learning_rate = model_params["learning_rate"].as_f64().unwrap_or(0.0005) as f32;
+    let max_seq_len = 256; // Valore di default usato nel costruttore del Trainer
     
     println!("Parametri del modello:");
     println!("  - Dimensione del modello (d_model): {} - Dimensione degli embedding e stati nascosti", d_model);
@@ -104,6 +260,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let vocab_size = tokenizer.get_vocab().len();
     println!("Vocabolario costruito con {} token", vocab_size);
+    
+    // Stampa il riassunto del modello
+    let params = calculate_model_parameters(
+        vocab_size,
+        d_model,
+        ff_dim,
+        num_heads,
+        num_layers,
+        max_seq_len
+    );
+    
+    print_model_summary(
+        &params,
+        d_model,
+        ff_dim,
+        num_heads,
+        num_layers,
+        vocab_size,
+        max_seq_len
+    );
     
     // Crea il trainer con i parametri estratti
     println!("\nInizializzazione del modello...");
@@ -399,7 +575,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("\nAddestramento completato in {:?}.", total_training_time);
     
     // Salva il modello addestrato
-    let model_path = "models/qa_model.bin";
+    let model_path = "models/qa_dummy_model.bin";
     println!("\nSalvataggio del modello in '{}'...", model_path);
     trainer.save_model(model_path)?;
     
