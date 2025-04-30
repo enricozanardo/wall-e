@@ -1,4 +1,4 @@
-use ndarray::{Array, Array2, Array3, s};
+use ndarray::{Array, Array2, Array3};
 use ndarray_rand::RandomExt;
 use ndarray_rand::rand_distr::Normal;
 
@@ -311,6 +311,7 @@ pub fn softmax_3d(x: &Array3<f32>, axis: usize) -> Array3<f32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ndarray::{Array3, s};
     
     #[test]
     fn test_create_weight_matrix() {
