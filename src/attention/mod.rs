@@ -311,7 +311,6 @@ pub fn softmax_3d(x: &Array3<f32>, axis: usize) -> Array3<f32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::Array;
     
     #[test]
     fn test_create_weight_matrix() {

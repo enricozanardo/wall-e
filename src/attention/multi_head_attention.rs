@@ -1,6 +1,4 @@
-use ndarray::{Array, Array2, Array3, Axis, Ix3};
-use ndarray_rand::RandomExt;
-use ndarray_rand::rand_distr::Normal;
+use ndarray::{Array2, Array3, Ix3};
 
 use crate::nabla::tensor::Tensor;
 use crate::attention::{Attention, create_weight_matrix, softmax_3d};

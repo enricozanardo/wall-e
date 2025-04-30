@@ -1,4 +1,3 @@
-use ndarray::{Array, Array2, Array3, Axis};
 use crate::nabla::tensor::Tensor;
 use super::{Attention, MultiHeadAttention, FeedForward};
 
@@ -184,7 +183,7 @@ impl EncoderLayer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::Array3;
+    use ndarray::{Array3, Array2};
     
     #[test]
     fn test_encoder_layer_creation() {
