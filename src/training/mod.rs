@@ -1,18 +1,12 @@
-use std::time::{Instant, Duration};
 use std::collections::HashMap;
 use std::path::Path;
-use std::io::{self, BufWriter, BufReader, Write};
-use std::fs::File;
-use ndarray::{Array, Array1, Array2, Array3, Axis, s, Ix3};
-use ndarray_rand::RandomExt;
-use ndarray_rand::rand_distr::Uniform;
-use indicatif::{ProgressBar, ProgressStyle};
+use std::io;
+use ndarray::{Array, Array1, Array2,s};
 use thiserror::Error;
-use crate::tokenizer::{Tokenizer, Vocab};
+use crate::tokenizer::Tokenizer;
 use crate::embedding::TransformerEmbedding;
-use crate::attention::{EncoderStack, Attention};
+use crate::attention::EncoderStack;
 use crate::nabla::tensor::Tensor;
-use crate::export;
 
 /// Possible errors during model usage
 #[derive(Error, Debug)]

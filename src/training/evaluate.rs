@@ -1,5 +1,4 @@
-use ndarray::{Array, Array2, Axis, Dimension};
-use rand::{thread_rng, Rng};
+use ndarray::Array2;
 use crate::nabla::tensor::Tensor;
 use crate::tokenizer::Tokenizer;
 use crate::training::ModelOutput;
