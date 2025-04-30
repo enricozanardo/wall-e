@@ -50,6 +50,7 @@ pub trait BatchEmbedding {
 /// TransformerEmbedding combines token embeddings and positional embeddings
 /// to create the input representation for transformer models, as described in
 /// the "Attention Is All You Need" paper.
+#[allow(dead_code)]
 pub struct TransformerEmbedding {
     /// Token embeddings
     token_emb: token_embedding::TokenEmbedding,
@@ -238,7 +239,6 @@ impl TransformerEmbedding {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::Array;
     
     #[test]
     fn test_transformer_embedding_creation() {

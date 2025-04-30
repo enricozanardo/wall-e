@@ -1,6 +1,5 @@
 use crate::nabla::tensor::Tensor;
-use ndarray::{Array, Array2, Axis};
-use std::f32::consts::PI;
+use ndarray::Array;
 use rayon::prelude::*;
 
 use super::Embedding;

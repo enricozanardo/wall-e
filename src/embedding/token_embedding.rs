@@ -1,8 +1,6 @@
-use ndarray::{Array, Array1, Array2, Array3, Axis};
+use ndarray::{Array1, Array2, Array3};
 use ndarray_rand::RandomExt;
 use ndarray_rand::rand_distr::Uniform;
-use rand::Rng;
-use std::vec;
 
 use crate::nabla::tensor::Tensor;
 use crate::embedding::{Embedding, BatchEmbedding};
