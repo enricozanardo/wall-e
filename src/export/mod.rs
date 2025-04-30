@@ -1,8 +1,8 @@
 use std::fs::{self, File};
-use std::io::{self, BufWriter, BufReader, Write, Read};
-use std::path::{Path, PathBuf};
+use std::io::{self, BufWriter, BufReader, Write};
+use std::path::Path;
 use std::collections::HashMap;
-use ndarray::{Array, ArrayD};
+use ndarray::Array;
 use bincode;
 use serde::{Serialize, Deserialize};
 
