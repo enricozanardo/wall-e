@@ -8,11 +8,12 @@ use wall_e1::training::Trainer;
 use serde_json::Value;
 use ndarray::Array2;
 use std::io::{self, Write};
-use std::time::Instant;
+use std::time::{Instant, Duration};
 use ndarray::{Array, Axis, s};
 use ndarray_parallel::prelude::*;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
+use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Addestramento modello QA Wall-E1");
@@ -20,8 +21,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Utilizzo {} thread per il calcolo parallelo", rayon::current_num_threads());
     
     // Carica il dataset QA
-    println!("Caricamento del dataset da 'data/qa_dataset.json'...");
-    let dataset_path = "data/qa_dataset.json";
+    println!("Caricamento del dataset da 'data/qa_dummy.json'...");
+    let dataset_path = "data/qa_dummy.json";
     
     if !Path::new(dataset_path).exists() {
         eprintln!("Errore: Il dataset '{}' non esiste!", dataset_path);
@@ -46,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let learning_rate = model_params["learning_rate"].as_f64().unwrap_or(0.0005) as f32;
     
     println!("Parametri del modello:");
-    println!("  - Dimensione del modello: {}", d_model);
+    println!("  - Dimensione del modello (d_model): {} - Dimensione degli embedding e stati nascosti", d_model);
     println!("  - Dimensione feed-forward: {}", ff_dim);
     println!("  - Numero di teste di attenzione: {}", num_heads);
     println!("  - Numero di layer: {}", num_layers);
@@ -119,6 +120,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Prepara gli esempi di addestramento
     println!("Preparazione degli esempi di addestramento...");
     
+    // Progress bar per la preparazione degli esempi
+    let progress_bar = ProgressBar::new(training_texts.len() as u64);
+    progress_bar.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} {msg}")
+            .unwrap()
+            .progress_chars("##-")
+    );
+    progress_bar.set_message("Preparazione esempi");
+    
     // Utilizziamo un vettore di esempi e target condiviso tra thread
     let training_examples_mutex = Arc::new(Mutex::new(Vec::new()));
     let training_targets_mutex = Arc::new(Mutex::new(Vec::new()));
@@ -156,7 +167,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 targets.extend(local_targets);
             }
         }
+        progress_bar.inc(1);
     });
+    
+    progress_bar.finish_with_message("Esempi preparati");
     
     // Estrai i dati dai mutex
     let training_examples = Arc::try_unwrap(training_examples_mutex)
@@ -175,6 +189,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Crea range di indici
     let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
+    
+    // Progress bar per la preparazione dei batch
+    let batch_progress = ProgressBar::new(indices.len() as u64);
+    batch_progress.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} {msg}")
+            .unwrap()
+            .progress_chars("##-")
+    );
+    batch_progress.set_message("Preparazione batch");
     
     // Struttura dati per i batch
     let batch_results = Arc::new(Mutex::new(Vec::new()));
@@ -230,7 +254,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 targets.push(batch_targets);
             }
         }
+        batch_progress.inc(1);
     });
+    
+    batch_progress.finish_with_message("Batch preparati");
     
     // Estrai i dati dai mutex
     let batched_examples = Arc::try_unwrap(batch_results)
@@ -244,15 +271,32 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di {}.", batch_size);
-    let epochs = 2; // Aumentiamo a 3 epoche
+    let epochs = 2; // Numero di epoche
+    
+    // Tempo di inizio dell'addestramento
+    let training_start_time = Instant::now();
     
     for epoch in 1..=epochs {
-        // Utilizziamo Mutex per aggiornare in modo sicuro i contatori di loss
+        // Tempo di inizio dell'epoca
+        let epoch_start_time = Instant::now();
+        
+        // Progress bar per l'epoca corrente
+        let epoch_progress = ProgressBar::new(batched_examples.len() as u64);
+        epoch_progress.set_style(
+            ProgressStyle::default_bar()
+                .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} Batch: {msg}")
+                .unwrap()
+                .progress_chars("##-")
+        );
+        epoch_progress.set_message(format!("Epoca {}/{}", epoch, epochs));
+        
+        // Utilizziamo Mutex per aggiornare in modo sicuro i contatori
         let total_loss_mutex = Arc::new(Mutex::new(0.0));
         let num_batches_mutex = Arc::new(Mutex::new(0));
         
-        // Creiamo un contatore per monitorare i batch
-        let batch_counter = Arc::new(Mutex::new(0));
+        // Per il calcolo dell'accuratezza
+        let correct_predictions_mutex = Arc::new(Mutex::new(0));
+        let total_predictions_mutex = Arc::new(Mutex::new(0));
         
         // Trainer deve essere mutato sequenzialmente, quindi non possiamo usare par_iter qui
         for (batch_idx, (batch, targets)) in batched_examples.iter().zip(batched_targets.iter()).enumerate() {
@@ -270,7 +314,43 @@ fn main() -> Result<(), Box<dyn Error>> {
             // Esegui un passo di training
             let loss = trainer.train_step(batch, &targets_array);
             
-            // Aggiorna il conteggio in modo thread-safe
+            // Calcola l'accuratezza per questo batch
+            let batch_output = trainer.forward(batch, Some(&targets_array));
+            let batch_size = batch.len();
+            let seq_len = batch[0].len();
+            
+            let mut batch_correct = 0;
+            let mut batch_total = 0;
+            
+            for i in 0..batch_size {
+                for j in 0..seq_len {
+                    if j < targets_array.shape()[1] {
+                        let target_id = targets_array[[i, j]];
+                        if target_id != 0 { // Ignora i token di padding
+                            batch_total += 1;
+                            
+                            // Trova il token con maggiore probabilità dall'output
+                            let mut max_token = 0;
+                            let mut max_prob = f32::NEG_INFINITY;
+                            
+                            for k in 0..trainer.get_vocab_size() {
+                                let prob = batch_output.logits.data[[i, j, k]];
+                                if prob > max_prob {
+                                    max_prob = prob;
+                                    max_token = k;
+                                }
+                            }
+                            
+                            // Controlla se la predizione è corretta
+                            if max_token == target_id {
+                                batch_correct += 1;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Aggiorna le metriche in modo thread-safe
             if let Ok(mut total) = total_loss_mutex.lock() {
                 *total += loss;
             }
@@ -279,26 +359,44 @@ fn main() -> Result<(), Box<dyn Error>> {
                 *count += 1;
             }
             
-            // Incrementa e controlla se mostrare l'avanzamento
-            let should_print = {
-                let mut counter = batch_counter.lock().unwrap();
-                *counter += 1;
-                *counter % 10 == 0
-            };
-            
-            if should_print {
-                println!("  Epoch {}, Batch {}/{}: Loss = {:.4}", 
-                         epoch, batch_idx + 1, batched_examples.len(), loss);
+            if let Ok(mut correct) = correct_predictions_mutex.lock() {
+                *correct += batch_correct;
             }
+            
+            if let Ok(mut total) = total_predictions_mutex.lock() {
+                *total += batch_total;
+            }
+            
+            // Aggiorna la progress bar
+            epoch_progress.set_position(batch_idx as u64 + 1);
+            epoch_progress.set_message(format!("Epoca {}/{} - Loss: {:.4}", epoch, epochs, loss));
         }
+        
+        // Tempo di fine dell'epoca
+        let epoch_duration = epoch_start_time.elapsed();
         
         // Estrai i valori finali dai mutex
         let total_loss = *total_loss_mutex.lock().unwrap();
         let num_batches = *num_batches_mutex.lock().unwrap();
+        let correct_predictions = *correct_predictions_mutex.lock().unwrap();
+        let total_predictions = *total_predictions_mutex.lock().unwrap();
         
         let avg_loss = total_loss / num_batches as f32;
-        println!("Epoch {} completata. Loss media: {:.4}", epoch, avg_loss);
+        let accuracy = if total_predictions > 0 {
+            (correct_predictions as f32 / total_predictions as f32) * 100.0
+        } else {
+            0.0
+        };
+        
+        epoch_progress.finish();
+        println!("Epoca {} completata in {:?}.", epoch, epoch_duration);
+        println!("  Loss media: {:.4}", avg_loss);
+        println!("  Accuratezza: {:.2}% ({}/{})", accuracy, correct_predictions, total_predictions);
     }
+    
+    // Tempo totale di addestramento
+    let total_training_time = training_start_time.elapsed();
+    println!("\nAddestramento completato in {:?}.", total_training_time);
     
     // Salva il modello addestrato
     let model_path = "models/qa_model.bin";
@@ -319,8 +417,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Creiamo un mutex per i risultati
     let results_mutex = Arc::new(Mutex::new(Vec::new()));
     
+    // Progress bar per il test
+    let test_progress = ProgressBar::new(test_prompts.len() as u64);
+    test_progress.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} {msg}")
+            .unwrap()
+            .progress_chars("##-")
+    );
+    test_progress.set_message("Testando domande");
+    
     // Test sincronizzato per i prompts
-    for prompt in test_prompts {
+    for (i, prompt) in test_prompts.iter().enumerate() {
         let question = prompt.as_str().unwrap().to_string();
         
         // Codifichiamo il prompt
@@ -357,7 +465,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 top_responses
             });
         }
+        
+        test_progress.set_position(i as u64 + 1);
     }
+    
+    test_progress.finish_with_message("Test completato");
     
     // Estrai i risultati e stampali
     let test_results = Arc::try_unwrap(results_mutex)
@@ -375,5 +487,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     println!("\nAddestramento e test completati!");
     println!("Modello salvato in: {}", model_path);
+    println!("Tempo totale: {:?}", total_training_time);
     Ok(())
 } 
