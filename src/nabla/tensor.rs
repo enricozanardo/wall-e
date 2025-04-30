@@ -1,4 +1,4 @@
-use ndarray::{Array, Array2, Array3, ArrayD, Dimension, Ix2, Ix3, IxDyn};
+use ndarray::{Array, Array2, Array3, ArrayD, Ix2, IxDyn};
 use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 
