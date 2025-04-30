@@ -2,24 +2,24 @@ use ndarray::{Array, Array2, Array3, ArrayD, Dimension, Ix2, Ix3, IxDyn};
 use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 
-// motore di autograd per il calcolo dei gradienti
+// autograd engine for gradient calculation
 
 
-/// Rappresenta un tensore con capacità di autograd
+/// Represents a tensor with autograd capabilities
 #[derive(Clone)]
 pub struct Tensor {
-    /// Dati del tensore (valori)
+    /// Tensor data (values)
     pub data: ArrayD<f32>,
-    /// Gradienti calcolati durante il backpropagation
+    /// Gradients calculated during backpropagation
     pub grad: Arc<Mutex<Option<ArrayD<f32>>>>,
-    /// Funzione per calcolare il gradiente durante il backprop
+    /// Function to calculate gradient during backprop
     pub grad_fn: Option<Arc<dyn Fn(&Tensor, &ArrayD<f32>) + Send + Sync>>,
-    /// Tensori padre da cui questo tensore è stato creato
+    /// Parent tensors from which this tensor was created
     pub parents: Vec<Tensor>,
 }
 
 impl Tensor {
-    /// Crea un nuovo tensore con i dati specificati (Array2)
+    /// Creates a new tensor with the specified data (Array2)
     pub fn new(data: Array2<f32>) -> Self {
         Tensor { 
             data: data.into_dyn(), 
@@ -29,7 +29,7 @@ impl Tensor {
         }
     }
     
-    /// Crea un nuovo tensore con i dati specificati (Array3)
+    /// Creates a new tensor with the specified data (Array3)
     pub fn new_3d(data: Array3<f32>) -> Self {
         Tensor { 
             data: data.into_dyn(), 
@@ -39,7 +39,7 @@ impl Tensor {
         }
     }
 
-    /// Crea un tensore con una funzione di gradiente
+    /// Creates a tensor with a gradient function
     pub fn with_grad_fn(data: ArrayD<f32>, parents: Vec<Tensor>, grad_fn: Arc<dyn Fn(&Tensor, &ArrayD<f32>) + Send + Sync>) -> Self {
         Self {
             data,
@@ -49,75 +49,127 @@ impl Tensor {
         }
     }
 
-    /// Esegue il backpropagation a partire da questo tensore
+    /// Performs backpropagation starting from this tensor
     pub fn backward(&self, grad_output: Option<ArrayD<f32>>) {
-        // Se non viene fornito un gradiente, usa un tensore di tutti 1
+        // If no gradient is provided, use a tensor of all 1s
         let grad = grad_output.unwrap_or_else(|| Array::ones(self.data.raw_dim()));
         
-        // Aggiorna il gradiente di questo tensore
+        // Update the gradient of this tensor
         self.update_grad(&grad);
         
-        // Propaga il gradiente ai tensori padre, se presente una grad_fn
+        // Propagate the gradient to parent tensors, if there's a grad_fn
         if let Some(ref grad_fn) = self.grad_fn {
-            // Applica la funzione di gradiente
+            // Apply the gradient function
             grad_fn(self, &grad);
         }
     }
     
-    /// Aggiorna il gradiente accumulato per questo tensore
+    /// Updates the accumulated gradient for this tensor
     fn update_grad(&self, grad: &ArrayD<f32>) {
         let mut locked_grad = self.grad.lock().unwrap();
         if let Some(ref existing_grad) = *locked_grad {
-            // Accumula il gradiente esistente
+            // Accumulate existing gradient
             *locked_grad = Some(existing_grad + grad);
         } else {
-            // Imposta il gradiente se non esiste
+            // Set the gradient if it doesn't exist
             *locked_grad = Some(grad.clone());
         }
     }
 
-    // ===== OPERAZIONI SUI TENSORI =====
+    // ===== TENSOR OPERATIONS =====
 
-    /// Somma due tensori elemento per elemento
+    /// Adds two tensors element-wise
+    ///
+    /// # Arguments
+    ///
+    /// * `a` - First tensor
+    /// * `b` - Second tensor
+    ///
+    /// # Returns
+    ///
+    /// A new tensor containing the element-wise sum
+    ///
+    /// # Panics
+    ///
+    /// Panics if the tensors have incompatible shapes
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+    /// let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
+    /// let c = Tensor::add(&a, &b);
+    ///
+    /// // c now contains [[6.0, 8.0], [10.0, 12.0]]
+    /// ```
     pub fn add(a: &Tensor, b: &Tensor) -> Tensor {
-        // Verifica che le dimensioni siano compatibili
-        assert_eq!(a.data.shape(), b.data.shape(), "Tensori di forme incompatibili per l'addizione");
+        // Verify that dimensions are compatible
+        assert_eq!(a.data.shape(), b.data.shape(), "Tensors with incompatible shapes for addition");
         
-        // Calcola il risultato forward usando Rayon
+        // Calculate the forward result using Rayon
         let a_vec: Vec<f32> = a.data.iter().cloned().collect();
         let b_vec: Vec<f32> = b.data.iter().cloned().collect();
         
-        // Parallelizza la somma elemento per elemento
+        // Parallelize the element-wise addition
         let result_vec: Vec<f32> = a_vec.par_iter()
             .zip(b_vec.par_iter())
             .map(|(&a_val, &b_val)| a_val + b_val)
             .collect();
         
-        // Converte il risultato in Array con la stessa forma
+        // Convert the result to Array with the same shape
         let data = Array::from_shape_vec(a.data.raw_dim(), result_vec).unwrap();
         
-        // Clona i tensori parent per la chiusura
+        // Clone the parent tensors for the closure
         let a_clone = a.clone();
         let b_clone = b.clone();
 
-        // Crea un nuovo tensore con la funzione di gradiente
+        // Create a new tensor with the gradient function
         Tensor::with_grad_fn(data, vec![a.clone(), b.clone()], Arc::new(move |_, grad| {
-            // Il gradiente della somma si propaga identico a entrambi gli input
+            // The gradient of addition propagates identically to both inputs
             a_clone.update_grad(grad);
             b_clone.update_grad(grad);
         }))
     }
 
-    /// Moltiplica due tensori (moltiplicazione matriciale)
+    /// Multiplies two tensors (matrix multiplication)
+    ///
+    /// # Arguments
+    ///
+    /// * `a` - First tensor
+    /// * `b` - Second tensor
+    ///
+    /// # Returns
+    ///
+    /// A new tensor containing the matrix multiplication result
+    ///
+    /// # Panics
+    ///
+    /// Panics if the tensors have incompatible shapes for matrix multiplication
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+    /// let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
+    /// let c = Tensor::matmul(&a, &b);
+    ///
+    /// // c now contains [[19.0, 22.0], [43.0, 50.0]]
+    /// ```
     pub fn matmul(a: &Tensor, b: &Tensor) -> Tensor {
-        // Convertiamo a Array2 per la moltiplicazione matriciale
+        // Convert to Array2 for matrix multiplication
         let a_2d = a.data.clone().into_dimensionality::<Ix2>().unwrap();
         let b_2d = b.data.clone().into_dimensionality::<Ix2>().unwrap();
         
-        // La moltiplicazione di matrici utilizza BLAS quando disponibile
+        // Matrix multiplication uses BLAS when available
         let data = a_2d.dot(&b_2d).into_dyn();
         
-        // Clona i tensori parent per la chiusura
+        // Clone the parent tensors for the closure
         let a_clone = a.clone();
         let b_clone = b.clone();
     
@@ -125,66 +177,109 @@ impl Tensor {
             data,
             vec![a.clone(), b.clone()],
             Arc::new(move |_, grad| {
-                // Convertiamo a Array2 per la moltiplicazione matriciale
+                // Convert to Array2 for matrix multiplication
                 let grad_2d = grad.clone().into_dimensionality::<Ix2>().unwrap();
                 let a_2d = a_clone.data.clone().into_dimensionality::<Ix2>().unwrap();
                 let b_2d = b_clone.data.clone().into_dimensionality::<Ix2>().unwrap();
                 
-                // Per la moltiplicazione matriciale:
+                // For matrix multiplication:
                 // dL/dA = dL/dZ · B^T
                 // dL/dB = A^T · dL/dZ
                 let grad_a = grad_2d.dot(&b_2d.t()).into_dyn();
                 let grad_b = a_2d.t().dot(&grad_2d).into_dyn();
                 
-                // Aggiorna i gradienti di A e B
+                // Update the gradients of A and B
                 a_clone.update_grad(&grad_a);
                 b_clone.update_grad(&grad_b);
             }),
         )
     }
     
-    /// Calcola la trasposta di un Tensor
+    /// Computes the transpose of a tensor
+    ///
+    /// # Returns
+    ///
+    /// A new tensor that is the transpose of the input tensor
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let a = Tensor::new(arr2(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]));
+    /// let at = a.transpose();
+    ///
+    /// // at now contains [[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]
+    /// ```
     pub fn transpose(&self) -> Tensor {
-        // Convertiamo a Array2 per la trasposizione
+        // Convert to Array2 for transposition
         let data_2d = self.data.clone().into_dimensionality::<Ix2>().unwrap();
         
-        // Ottiene la trasposta dell'array di dati
+        // Get the transpose of the data array
         let transposed_data = data_2d.t().to_owned().into_dyn();
         
-        // Clona il tensore parent per la chiusura
+        // Clone the parent tensor for the closure
         let self_clone = self.clone();
         
         Tensor::with_grad_fn(
             transposed_data,
             vec![self.clone()],
             Arc::new(move |_, grad| {
-                // Convertiamo a Array2 per la trasposizione
+                // Convert to Array2 for transposition
                 let grad_2d = grad.clone().into_dimensionality::<Ix2>().unwrap();
                 
-                // Il gradiente della trasposta è la trasposta del gradiente
+                // The gradient of transpose is the transpose of the gradient
                 let grad_input = grad_2d.t().to_owned().into_dyn();
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 self_clone.update_grad(&grad_input);
             }),
         )
     }
     
-    /// Moltiplica un tensore per un altro (moltiplicazione matriciale)
-    /// Metodo di istanza per migliorare l'usabilità
+    /// Multiplies this tensor by another tensor (matrix multiplication)
+    ///
+    /// This is an instance method that provides a more convenient syntax for 
+    /// matrix multiplication operations.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - The tensor to multiply with
+    ///
+    /// # Returns
+    ///
+    /// A new tensor containing the matrix multiplication result
+    ///
+    /// # Panics
+    ///
+    /// Panics if the tensors have incompatible shapes for matrix multiplication
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+    /// let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
+    /// let c = a.matmul_with(&b);
+    ///
+    /// // c now contains [[19.0, 22.0], [43.0, 50.0]]
+    /// ```
     pub fn matmul_with(&self, other: &Tensor) -> Tensor {
-        // Log delle forme per debug
+        // Debug logging of shapes
         // println!("Debug: matmul_with - self shape: {:?}, other shape: {:?}", self.data.shape(), other.data.shape());
         
-        // Supporto special case per tensori 3D [batch, seq_len, feature_dim] 
-        // moltiplicati per un tensore 2D [feature_dim, output_dim]
+        // Special case support for 3D tensors [batch, seq_len, feature_dim] 
+        // multiplied by a 2D tensor [feature_dim, output_dim]
         if self.data.ndim() == 3 && other.data.ndim() == 2 {
             let self_shape = self.data.shape();
             let other_shape = other.data.shape();
             
-            // Verifica compatibilità delle dimensioni
+            // Verify dimension compatibility
             if self_shape[2] != other_shape[0] {
-                panic!("Dimensioni incompatibili per matmul_with: {:?} e {:?}", self_shape, other_shape);
+                panic!("Incompatible dimensions for matmul_with: {:?} and {:?}", self_shape, other_shape);
             }
             
             let batch_size = self_shape[0];
@@ -192,12 +287,12 @@ impl Tensor {
             let feature_dim = self_shape[2];
             let output_dim = other_shape[1];
             
-            // println!("Debug: matmul_with - caso speciale 3D x 2D");
+            // println!("Debug: matmul_with - special case 3D x 2D");
             
-            // Risultato: [batch_size, seq_len, output_dim]
+            // Result: [batch_size, seq_len, output_dim]
             let mut result = Array3::<f32>::zeros((batch_size, seq_len, output_dim));
             
-            // Esegui la moltiplicazione matriciale per ogni batch e ogni posizione nella sequenza
+            // Perform matrix multiplication for each batch and each position in the sequence
             for b in 0..batch_size {
                 for s in 0..seq_len {
                     for o in 0..output_dim {
@@ -210,62 +305,98 @@ impl Tensor {
                 }
             }
             
-            // Ritorna un tensore 3D
+            // Return a 3D tensor
             return Tensor::new_3d(result);
         }
         
-        // Caso generale - usa la matmul standard
+        // General case - use standard matmul
         Tensor::matmul(self, other)
     }
 
-    /// Applica la funzione ReLU al tensore
+    /// Applies the ReLU (Rectified Linear Unit) activation function to the tensor
+    ///
+    /// This applies the function f(x) = max(0, x) to each element of the tensor.
+    ///
+    /// # Returns
+    ///
+    /// A new tensor with ReLU applied element-wise
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let x = Tensor::new(arr2(&[[-1.0, 2.0], [-3.0, 4.0]]));
+    /// let y = x.relu();
+    /// // y now contains [[0.0, 2.0], [0.0, 4.0]]
+    /// ```
     pub fn relu(&self) -> Self {
         let result = self.data.mapv(|x| x.max(0.0));
         
-        // Clona il tensore parent per la chiusura
+        // Clone the parent tensor for the closure
         let self_clone = self.clone();
         
         Tensor::with_grad_fn(
             result,
             vec![self.clone()],
             Arc::new(move |_, grad| {
-                // Il gradiente di ReLU è 1 se l'input è > 0, altrimenti 0
+                // The gradient of ReLU is 1 if the input is > 0, otherwise 0
                 let input_data = &self_clone.data;
                 let mut grad_input = grad.clone();
                 
-                // Applicare la maschera al gradiente
+                // Apply the mask to the gradient
                 for (i, &val) in input_data.iter().enumerate() {
                     if val <= 0.0 {
                         grad_input.as_slice_mut().unwrap()[i] = 0.0;
                     }
                 }
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 self_clone.update_grad(&grad_input);
             }),
         )
     }
 
-    /// Eleva al quadrato ogni elemento del tensore
+    /// Squares each element of the tensor
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The input tensor
+    ///
+    /// # Returns
+    ///
+    /// A new tensor with each element squared
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let x = Tensor::new(arr2(&[[1.0, 2.0], [3.0, -4.0]]));
+    /// let y = Tensor::square(&x);
+    /// // y now contains [[1.0, 4.0], [9.0, 16.0]]
+    /// ```
     pub fn square(x: &Tensor) -> Tensor {
-        // x² è calcolato come x * x utilizzando Rayon per parallelizzare
-        // Convertiamo in vettore per usare Rayon, poi torniamo ad Array
+        // x² is calculated as x * x using Rayon for parallelization
+        // Convert to vector to use Rayon, then back to Array
         let data_vec: Vec<f32> = x.data.iter().cloned().collect();
         let result_vec: Vec<f32> = data_vec.par_iter()
             .map(|&v| v * v)
             .collect();
         
-        // Converte il risultato in Array con la stessa forma
+        // Convert the result to Array with the same shape
         let result_data = Array::from_shape_vec(x.data.raw_dim(), result_vec).unwrap();
         
-        // Clona il tensore parent per la chiusura
+        // Clone the parent tensor for the closure
         let x_clone = x.clone();
         
         Tensor::with_grad_fn(
             result_data,
             vec![x.clone()],
             Arc::new(move |_, grad| {
-                // Il gradiente di x² è 2x
+                // The gradient of x² is 2x
                 let mut grad_input = grad.clone();
                 let x_data = &x_clone.data;
                 
@@ -273,62 +404,106 @@ impl Tensor {
                     grad_input.as_slice_mut().unwrap()[i] *= 2.0 * x_val;
                 }
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 x_clone.update_grad(&grad_input);
             }),
         )
     }
     
-    /// Somma tutti gli elementi del tensore
+    /// Computes the sum of all elements in the tensor
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The input tensor
+    ///
+    /// # Returns
+    ///
+    /// A new scalar tensor (1x1) containing the sum of all elements
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let x = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+    /// let sum = Tensor::sum(&x);
+    /// // sum now contains a 1x1 tensor with value 10.0
+    /// ```
     pub fn sum(x: &Tensor) -> Tensor {
-        // Calcola la somma scalare di tutti gli elementi
+        // Calculate the scalar sum of all elements
         let sum_val = x.data.sum();
         let mut data = Array::zeros(IxDyn(&[1, 1]));
         data[IxDyn(&[0, 0])] = sum_val;
         
-        // Clona il tensore parent per la chiusura
+        // Clone the parent tensor for the closure
         let x_clone = x.clone();
         
         Tensor::with_grad_fn(
             data,
             vec![x.clone()],
             Arc::new(move |_, grad| {
-                // Il gradiente della somma è un array di tutti 1 con la stessa forma dell'input
+                // The gradient of sum is an array of all 1s with the same shape as the input
                 let grad_val = grad[IxDyn(&[0, 0])];
                 let grad_input = Array::from_elem(x_clone.data.raw_dim(), grad_val);
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 x_clone.update_grad(&grad_input);
             }),
         )
     }
     
-    /// Calcola l'errore quadratico medio (MSE) tra output e target
+    /// Computes the Mean Squared Error (MSE) between output and target tensors
+    ///
+    /// # Arguments
+    ///
+    /// * `output` - The predicted tensor
+    /// * `target` - The target tensor
+    ///
+    /// # Returns
+    ///
+    /// A scalar tensor (1x1) containing the MSE value
+    ///
+    /// # Panics
+    ///
+    /// Panics if the tensors have incompatible shapes
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::arr2;
+    ///
+    /// let output = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
+    /// let target = Tensor::new(arr2(&[[0.0, 0.0], [0.0, 0.0]]));
+    /// let loss = Tensor::mse(&output, &target);
+    /// // loss now contains the mean squared error: 7.5
+    /// ```
     pub fn mse(output: &Tensor, target: &Tensor) -> Tensor {
-        // Verifica che le dimensioni siano compatibili
-        assert_eq!(output.data.shape(), target.data.shape(), "Tensori di forme incompatibili per MSE");
+        // Verify that dimensions are compatible
+        assert_eq!(output.data.shape(), target.data.shape(), "Tensors with incompatible shapes for MSE");
         
-        // Calcola la differenza
+        // Calculate the difference
         let diff_vec: Vec<f32> = output.data.iter()
             .zip(target.data.iter())
             .map(|(&o, &t)| o - t)
             .collect();
         
-        // Converte il risultato in Array con la stessa forma
+        // Convert the result to Array with the same shape
         let diff_data = Array::from_shape_vec(output.data.raw_dim(), diff_vec).unwrap();
         
-        // Calcola il quadrato delle differenze
+        // Calculate the squared differences
         let squared_diff: Vec<f32> = diff_data.iter().map(|&d| d * d).collect();
         
-        // Calcola la media
+        // Calculate the mean
         let n = squared_diff.len() as f32;
         let mse_val = squared_diff.iter().sum::<f32>() / n;
         
-        // Crea un Tensor scalare
+        // Create a scalar Tensor
         let mut data = Array::zeros(IxDyn(&[1, 1]));
         data[IxDyn(&[0, 0])] = mse_val;
         
-        // Cloniamo i tensori parent per la chiusura
+        // Clone the parent tensors for the closure
         let output_clone = output.clone();
         let target_clone = target.clone();
         
@@ -336,7 +511,7 @@ impl Tensor {
             data,
             vec![output.clone(), target.clone()],
             Arc::new(move |_, grad| {
-                // Il gradiente dell'MSE rispetto all'output è 2(output - target) / n
+                // The gradient of MSE with respect to the output is 2(output - target) / n
                 let grad_val = grad[IxDyn(&[0, 0])];
                 let n = output_clone.data.len() as f32;
                 
@@ -345,23 +520,48 @@ impl Tensor {
                     .map(|(&o, &t)| 2.0 * (o - t) * grad_val / n)
                     .collect();
                 
-                // Converte il gradiente in Array con la stessa forma dell'output
+                // Convert the gradient to Array with the same shape as the output
                 let grad_output = Array::from_shape_vec(output_clone.data.raw_dim(), grad_vec).unwrap();
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 output_clone.update_grad(&grad_output);
                 
-                // Il gradiente rispetto al target è -grad(output)
+                // The gradient with respect to the target is -grad(output)
                 let grad_target_vec: Vec<f32> = grad_output.iter().map(|&g| -g).collect();
                 let grad_target = Array::from_shape_vec(target_clone.data.raw_dim(), grad_target_vec).unwrap();
                 
-                // Aggiorna il gradiente
+                // Update the gradient
                 target_clone.update_grad(&grad_target);
             }),
         )
     }
 
-    /// Crea un nuovo tensore da un ArrayD
+    /// Creates a new tensor from an ArrayD
+    ///
+    /// This allows creating a tensor from an n-dimensional array directly.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - The n-dimensional array
+    ///
+    /// # Returns
+    ///
+    /// A new tensor containing the input data
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nabla::tensor::Tensor;
+    /// use ndarray::{Array, IxDyn};
+    ///
+    /// // Create a 2x3 array
+    /// let data = Array::from_shape_vec(
+    ///     IxDyn(&[2, 3]),
+    ///     vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    /// ).unwrap();
+    /// 
+    /// let tensor = Tensor::new_from_array(data);
+    /// ```
     pub fn new_from_array(data: ArrayD<f32>) -> Self {
         Self {
             data,
@@ -387,18 +587,18 @@ mod tests {
     
     #[test]
     fn test_add_forward_and_backward() {
-        // Inizializza i tensori di input
+        // Initialize input tensors
         let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
         let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
         
-        // Test operazione forward
+        // Test forward operation
         let z = Tensor::add(&a, &b);
         assert_eq!(z.data, arr2(&[[6.0, 8.0], [10.0, 12.0]]).into_dyn());
         
         // Test backpropagation
         z.backward(None);
         
-        // Il gradiente dovrebbe essere 1.0 ovunque
+        // The gradient should be 1.0 everywhere
         let expected_grad: ndarray::ArrayBase<ndarray::OwnedRepr<f32>, ndarray::Dim<ndarray::IxDynImpl>> = Array2::ones((2, 2)).into_dyn();
         assert_eq!(a.grad.lock().unwrap().clone().unwrap(), expected_grad);
         assert_eq!(b.grad.lock().unwrap().clone().unwrap(), expected_grad);
@@ -406,22 +606,22 @@ mod tests {
     
     #[test]
     fn test_matmul_forward_and_backward() {
-        // Inizializza i tensori di input
+        // Initialize input tensors
         let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
         let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
         
-        // Test operazione forward
+        // Test forward operation
         let z = Tensor::matmul(&a, &b);
         assert_eq!(z.data, arr2(&[[19.0, 22.0], [43.0, 50.0]]).into_dyn());
         
         // Test backpropagation
         z.backward(None);
         
-        // Ottieni i gradienti
+        // Get the gradients
         let a_grad = a.grad.lock().unwrap().clone().unwrap();
         let b_grad = b.grad.lock().unwrap().clone().unwrap();
         
-        // Per la moltiplicazione di matrici con gradiente di tutti 1:
+        // For matrix multiplication with gradient of all 1s:
         // dA = dZ · B^T = [1 1; 1 1] · [5 7; 6 8]^T = [1 1; 1 1] · [5 6; 7 8] = [11 15; 11 15]
         let expected_grad_a = arr2(&[[11.0, 15.0], [11.0, 15.0]]).into_dyn();
         assert_eq!(a_grad, expected_grad_a);
@@ -433,72 +633,72 @@ mod tests {
     
     #[test]
     fn test_relu_forward_and_backward() {
-        // Inizializza il tensore di input
+        // Initialize input tensor
         let x = Tensor::new(arr2(&[[-1.0, 2.0], [-3.0, 4.0]]));
         
-        // Test operazione forward
+        // Test forward operation
         let y = x.relu();
         assert_eq!(y.data, arr2(&[[0.0, 2.0], [0.0, 4.0]]).into_dyn());
         
         // Test backpropagation
         y.backward(None);
         
-        // Per ReLU il gradiente dovrebbe essere 1 dove l'input è positivo, 0 altrimenti
+        // For ReLU the gradient should be 1 where the input is positive, 0 otherwise
         let expected_grad = arr2(&[[0.0, 1.0], [0.0, 1.0]]).into_dyn();
         assert_eq!(x.grad.lock().unwrap().clone().unwrap(), expected_grad);
     }
     
     #[test]
     fn test_transpose() {
-        // Inizializza il tensore di input
+        // Initialize input tensor
         let x = Tensor::new(arr2(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]));
         
-        // Test operazione forward
+        // Test forward operation
         let y = x.transpose();
         
-        // Verifica che la matrice sia effettivamente trasposta
+        // Verify that the matrix is actually transposed
         assert_eq!(y.data, arr2(&[[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]).into_dyn());
         
         // Test backpropagation
         y.backward(None);
         
-        // Il gradiente dovrebbe essere 1.0 ovunque, ma con la forma originale
+        // The gradient should be 1.0 everywhere, but with the original shape
         let expected_grad: ndarray::ArrayBase<ndarray::OwnedRepr<f32>, ndarray::Dim<ndarray::IxDynImpl>> = Array2::ones((2, 3)).into_dyn();
         assert_eq!(x.grad.lock().unwrap().clone().unwrap(), expected_grad);
     }
     
     #[test]
     fn test_matmul_with() {
-        // Test per il metodo di istanza matmul_with
+        // Test for the matmul_with instance method
         let a = Tensor::new(arr2(&[[1.0, 2.0], [3.0, 4.0]]));
         let b = Tensor::new(arr2(&[[5.0, 6.0], [7.0, 8.0]]));
         
-        // Utilizzo del metodo di istanza
+        // Using the instance method
         let z1 = a.matmul_with(&b);
         
-        // Utilizzo della funzione statica
+        // Using the static function
         let z2 = Tensor::matmul(&a, &b);
         
-        // I risultati dovrebbero essere identici
+        // The results should be identical
         assert_eq!(z1.data, z2.data);
     }
     
     #[test]
     fn test_thread_safety() {
-        // Test per verificare la sicurezza in contesti multi-thread
+        // Test to verify safety in multi-thread contexts
         let data = arr2(&[[1.0, 2.0], [3.0, 4.0]]);
         let tensor = Tensor::new(data.clone());
         
-        // Clona il tensore per usarlo in un altro thread
+        // Clone the tensor to use it in another thread
         let tensor_clone = tensor.clone();
         
-        // Crea un nuovo thread che accede al tensore
+        // Create a new thread that accesses the tensor
         let handle = std::thread::spawn(move || {
-            // Accedi al tensore in un altro thread
+            // Access the tensor in another thread
             tensor_clone.data.clone()
         });
         
-        // Attendi il completamento del thread e verifica il risultato
+        // Wait for the thread to complete and verify the result
         let result = handle.join().unwrap();
         assert_eq!(result, data.into_dyn());
     }

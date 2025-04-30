@@ -2,20 +2,20 @@ use rayon::prelude::*;
 use std::sync::Arc;
 use regex;
 
-/// Interfaccia per il processore di testo
+/// Interface for text processors
 pub trait TextProcessor: Send + Sync {
-    /// Processa una stringa di testo
+    /// Processes a text string
     fn process(&self, text: &str) -> String;
 }
 
-/// Processore di testo che normalizza spazi bianchi e converte in minuscolo
+/// Text processor that normalizes whitespace and converts to lowercase
 pub struct BasicTextProcessor {
     lowercase: bool,
     normalize_whitespace: bool,
 }
 
 impl BasicTextProcessor {
-    /// Crea un nuovo processore di testo basilare
+    /// Creates a new basic text processor
     pub fn new(lowercase: bool, normalize_whitespace: bool) -> Self {
         Self {
             lowercase,
@@ -33,11 +33,11 @@ impl TextProcessor for BasicTextProcessor {
         }
         
         if self.normalize_whitespace {
-            // Sostituisci sequenze di spazi bianchi con un singolo spazio
+            // Replace sequences of whitespace with a single space
             let re = regex::Regex::new(r"\s+").unwrap();
             processed = re.replace_all(&processed, " ").to_string();
             
-            // Rimuovi spazi all'inizio e alla fine
+            // Remove spaces at the beginning and end
             processed = processed.trim().to_string();
         }
         
@@ -45,20 +45,20 @@ impl TextProcessor for BasicTextProcessor {
     }
 }
 
-/// Processore che può eseguire una sequenza di trasformazioni sul testo
+/// Processor that can execute a sequence of transformations on text
 pub struct CompositeTextProcessor {
     processors: Vec<Box<dyn TextProcessor>>,
 }
 
 impl CompositeTextProcessor {
-    /// Crea un nuovo processore composito vuoto
+    /// Creates a new empty composite processor
     pub fn new() -> Self {
         Self {
             processors: Vec::new(),
         }
     }
     
-    /// Aggiunge un processore alla catena
+    /// Adds a processor to the chain
     pub fn add_processor<P: TextProcessor + 'static>(mut self, processor: P) -> Self {
         self.processors.push(Box::new(processor));
         self

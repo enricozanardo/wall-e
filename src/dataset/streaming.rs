@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-/// Struttura per lo streaming di dati da un file di testo
+/// Structure for streaming data from a text file
 pub struct DatasetStream {
     reader: BufReader<File>,
     batch_size: usize,
@@ -13,17 +13,20 @@ pub struct DatasetStream {
 }
 
 impl DatasetStream {
-    /// Crea un nuovo stream da un file
+    /// Creates a new stream from a file
     /// 
     /// # Arguments
-    /// * `path` - Percorso del file da cui leggere
-    /// * `batch_size` - Dimensione del batch da leggere ad ogni chiamata a `next_batch`
+    /// 
+    /// * `path` - Path to the file to read from
+    /// * `batch_size` - Size of the batch to read with each call to `next_batch`
     ///
     /// # Returns
-    /// * `DatasetStream` - Il nuovo stream
+    /// 
+    /// * `DatasetStream` - The new stream
     ///
     /// # Errors
-    /// Restituisce un errore se il file non può essere aperto
+    /// 
+    /// Returns an error if the file cannot be opened
     pub fn new<P: AsRef<Path>>(path: P, batch_size: usize) -> io::Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
@@ -37,46 +40,49 @@ impl DatasetStream {
         })
     }
     
-    /// Imposta un processore di testo per lo stream
+    /// Sets a text processor for the stream
     ///
     /// # Arguments
-    /// * `processor` - Il processore da utilizzare
+    /// 
+    /// * `processor` - The processor to use
     ///
     /// # Returns
-    /// * `Self` - Lo stream con il processore impostato
+    /// 
+    /// * `Self` - The stream with the processor set
     pub fn with_processor<P: TextProcessor + 'static>(mut self, processor: P) -> Self {
         self.processor = Some(Box::new(processor));
         self
     }
     
-    /// Legge il prossimo batch di dati dal file
+    /// Reads the next batch of data from the file
     ///
     /// # Returns
-    /// * `Option<Vec<String>>` - Un batch di linee lette dal file, o None se il file è terminato
+    /// 
+    /// * `Option<Vec<String>>` - A batch of lines read from the file, or None if the file is finished
     pub fn next_batch(&mut self) -> Option<Vec<String>> {
         if self.eof_reached && self.buffer.is_empty() {
             return None;
         }
         
-        // Se abbiamo ancora dati nel buffer, li restituiamo
+        // If we still have data in the buffer, we return it
         if !self.buffer.is_empty() {
             let batch = std::mem::take(&mut self.buffer);
             return Some(batch);
         }
         
-        // Altrimenti leggiamo dal file
+        // Otherwise we read from the file
         let mut batch = Vec::with_capacity(self.batch_size);
         
         for _ in 0..self.batch_size {
             let mut line = String::new();
             match self.reader.read_line(&mut line) {
                 Ok(0) => {
-                    // EOF raggiunto
+                    // EOF reached
                     self.eof_reached = true;
                     break;
                 },
                 Ok(_) => {
-                    // Rimuove il carattere newline se presente
+                    // Remove newline character if present
                     if line.ends_with('\n') {
                         line.pop();
                         if line.ends_with('\r') {
@@ -84,7 +90,7 @@ impl DatasetStream {
                         }
                     }
                     
-                    // Processa la linea se è presente un processore
+                    // Process the line if a processor is present
                     if let Some(processor) = &self.processor {
                         line = processor.process(&line);
                     }
@@ -92,7 +98,7 @@ impl DatasetStream {
                     batch.push(line);
                 },
                 Err(e) => {
-                    eprintln!("Errore durante la lettura: {}", e);
+                    eprintln!("Error during reading: {}", e);
                     self.eof_reached = true;
                     break;
                 }
@@ -106,21 +112,22 @@ impl DatasetStream {
         }
     }
     
-    /// Resetta lo stream all'inizio del file
+    /// Resets the stream to the beginning of the file
     ///
     /// # Returns
-    /// * `io::Result<()>` - Ok se il reset è riuscito, Err altrimenti
+    /// 
+    /// * `io::Result<()>` - Ok if the reset was successful, Err otherwise
     pub fn reset(&mut self) -> io::Result<()> {
-        // Non è possibile ottenere il percorso direttamente da BufReader
-        // Dovremmo memorizzare il percorso originale quando creiamo lo stream
+        // It's not possible to get the path directly from BufReader
+        // We should store the original path when we create the stream
         return Err(io::Error::new(
             io::ErrorKind::Unsupported,
-            "Reset non supportato. Creare un nuovo stream invece."
+            "Reset not supported. Create a new stream instead."
         ));
     }
 }
 
-/// Utility function per aprire uno stream di testo
+/// Utility function to open a text stream
 pub fn open_dataset_stream<P: AsRef<Path>>(path: P, batch_size: usize) -> io::Result<DatasetStream> {
     DatasetStream::new(path, batch_size)
 }
@@ -148,24 +155,24 @@ mod tests {
         let file = create_test_file();
         let mut stream = DatasetStream::new(file.path(), 2).unwrap();
         
-        // Legge il primo batch
+        // Reads the first batch
         let batch1 = stream.next_batch().unwrap();
         assert_eq!(batch1.len(), 2);
         assert_eq!(batch1[0], "Line 1");
         assert_eq!(batch1[1], "Line 2");
         
-        // Legge il secondo batch
+        // Reads the second batch
         let batch2 = stream.next_batch().unwrap();
         assert_eq!(batch2.len(), 2);
         assert_eq!(batch2[0], "Line 3");
         assert_eq!(batch2[1], "Line 4");
         
-        // Legge il terzo batch (incompleto)
+        // Reads the third batch (incomplete)
         let batch3 = stream.next_batch().unwrap();
         assert_eq!(batch3.len(), 1);
         assert_eq!(batch3[0], "Line 5");
         
-        // Verifica che non ci siano più dati
+        // Verifies that there is no more data
         assert!(stream.next_batch().is_none());
     }
     
@@ -187,17 +194,17 @@ mod tests {
     }
     
     #[test]
-    #[should_panic(expected = "Reset non supportato")]
+    #[should_panic(expected = "Reset not supported")]
     fn test_stream_reset() {
         let file = create_test_file();
         let mut stream = DatasetStream::new(file.path(), 5).unwrap();
         
-        // Legge tutto il file
+        // Reads the entire file
         let batch1 = stream.next_batch().unwrap();
         assert_eq!(batch1.len(), 5);
         assert!(stream.next_batch().is_none());
         
-        // Dovrebbe fallire con errore
+        // Should fail with error
         stream.reset().unwrap();
     }
 } 

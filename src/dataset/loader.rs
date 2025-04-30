@@ -6,74 +6,82 @@ use serde_json;
 use std::collections::HashMap;
 use rayon::prelude::*;
 
-/// Struttura dati generica per dataset
+/// Generic data structure for datasets
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataItem {
-    /// Testo dell'elemento
+    /// Text content of the item
     pub text: String,
-    /// Metadati opzionali (ad es. etichetta, categoria, ecc.)
+    /// Optional metadata (e.g. label, category, etc.)
     #[serde(default)]
     pub metadata: serde_json::Value,
 }
 
-/// Carica un file di testo completo in memoria
+/// Loads an entire text file into memory
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(String)` - Il contenuto del file
-/// * `Err(io::Error)` - Errore durante la lettura
+/// * `file_path` - The path to the file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(String)` - The content of the file
+/// * `Err(io::Error)` - Error during reading
 pub fn load_text<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     std::fs::read_to_string(file_path)
 }
 
-/// Carica un file di testo linea per linea, utile per file molto grandi
+/// Loads a text file line by line, useful for very large files
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<String>)` - Le righe del file
-/// * `Err(io::Error)` - Errore durante la lettura
+/// * `file_path` - The path to the file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<String>)` - The lines of the file
+/// * `Err(io::Error)` - Error during reading
 pub fn load_text_lines<P: AsRef<Path>>(file_path: P) -> io::Result<Vec<String>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     reader.lines().collect()
 }
 
-/// Carica un file di testo completo in memoria in modo parallelizzato
+/// Loads a complete text file into memory in a parallelized way
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(String)` - Il contenuto del file
-/// * `Err(io::Error)` - Errore durante la lettura
+/// * `file_path` - The path to the file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(String)` - The content of the file
+/// * `Err(io::Error)` - Error during reading
 pub fn load_text_parallel<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
-    // Legge le linee del file
+    // Read the lines of the file
     let lines = load_text_lines_parallel(&file_path)?;
     
-    // Unisce le linee in modo efficiente
+    // Join the lines efficiently
     Ok(lines.join("\n"))
 }
 
-/// Carica un file di testo linea per linea in modo parallelizzato, utile per file molto grandi
+/// Loads a text file line by line in a parallelized way, useful for very large files
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<String>)` - Le righe del file
-/// * `Err(io::Error)` - Errore durante la lettura
+/// * `file_path` - The path to the file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<String>)` - The lines of the file
+/// * `Err(io::Error)` - Error during reading
 pub fn load_text_lines_parallel<P: AsRef<Path>>(file_path: P) -> io::Result<Vec<String>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     
-    // Raccoglie le linee in un vettore
+    // Collect the lines into a vector
     let lines: Vec<io::Result<String>> = reader.lines().collect();
     
-    // Processa le linee in parallelo
+    // Process the lines in parallel
     let result: io::Result<Vec<String>> = lines
         .into_par_iter()
         .map(|line_result| line_result.map(|line| process_line(&line)))
@@ -82,34 +90,38 @@ pub fn load_text_lines_parallel<P: AsRef<Path>>(file_path: P) -> io::Result<Vec<
     result
 }
 
-/// Elabora una singola linea di testo (può essere estesa con operazioni più complesse)
+/// Processes a single line of text (can be extended with more complex operations)
 fn process_line(line: &str) -> String {
-    // Qui è possibile aggiungere elaborazione specifica
-    // Ad esempio, normalizzazione, pulizia, tokenizzazione, ecc.
+    // Here it's possible to add specific processing
+    // For example, normalization, cleaning, tokenization, etc.
     line.to_string()
 }
 
-/// Apre un file di testo e restituisce un BufReader per lo streaming
+/// Opens a text file and returns a BufReader for streaming
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(BufReader<File>)` - Reader per lo streaming
-/// * `Err(io::Error)` - Errore durante l'apertura
+/// * `file_path` - The path to the file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(BufReader<File>)` - Reader for streaming
+/// * `Err(io::Error)` - Error during opening
 pub fn open_text_stream<P: AsRef<Path>>(file_path: P) -> io::Result<BufReader<File>> {
     let file = File::open(file_path)?;
     Ok(BufReader::new(file))
 }
 
-/// Carica un dataset JSON in memoria
+/// Loads a JSON dataset into memory
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file JSON da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<DataItem>)` - Gli elementi nel file JSON
-/// * `Err(...)` - Errore durante la lettura o il parsing
+/// * `file_path` - The path to the JSON file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<DataItem>)` - The items in the JSON file
+/// * `Err(...)` - Error during reading or parsing
 pub fn load_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn std::error::Error>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
@@ -117,27 +129,29 @@ pub fn load_json<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn 
     Ok(items)
 }
 
-/// Carica un dataset JSON in memoria utilizzando parallelizzazione dove possibile
+/// Loads a JSON dataset into memory using parallelization where possible
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file JSON da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<DataItem>)` - Gli elementi nel file JSON
-/// * `Err(...)` - Errore durante la lettura o il parsing
+/// * `file_path` - The path to the JSON file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<DataItem>)` - The items in the JSON file
+/// * `Err(...)` - Error during reading or parsing
 pub fn load_json_parallel<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn std::error::Error>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     
-    // Prima fase: carica l'intero JSON
+    // First phase: load the entire JSON
     let items: Vec<DataItem> = serde_json::from_reader(reader)?;
     
-    // Seconda fase: processa gli elementi in parallelo
+    // Second phase: process the items in parallel
     let processed_items: Vec<DataItem> = items
         .into_par_iter()
         .map(|item| {
-            // Qui è possibile aggiungere elaborazione specifica
-            // Ad esempio, normalizzazione del testo, preparazione dei dati, ecc.
+            // Here it's possible to add specific processing
+            // For example, text normalization, data preparation, etc.
             item
         })
         .collect();
@@ -145,14 +159,16 @@ pub fn load_json_parallel<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>,
     Ok(processed_items)
 }
 
-/// Carica un dataset JSONL (JSON Lines) linea per linea
+/// Loads a JSONL (JSON Lines) dataset line by line
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file JSONL da caricare
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<DataItem>)` - Gli elementi nel file JSONL
-/// * `Err(...)` - Errore durante la lettura o il parsing
+/// * `file_path` - The path to the JSONL file to load
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<DataItem>)` - The items in the JSONL file
+/// * `Err(...)` - Error during reading or parsing
 pub fn load_jsonl<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn std::error::Error>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
@@ -169,16 +185,18 @@ pub fn load_jsonl<P: AsRef<Path>>(file_path: P) -> Result<Vec<DataItem>, Box<dyn
     Ok(items)
 }
 
-/// Carica un dataset CSV in memoria
+/// Loads a CSV dataset into memory
 /// 
-/// # Argomenti
-/// * `file_path` - Il percorso del file CSV da caricare
-/// * `has_headers` - Se il file ha una riga di intestazione
-/// * `text_column` - Nome della colonna contenente il testo (o indice se non ci sono intestazioni)
+/// # Arguments
 /// 
-/// # Restituisce
-/// * `Ok(Vec<DataItem>)` - Gli elementi estratti dal CSV
-/// * `Err(...)` - Errore durante la lettura o il parsing
+/// * `file_path` - The path to the CSV file to load
+/// * `has_headers` - Whether the file has a header row
+/// * `text_column` - Name of the column containing the text (or index if there are no headers)
+/// 
+/// # Returns
+/// 
+/// * `Ok(Vec<DataItem>)` - The items extracted from the CSV
+/// * `Err(...)` - Error during reading or parsing
 pub fn load_csv<P: AsRef<Path>>(
     file_path: P,
     has_headers: bool,
@@ -198,7 +216,7 @@ pub fn load_csv<P: AsRef<Path>>(
     let mut items = Vec::new();
     let headers = csv_reader.headers()?.iter().collect::<Vec<_>>();
     let text_column_index = headers.iter().position(|h| *h == text_column)
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, format!("Colonna {} non trovata", text_column)))?;
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, format!("Column {} not found", text_column)))?;
 
     for result in csv_reader.records() {
         let record = result?;
@@ -222,10 +240,10 @@ mod tests {
     #[test]
     fn test_load_text() -> io::Result<()> {
         let mut file = NamedTempFile::new()?;
-        writeln!(file, "Prima riga\nSeconda riga\nTerza riga")?;
+        writeln!(file, "First line\nSecond line\nThird line")?;
         
         let content = load_text(file.path())?;
-        assert_eq!(content, "Prima riga\nSeconda riga\nTerza riga\n");
+        assert_eq!(content, "First line\nSecond line\nThird line\n");
         
         Ok(())
     }
@@ -233,12 +251,12 @@ mod tests {
     #[test]
     fn test_load_text_lines() -> io::Result<()> {
         let mut file = NamedTempFile::new()?;
-        writeln!(file, "Prima riga")?;
-        writeln!(file, "Seconda riga")?;
-        writeln!(file, "Terza riga")?;
+        writeln!(file, "First line")?;
+        writeln!(file, "Second line")?;
+        writeln!(file, "Third line")?;
         
         let lines = load_text_lines(file.path())?;
-        assert_eq!(lines, vec!["Prima riga", "Seconda riga", "Terza riga"]);
+        assert_eq!(lines, vec!["First line", "Second line", "Third line"]);
         
         Ok(())
     }

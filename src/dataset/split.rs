@@ -3,27 +3,30 @@ use rand::thread_rng;
 use std::cmp::min;
 use std::error::Error;
 
-/// Struttura che contiene le divisioni del dataset
+/// Structure containing dataset splits
 pub struct DatasetSplit<T> {
     pub train: Vec<T>,
     pub validation: Vec<T>,
     pub test: Vec<T>,
 }
 
-/// Divide un dataset in set di training, validation e test
+/// Splits a dataset into training, validation and test sets
 /// 
 /// # Arguments
-/// * `data` - Il dataset da dividere
-/// * `train_ratio` - La proporzione del dataset da usare per il training (0.0-1.0)
-/// * `validation_ratio` - La proporzione del dataset da usare per la validation (0.0-1.0)
-/// * `test_ratio` - La proporzione del dataset da usare per il test (0.0-1.0)
-/// * `shuffle` - Se mescolare i dati prima della divisione
+/// 
+/// * `data` - The dataset to split
+/// * `train_ratio` - The proportion of the dataset to use for training (0.0-1.0)
+/// * `validation_ratio` - The proportion of the dataset to use for validation (0.0-1.0)
+/// * `test_ratio` - The proportion of the dataset to use for testing (0.0-1.0)
+/// * `shuffle` - Whether to shuffle the data before splitting
 ///
 /// # Returns
-/// * `DatasetSplit` - Struttura contenente le divisioni del dataset
+/// 
+/// * `DatasetSplit` - Structure containing the dataset splits
 ///
 /// # Note
-/// Le proporzioni devono sommare a 1.0, altrimenti viene restituito un errore
+/// 
+/// The proportions must sum to 1.0, otherwise an error is returned
 pub fn split_dataset<T: Clone>(
     data: &[T],
     train_ratio: f32,
@@ -31,30 +34,30 @@ pub fn split_dataset<T: Clone>(
     test_ratio: f32,
     shuffle: bool,
 ) -> Result<DatasetSplit<T>, Box<dyn Error>> {
-    // Verifica che le proporzioni siano valide
+    // Verify that the proportions are valid
     if (train_ratio + validation_ratio + test_ratio - 1.0).abs() > 1e-6 {
-        return Err("Le proporzioni di train, validation e test devono sommare a 1.0".into());
+        return Err("The proportions of train, validation and test must sum to 1.0".into());
     }
     
     if train_ratio < 0.0 || validation_ratio < 0.0 || test_ratio < 0.0 {
-        return Err("Le proporzioni non possono essere negative".into());
+        return Err("The proportions cannot be negative".into());
     }
     
     let total_size = data.len();
     let mut indices: Vec<usize> = (0..total_size).collect();
     
-    // Mescola gli indici se richiesto
+    // Shuffle the indices if requested
     if shuffle {
         let mut rng = thread_rng();
         indices.shuffle(&mut rng);
     }
     
-    // Calcola la dimensione di ciascun set
+    // Calculate the size of each set
     let train_size = (total_size as f32 * train_ratio).round() as usize;
     let validation_size = (total_size as f32 * validation_ratio).round() as usize;
     let test_size = min(total_size - train_size - validation_size, (total_size as f32 * test_ratio).round() as usize);
     
-    // Estrae gli elementi basandosi sugli indici
+    // Extract the elements based on the indices
     let mut train = Vec::with_capacity(train_size);
     let mut validation = Vec::with_capacity(validation_size);
     let mut test = Vec::with_capacity(test_size);
@@ -78,34 +81,36 @@ pub fn split_dataset<T: Clone>(
     })
 }
 
-/// Divide un dataset in k subset per la cross-validation
+/// Splits a dataset into k subsets for cross-validation
 /// 
 /// # Arguments
-/// * `data` - Il dataset da dividere
-/// * `k` - Il numero di fold per la cross-validation
-/// * `shuffle` - Se mescolare i dati prima della divisione
+/// 
+/// * `data` - The dataset to split
+/// * `k` - The number of folds for cross-validation
+/// * `shuffle` - Whether to shuffle the data before splitting
 ///
 /// # Returns
-/// * Vec<(Vec<T>, Vec<T>)> - Un vettore di tuple (training_set, validation_set) per ogni fold
+/// 
+/// * Vec<(Vec<T>, Vec<T>)> - A vector of tuples (training_set, validation_set) for each fold
 pub fn k_fold_split<T: Clone>(
     data: &[T],
     k: usize,
     shuffle: bool,
 ) -> Vec<(Vec<T>, Vec<T>)> {
     if k <= 1 {
-        panic!("Il numero di fold deve essere maggiore di 1");
+        panic!("The number of folds must be greater than 1");
     }
     
     let total_size = data.len();
     let mut indices: Vec<usize> = (0..total_size).collect();
     
-    // Mescola gli indici se richiesto
+    // Shuffle the indices if requested
     if shuffle {
         let mut rng = thread_rng();
         indices.shuffle(&mut rng);
     }
     
-    // Calcola la dimensione di ciascun fold
+    // Calculate the size of each fold
     let fold_size = total_size / k;
     
     let mut folds = Vec::with_capacity(k);
@@ -149,7 +154,7 @@ mod tests {
         assert_eq!(split.validation.len(), 15);
         assert_eq!(split.test.len(), 15);
         
-        // Verifica che i dati siano stati divisi correttamente
+        // Verify that the data has been split correctly
         for i in 0..70 {
             assert_eq!(split.train[i], i as i32);
         }
