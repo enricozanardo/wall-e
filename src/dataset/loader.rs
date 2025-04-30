@@ -3,7 +3,6 @@ use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::collections::HashMap;
 use rayon::prelude::*;
 
 /// Generic data structure for datasets

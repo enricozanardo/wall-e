@@ -1,5 +1,3 @@
-use rayon::prelude::*;
-use std::sync::Arc;
 use regex;
 
 /// Interface for text processors

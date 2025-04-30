@@ -136,7 +136,6 @@ pub fn open_dataset_stream<P: AsRef<Path>>(path: P, batch_size: usize) -> io::Re
 mod tests {
     use super::*;
     use crate::dataset::processor::BasicTextProcessor;
-    use std::fs;
     use std::io::Write;
     use tempfile::NamedTempFile;
     
