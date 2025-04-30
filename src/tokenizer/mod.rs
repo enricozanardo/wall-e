@@ -53,10 +53,3 @@ pub trait Tokenizer: Send + Sync {
         None  // Default implementation returns None
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    // Tests for specific tokenizers will be in their respective modules
-} 
