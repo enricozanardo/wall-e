@@ -93,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("------------------------------------");
     
     // Percorso del modello
-    let model_path = "models/qa_model.bin";
+    let model_path = "models/qa_en_model.bin";
     
     // Verifica che il modello esista
     if !Path::new(model_path).exists() {
@@ -126,7 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("-----------------------------");
     
     // Prompt di esempio
-    let prompt = "Cosa è una Software Defined Network?";
+    let prompt = "what is a Software Defined Network?";
     
     // Genera testo (max 30 token aggiuntivi)
     let generated_text = generate_text(&trainer, &tokenizer, prompt, 30);

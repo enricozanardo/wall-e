@@ -7,13 +7,12 @@ use wall_e1::tokenizer::Tokenizer;
 use wall_e1::training::Trainer;
 use serde_json::Value;
 use ndarray::Array2;
-use std::io::{self, Write};
-use std::time::{Instant, Duration};
-use ndarray::{Array, Axis, s};
+use std::time::Instant;
+use ndarray::s;
 use ndarray_parallel::prelude::*;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
-use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
+use indicatif::{ProgressBar, ProgressStyle};
 use std::fmt;
 
 // Struttura per rappresentare un parametro del modello
@@ -33,6 +32,7 @@ impl fmt::Display for ModelParam {
 }
 
 // Funzione per calcolare i parametri del modello
+#[allow(unused_variables)]
 fn calculate_model_parameters(
     vocab_size: usize,
     d_model: usize,
@@ -176,8 +176,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Utilizzo {} thread per il calcolo parallelo", rayon::current_num_threads());
     
     // Carica il dataset QA
-    println!("Caricamento del dataset da 'data/qa_dummy.json'...");
-    let dataset_path = "data/qa_dummy.json";
+    println!("Caricamento del dataset da 'data/qa_en_dataset.json'...");
+    let dataset_path = "data/qa_en_dataset.json";
     
     if !Path::new(dataset_path).exists() {
         eprintln!("Errore: Il dataset '{}' non esiste!", dataset_path);
@@ -361,7 +361,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Batch delle sequenze - Utilizziamo Rayon per processare i batch in parallelo
     println!("Preparazione dei batch in parallelo...");
-    let batch_size = 16; // Ridotto a 1 per evitare problemi di compatibilità di forma
+    let batch_size = 128; // Ridotto a 1 per evitare problemi di compatibilità di forma
     
     // Crea range di indici
     let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
@@ -447,7 +447,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di {}.", batch_size);
-    let epochs = 2; // Numero di epoche
+    let epochs = 100; // Numero di epoche
     
     // Tempo di inizio dell'addestramento
     let training_start_time = Instant::now();
@@ -575,7 +575,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("\nAddestramento completato in {:?}.", total_training_time);
     
     // Salva il modello addestrato
-    let model_path = "models/qa_dummy_model.bin";
+    let model_path = "models/qa_en_model.bin";
     println!("\nSalvataggio del modello in '{}'...", model_path);
     trainer.save_model(model_path)?;
     
