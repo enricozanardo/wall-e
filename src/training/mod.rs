@@ -219,16 +219,21 @@ pub struct AdamOptimizer {
     v: HashMap<String, Tensor>,
     /// Training step
     t: usize,
+    /// Gradient clipping threshold (if None, no clipping is applied)
+    clip_threshold: Option<f32>,
 }
 
 impl AdamOptimizer {
-    /// Creates a new Adam optimizer
-    /// 
+    /// Creates a new Adam optimizer with default parameters
+    ///
     /// # Arguments
     /// * `lr` - Learning rate
-    /// * `beta1` - Beta1 parameter for first moment (default: 0.9)
-    /// * `beta2` - Beta2 parameter for second moment (default: 0.999)
+    /// * `beta1` - Beta1 parameter (default: 0.9)
+    /// * `beta2` - Beta2 parameter (default: 0.999)
     /// * `epsilon` - Epsilon for numerical stability (default: 1e-8)
+    ///
+    /// # Returns
+    /// A new AdamOptimizer instance
     pub fn new(lr: f32, beta1: f32, beta2: f32, epsilon: f32) -> Self {
         Self {
             lr,
@@ -238,7 +243,45 @@ impl AdamOptimizer {
             m: HashMap::new(),
             v: HashMap::new(),
             t: 0,
+            clip_threshold: None,
         }
+    }
+    
+    /// Sets the gradient clipping threshold
+    ///
+    /// # Arguments
+    /// * `threshold` - The gradient norm threshold, or None to disable clipping
+    pub fn with_gradient_clipping(mut self, threshold: Option<f32>) -> Self {
+        self.clip_threshold = threshold;
+        self
+    }
+    
+    /// Clips gradients if their norm exceeds the threshold
+    ///
+    /// # Arguments
+    /// * `grad` - Gradient tensor to clip
+    /// * `threshold` - The threshold for clipping
+    ///
+    /// # Returns
+    /// Clipped gradient tensor
+    fn clip_gradient(&self, grad: &Tensor, threshold: f32) -> Tensor {
+        // Calculate the L2 norm of the gradient (Frobenius norm for matrices)
+        let mut squared_sum = 0.0;
+        for &val in grad.data.iter() {
+            squared_sum += val * val;
+        }
+        let norm = squared_sum.sqrt();
+        
+        // If the norm is below the threshold, return the original gradient
+        if norm <= threshold || norm < 1e-8 {
+            return grad.clone();
+        }
+        
+        // Otherwise, scale the gradient to have the desired norm
+        let scale = threshold / norm;
+        let clipped_data = grad.data.mapv(|x| x * scale);
+        
+        Tensor::new_from_array(clipped_data)
     }
     
     /// Performs an optimization step
@@ -259,12 +302,19 @@ impl AdamOptimizer {
         // Update each parameter
         for (name, grad) in grads.iter() {
             if let Some(param) = params.get_mut(name) {
+                // Apply gradient clipping if threshold is set
+                let processed_grad = if let Some(threshold) = self.clip_threshold {
+                    self.clip_gradient(grad, threshold)
+                } else {
+                    grad.clone()
+                };
+                
                 // Initialize moments if they don't exist
                 if !self.m.contains_key(name) {
-                    self.m.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
+                    self.m.insert(name.clone(), Tensor::new_from_array(Array::zeros(processed_grad.data.raw_dim())));
                 }
                 if !self.v.contains_key(name) {
-                    self.v.insert(name.clone(), Tensor::new_from_array(Array::zeros(grad.data.raw_dim())));
+                    self.v.insert(name.clone(), Tensor::new_from_array(Array::zeros(processed_grad.data.raw_dim())));
                 }
                 
                 // Get moments
@@ -274,7 +324,7 @@ impl AdamOptimizer {
                 // Update moments (inplace)
                 for (((m_val, v_val), g_val), p_val) in m.data.iter_mut()
                     .zip(v.data.iter_mut())
-                    .zip(grad.data.iter())
+                    .zip(processed_grad.data.iter())
                     .zip(param.data.iter_mut()) {
                     // Update first moment: m = beta1 * m + (1 - beta1) * grad
                     *m_val = self.beta1 * *m_val + (1.0 - self.beta1) * g_val;
@@ -733,6 +783,33 @@ impl Trainer {
         trainer.tokenizer = Box::new(tokenizer.clone());
         
         Ok(trainer)
+    }
+    
+    /// Configures gradient clipping for the optimizer
+    ///
+    /// # Arguments
+    /// * `threshold` - Threshold for gradient clipping, or None to disable clipping
+    ///
+    /// # Returns
+    /// * `&mut Self` - Reference to the trainer for method chaining
+    pub fn with_gradient_clipping(&mut self, threshold: Option<f32>) -> &mut Self {
+        // Create a new optimizer with the same parameters but with gradient clipping
+        let mut new_optimizer = AdamOptimizer::new(
+            self.optimizer.get_learning_rate(),
+            0.9, // Default beta1
+            0.999, // Default beta2
+            1e-8, // Default epsilon
+        ).with_gradient_clipping(threshold);
+        
+        // Transfer the state from the old optimizer
+        new_optimizer.t = self.optimizer.t;
+        new_optimizer.m = self.optimizer.m.clone();
+        new_optimizer.v = self.optimizer.v.clone();
+        
+        // Replace the optimizer
+        self.optimizer = new_optimizer;
+        
+        self
     }
 }
 

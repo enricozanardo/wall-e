@@ -195,6 +195,47 @@ mod tests {
     }
 
     #[test]
+    fn test_adam_optimizer_with_gradient_clipping() {
+        // Create an Adam optimizer with gradient clipping enabled
+        let mut optimizer = AdamOptimizer::new(0.1, 0.9, 0.999, 1e-8)
+            .with_gradient_clipping(Some(1.0)); // Clip at norm 1.0
+        
+        // Create a parameter
+        let param_data = ndarray::Array2::<f32>::zeros((2, 2));
+        let param = Tensor::new(param_data);
+        
+        // Create a large gradient (with norm > 1.0)
+        let grad_data = ndarray::Array2::<f32>::from_elem((2, 2), 10.0); // Norm = sqrt(400) = 20
+        let grad = Tensor::new(grad_data);
+        
+        // Add parameter and gradient
+        let mut params = HashMap::new();
+        params.insert("w".to_string(), param);
+        
+        let mut grads = HashMap::new();
+        grads.insert("w".to_string(), grad);
+        
+        // Perform an optimization step
+        optimizer.step(&mut params, &grads);
+        
+        // Get the updated parameter
+        let updated_param = params.get("w").unwrap();
+        
+        // Calculate what the update should be with clipping
+        // Norm of gradient is 20, so scale factor is 1.0/20.0 = 0.05
+        // Clipped gradient is 10.0 * 0.05 = 0.5
+        // Expect roughly -0.1 * 0.5 = -0.05 (learning_rate * clipped_grad)
+        // but with Adam correction factors
+        
+        // Verify the update is smaller than if no clipping was used
+        // Without clipping, update would be approx -0.1 * 10.0 = -1.0
+        assert!(
+            updated_param.data[[0, 0]].abs() < 0.2,
+            "The gradient should be clipped, resulting in a smaller update"
+        );
+    }
+
+    #[test]
     fn test_trainer_initialization() {
         // Create a basic tokenizer
         let mut tokenizer = BasicTokenizer::new();

@@ -201,6 +201,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let dropout_rate = model_params["dropout_rate"].as_f64().unwrap_or(0.15) as f32;
     let learning_rate = model_params["learning_rate"].as_f64().unwrap_or(0.0005) as f32;
     let max_seq_len = 256; // Valore di default usato nel costruttore del Trainer
+    let gradient_clip = model_params["gradient_clip"].as_f64().map(|c| c as f32); // Nuovo parametro
     
     println!("Parametri del modello:");
     println!("  - Dimensione del modello (d_model): {} - Dimensione degli embedding e stati nascosti", d_model);
@@ -209,6 +210,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("  - Numero di layer: {}", num_layers);
     println!("  - Dropout rate: {}", dropout_rate);
     println!("  - Learning rate: {}", learning_rate);
+    if let Some(clip) = gradient_clip {
+        println!("  - Gradient clipping: {}", clip);
+    } else {
+        println!("  - Gradient clipping: disabilitato");
+    }
     
     // Estrai i dati di training
     let train_data = &data["train_data"];
@@ -283,15 +289,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Crea il trainer con i parametri estratti
     println!("\nInizializzazione del modello...");
-    let mut trainer = Trainer::new(
-        Box::new(tokenizer.clone()),
-        d_model,
-        ff_dim,
-        num_heads,
-        num_layers,
-        dropout_rate,
-        learning_rate
-    );
+    let mut trainer = {
+        // Creiamo prima un trainer base
+        let mut t = Trainer::new(
+            Box::new(tokenizer.clone()),
+            d_model,
+            ff_dim,
+            num_heads,
+            num_layers,
+            dropout_rate,
+            learning_rate
+        );
+        
+        // Modifichiamo l'ottimizzatore per supportare il gradient clipping se necessario
+        if let Some(clip_threshold) = gradient_clip {
+            println!("Configurazione del gradient clipping con soglia {}", clip_threshold);
+            t.with_gradient_clipping(Some(clip_threshold));
+        }
+        
+        t
+    };
     
     // Prepara gli esempi di addestramento
     println!("Preparazione degli esempi di addestramento...");
