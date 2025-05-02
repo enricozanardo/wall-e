@@ -14,7 +14,9 @@ use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::fmt;
-
+use wall_e1::tokenizer::BPETokenizer;
+use num_cpus;
+use wall_e1::nabla;
 // Struttura per rappresentare un parametro del modello
 struct ModelParam {
     name: String,
@@ -171,6 +173,11 @@ fn print_model_summary(
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // Set number of threads based on CPU
+    let num_cores = num_cpus::get();
+    let threads_to_use = std::cmp::min(num_cores - 1, 12); // Leave 1 core free, max 12 threads
+    nabla::tensor::set_num_threads(threads_to_use);
+    
     println!("Addestramento modello QA Wall-E1");
     println!("--------------------------------");
     println!("Utilizzo {} thread per il calcolo parallelo", rayon::current_num_threads());
@@ -260,9 +267,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     
     // Crea e inizializza il tokenizer
-    let mut tokenizer = BasicTokenizer::new();
-    println!("\nCostruzione del vocabolario dal corpus...");
-    tokenizer.build_vocab(&corpus, 2); // Minima frequenza: 2
+    let mut tokenizer = BPETokenizer::new();
+    tokenizer.learn_bpe(&corpus, 3000, 2); // Larger vocabulary (3000), min frequency 2
     
     let vocab_size = tokenizer.get_vocab().len();
     println!("Vocabolario costruito con {} token", vocab_size);
@@ -378,7 +384,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Batch delle sequenze - Utilizziamo Rayon per processare i batch in parallelo
     println!("Preparazione dei batch in parallelo...");
-    let batch_size = 128; // Ridotto a 1 per evitare problemi di compatibilità di forma
+    let batch_size = 64; // Ridotto a 1 per evitare problemi di compatibilità di forma
     
     // Crea range di indici
     let indices: Vec<usize> = (0..training_examples.len()).step_by(batch_size).collect();
@@ -464,7 +470,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di {}.", batch_size);
-    let epochs = 2; // Numero di epoche ridotto per test
+    let epochs = 40; // Numero di epoche ridotto per test
     
     // Tempo di inizio dell'addestramento
     let training_start_time = Instant::now();

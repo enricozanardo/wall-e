@@ -657,9 +657,25 @@ impl Trainer {
         // Calculate the gradient of the output projection: [d_model, vocab_size]
         let mut output_proj_grad = Array::zeros((d_model, vocab_size));
         
-        for i in 0..batch_size * seq_len {
+        // Add bounds checking to prevent index out of bounds errors
+        for i in 0..(batch_size * seq_len) {
+            if i >= encoder_output_flat.shape()[0] || i >= logits_grad_flat.shape()[0] {
+                // Skip invalid indices
+                continue;
+            }
+            
             for j in 0..d_model {
+                if j >= encoder_output_flat.shape()[1] {
+                    // Skip invalid indices
+                    continue;
+                }
+                
                 for k in 0..vocab_size {
+                    if k >= logits_grad_flat.shape()[1] {
+                        // Skip invalid indices
+                        continue;
+                    }
+                    
                     output_proj_grad[[j, k]] += encoder_output_flat[[i, j]] * logits_grad_flat[[i, k]];
                 }
             }

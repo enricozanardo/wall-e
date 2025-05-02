@@ -4,6 +4,27 @@ use rayon::prelude::*;
 
 // autograd engine for gradient calculation
 
+/// Sets the number of threads to use for parallel tensor operations
+///
+/// # Arguments
+///
+/// * `num_threads` - The number of threads to use
+///
+/// # Examples
+///
+/// ```
+/// use wall_e1::nabla::tensor::set_num_threads;
+///
+/// // Use 4 threads for tensor operations
+/// set_num_threads(4);
+/// ```
+pub fn set_num_threads(num_threads: usize) {
+    // Configure Rayon's global thread pool
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build_global()
+        .expect("Failed to configure thread pool");
+}
 
 /// Represents a tensor with autograd capabilities
 #[derive(Clone)]
