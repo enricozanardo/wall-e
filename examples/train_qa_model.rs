@@ -464,7 +464,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Addestramento del modello
     println!("\nInizio addestramento con {} batch...", batched_examples.len());
     println!("\nNOTA: Usando batch size di {}.", batch_size);
-    let epochs = 100; // Numero di epoche
+    let epochs = 2; // Numero di epoche ridotto per test
     
     // Tempo di inizio dell'addestramento
     let training_start_time = Instant::now();
