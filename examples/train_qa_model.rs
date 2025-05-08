@@ -207,7 +207,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let num_layers = model_params["num_layers"].as_u64().unwrap_or(3) as usize;
     let dropout_rate = model_params["dropout_rate"].as_f64().unwrap_or(0.15) as f32;
     let learning_rate = model_params["learning_rate"].as_f64().unwrap_or(0.0005) as f32;
-    let max_seq_len = 256; // Valore di default usato nel costruttore del Trainer
+    let max_seq_len = 128; // Valore di default usato nel costruttore del Trainer
     let gradient_clip = model_params["gradient_clip"].as_f64().map(|c| c as f32); // Nuovo parametro
     
     println!("Parametri del modello:");

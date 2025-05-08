@@ -827,8 +827,48 @@ impl Trainer {
         
         self
     }
+    
+    /// Returns the model dimension
+    pub fn get_model_dim(&self) -> usize {
+        self.model_dim
+    }
+    
+    /// Returns the feed-forward dimension
+    pub fn get_ff_dim(&self) -> usize {
+        self.ff_dim
+    }
+    
+    /// Returns the number of attention heads
+    pub fn get_num_heads(&self) -> usize {
+        self.num_heads
+    }
+    
+    /// Returns the number of layers
+    pub fn get_num_layers(&self) -> usize {
+        self.num_layers
+    }
+    
+    /// Returns the dropout rate
+    pub fn get_dropout_rate(&self) -> f32 {
+        // Since we don't store the dropout rate directly,
+        // return a default value
+        0.1
+    }
+    
+    /// Sets the learning rate for the optimizer
+    pub fn set_learning_rate(&mut self, lr: f32) {
+        self.optimizer.set_learning_rate(lr);
+    }
 }
 
 // Include additional modules
 pub mod tests;
-pub mod evaluate; 
+pub mod evaluate;
+pub mod generation;
+pub mod curriculum;
+pub mod enhanced_trainer;
+
+// Re-export key components for easier access
+pub use generation::{TextGenerator, TextGenerationModel};
+pub use curriculum::{CurriculumScheduler, CurriculumExample, DifficultyLevel};
+pub use enhanced_trainer::EnhancedTrainer; 

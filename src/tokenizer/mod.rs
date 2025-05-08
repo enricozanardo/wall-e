@@ -1,10 +1,12 @@
 pub mod basic_tokenizer;
 pub mod vocab;
 pub mod bpe;
+pub mod word_bpe;
 
 pub use basic_tokenizer::BasicTokenizer;
 pub use vocab::Vocab;
 pub use bpe::BPETokenizer;
+pub use word_bpe::WordPieceBPETokenizer;
 
 /// Trait that defines the functionalities of a tokenizer
 ///
