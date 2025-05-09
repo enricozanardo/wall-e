@@ -29,6 +29,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ff_dim = 256;
     let mut num_heads = 8;
     let mut num_layers = 6;
+    let mut rep_penalty = 1.8; // Default repetition penalty
+    let mut pres_penalty = 0.4; // Default presence penalty
+    let mut freq_penalty = 0.4; // Default frequency penalty
+    let mut curriculum_step = 2; // Default epochs per curriculum level
+    let mut custom_batch_size = 0; // Default to auto-determined batch size
     
     // Process command line arguments
     for i in 1..args.len() {
@@ -36,12 +41,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--fast" => {
                 fast_mode = true;
                 max_stories = 5000;
-                epochs = 3;
-                vocab_size = 2000;
+                epochs = 5;
+                vocab_size = 4000;
                 model_dim = 128;
-                ff_dim = 128;
-                num_heads = 4;
-                num_layers = 3;
+                ff_dim = 256;
+                num_heads = 8;
+                num_layers = 4;
                 println!("Fast mode enabled: using reduced parameters for quick testing");
             },
             "--no-curriculum" => {
@@ -69,6 +74,69 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
             },
+            "--model-dim" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        model_dim = val;
+                    }
+                }
+            },
+            "--ff-dim" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        ff_dim = val;
+                    }
+                }
+            },
+            "--heads" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        num_heads = val;
+                    }
+                }
+            },
+            "--layers" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        num_layers = val;
+                    }
+                }
+            },
+            "--rep-penalty" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        rep_penalty = val;
+                    }
+                }
+            },
+            "--pres-penalty" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        pres_penalty = val;
+                    }
+                }
+            },
+            "--freq-penalty" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        freq_penalty = val;
+                    }
+                }
+            },
+            "--curriculum-step" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        curriculum_step = val;
+                    }
+                }
+            },
+            "--batch-size" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse() {
+                        custom_batch_size = val;
+                    }
+                }
+            },
             _ => {}
         }
     }
@@ -84,6 +152,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("  - Num heads: {}", num_heads);
     println!("  - Num layers: {}", num_layers);
     println!("  - Curriculum learning: {}", use_curriculum);
+    println!("  - Repetition penalty: {}", rep_penalty);
+    println!("  - Presence penalty: {}", pres_penalty);
+    println!("  - Frequency penalty: {}", freq_penalty);
+    println!("  - Curriculum step: {}", curriculum_step);
+    println!("  - Custom batch size: {}", if custom_batch_size > 0 { custom_batch_size.to_string() } else { "auto".to_string() });
     
     // Load the dataset
     println!("\nLoading dataset from 'data/tiny_stories_sample_updated.json'...");
@@ -141,8 +214,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         ff_dim,
         num_heads,
         num_layers,
-        0.15, // dropout
-        0.0015 // learning rate
+        0.1,  // Reduced dropout for better training
+        0.001 // Adjusted learning rate for better convergence
     );
     
     // Configure the trainer
@@ -152,7 +225,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_gradient_clipping(Some(1.0));
 
     // Configure text generator with stronger anti-repetition settings
-    trainer.configure_anti_repetition(1.5, 0.3, 0.3);
+    trainer.configure_anti_repetition(rep_penalty, pres_penalty, freq_penalty);
     
     // Configure text generator for better text generation
     let generator = TextGenerator::new()
@@ -168,8 +241,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Create the curriculum scheduler
     if use_curriculum {
         let scheduler = CurriculumScheduler::new()
-            .with_epochs_per_level(2)
-            .with_harder_examples_ratio(0.2)
+            .with_epochs_per_level(curriculum_step)
+            .with_harder_examples_ratio(0.25)  // More exposure to harder examples
             .with_easier_examples_ratio(0.1);
         
         trainer = trainer.with_curriculum_scheduler(scheduler);
@@ -205,6 +278,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     trainer.debug_tokenize("Once upon a time, there was a little dog.");
     trainer.debug_tokenize("The quick brown fox jumps over the lazy dog.");
     
+    // Determine appropriate batch size based on model dimension or user preference
+    let batch_size = if custom_batch_size > 0 {
+        custom_batch_size
+    } else if model_dim <= 64 {
+        32
+    } else if model_dim <= 128 {
+        24
+    } else if model_dim <= 256 {
+        16
+    } else {
+        8
+    };
+    
     // Prepare training examples
     println!("\nPreparing training examples...");
     let examples_result = prepare_training_examples(&training_texts, trainer.get_tokenizer(), 64);
@@ -214,7 +300,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Create batches
     println!("Creating batches...");
-    let (batched_examples, batched_targets) = create_batches(&training_examples, &training_targets, 32);
+    let (batched_examples, batched_targets) = create_batches(&training_examples, &training_targets, batch_size);
     println!("Created {} batches", batched_examples.len());
     
     // Add examples to curriculum
@@ -237,6 +323,40 @@ fn main() -> Result<(), Box<dyn Error>> {
         "Today I will",
     ];
     
+    // Set aside some examples for validation
+    let validation_size = training_examples.len() / 10; // 10% for validation
+    let mut rng = rand::thread_rng();
+    let mut indices: Vec<usize> = (0..training_examples.len()).collect();
+    indices.shuffle(&mut rng);
+
+    let validation_indices = indices.iter().take(validation_size).cloned().collect::<Vec<_>>();
+    let training_indices = indices.iter().skip(validation_size).cloned().collect::<Vec<_>>();
+
+    // Create validation sets
+    let mut validation_inputs = Vec::new();
+    let mut validation_targets = Vec::new();
+
+    for &idx in &validation_indices {
+        validation_inputs.push(training_examples[idx].clone());
+        validation_targets.push(training_targets[idx].clone());
+    }
+
+    println!("Reserved {} examples for validation", validation_inputs.len());
+
+    // Create filtered training examples
+    let mut filtered_training_examples = Vec::new();
+    let mut filtered_training_targets = Vec::new();
+
+    for &idx in &training_indices {
+        filtered_training_examples.push(training_examples[idx].clone());
+        filtered_training_targets.push(training_targets[idx].clone());
+    }
+
+    println!("Using {} examples for training", filtered_training_examples.len());
+
+    // Track metrics over time
+    let mut epoch_metrics = Vec::new();
+
     // Train for specified number of epochs
     for epoch in 1..=epochs {
         println!("\nEpoch {}/{}", epoch, epochs);
@@ -247,13 +367,22 @@ fn main() -> Result<(), Box<dyn Error>> {
             // Use curriculum learning
             trainer.train_epoch(&[], &[])
         } else {
-            // Use standard training
+            // Use standard training with batched examples
             trainer.train_epoch(&batched_examples, &batched_targets)
         };
         
+        // Calculate validation metrics
+        let perplexity = trainer.calculate_perplexity(&validation_inputs, &validation_targets);
+        let accuracy = trainer.calculate_accuracy(&validation_inputs, &validation_targets);
+        
+        // Store metrics
+        epoch_metrics.push((epoch, avg_loss, perplexity, accuracy));
+        
         let epoch_duration = epoch_start.elapsed();
         println!("Epoch completed in {:?}", epoch_duration);
-        println!("Average loss: {:.6}", avg_loss);
+        println!("Average training loss: {:.6}", avg_loss);
+        println!("Validation perplexity: {:.2}", perplexity);
+        println!("Validation accuracy: {:.2}%", accuracy);
         
         // Generate sample text
         println!("\nGenerating sample text (Epoch {}):", epoch);
@@ -261,12 +390,28 @@ fn main() -> Result<(), Box<dyn Error>> {
             let generated = trainer.generate_text(prompt, Some(50));
             println!("Prompt: '{}'", prompt);
             println!("Generated: '{}'", generated);
+            
+            // Calculate similarity to prompt (to check for coherence)
+            if generated.starts_with(prompt) {
+                let prompt_words = prompt.split_whitespace().count();
+                let generated_words = generated.split_whitespace().count();
+                let additional_words = generated_words.saturating_sub(prompt_words);
+                println!("Added {} new words", additional_words);
+            }
         }
         
         // Save checkpoint
         let checkpoint_path = format!("models/improved_model_epoch_{}.bin", epoch);
         println!("Saving checkpoint to '{}'...", checkpoint_path);
         trainer.save_model(&checkpoint_path)?;
+    }
+
+    // Print final metrics report
+    println!("\n===== TRAINING METRICS =====");
+    println!("Epoch | Loss      | Perplexity | Accuracy(%)");
+    println!("------------------------------------------");
+    for (epoch, loss, perplexity, accuracy) in &epoch_metrics {
+        println!("{:5} | {:9.6} | {:10.2} | {:10.2}", epoch, loss, perplexity, accuracy);
     }
     
     // Save final model
@@ -304,7 +449,7 @@ fn prepare_training_examples(
         let tokens = tokenizer.encode(story);
         
         // Skip very short sequences
-        if tokens.len() < 5 {
+        if tokens.len() < 10 {
             progress_bar.inc(1);
             continue;
         }
@@ -316,7 +461,7 @@ fn prepare_training_examples(
         let mut pos = 0;
         while pos + 2 <= tokens.len() {
             let end = std::cmp::min(pos + window_size, tokens.len());
-            if end - pos < 3 {
+            if end - pos < 10 {
                 break; // Too short to be useful
             }
             
@@ -326,8 +471,21 @@ fn prepare_training_examples(
             // Target: all tokens except the first one
             let target = tokens[pos + 1..end].to_vec();
             
-            inputs.push(input);
-            targets.push(target);
+            // Only add good quality examples (ones with proper text, not just special tokens)
+            let normal_token_count = input.iter().filter(|&&id| {
+                if let Some(token) = tokenizer.get_vocab().id_to_token(id) {
+                    !token.starts_with('[') && !token.ends_with(']')
+                } else {
+                    false
+                }
+            }).count();
+            
+            // Only include examples where at least 30% are normal word tokens
+            // Lowered from 70% to ensure we have enough examples
+            if normal_token_count as f32 / input.len() as f32 >= 0.3 && input.len() >= 8 {
+                inputs.push(input);
+                targets.push(target);
+            }
             
             pos += stride;
         }
@@ -335,12 +493,12 @@ fn prepare_training_examples(
         progress_bar.inc(1);
     }
     
-    progress_bar.finish_with_message("Examples prepared");
+    progress_bar.finish_with_message(format!("Examples prepared: {}", inputs.len()));
     
     (inputs, targets)
 }
 
-// Function to create batches
+// Function to create batches with tighter length controls
 fn create_batches(
     inputs: &[Vec<usize>],
     targets: &[Vec<usize>],
@@ -349,37 +507,66 @@ fn create_batches(
     let mut batched_inputs = Vec::new();
     let mut batched_targets = Vec::new();
     
-    // Shuffle the inputs and targets together
-    let mut indices: Vec<usize> = (0..inputs.len()).collect();
-    indices.shuffle(&mut rand::thread_rng());
+    // Group examples by similar lengths to avoid padding issues
+    let mut length_groups: HashMap<usize, Vec<usize>> = HashMap::new();
     
-    // Create batches
-    for chunk in indices.chunks(batch_size) {
-        let mut batch_inputs = Vec::new();
+    // Group by length ranges (every 8 tokens)
+    for (idx, input) in inputs.iter().enumerate() {
+        let length_bucket = (input.len() / 8) * 8;  // Round down to nearest multiple of 8
+        length_groups.entry(length_bucket).or_default().push(idx);
+    }
+    
+    // Process each length group separately
+    for (length, indices) in length_groups.into_iter() {
+        let mut group_indices = indices;
+        group_indices.shuffle(&mut rand::thread_rng());
         
-        // Find max length in this batch for padding
-        let mut max_target_len = 0;
-        for &idx in chunk {
-            max_target_len = std::cmp::max(max_target_len, targets[idx].len());
-        }
-        
-        // Create batch input and target arrays
-        let batch_size = chunk.len();
-        let mut batch_targets = Array2::zeros((batch_size, max_target_len));
-        
-        // Add each example to batch
-        for (i, &idx) in chunk.iter().enumerate() {
-            batch_inputs.push(inputs[idx].clone());
+        // Create batches from this length group
+        for chunk in group_indices.chunks(batch_size) {
+            if chunk.is_empty() {
+                continue;
+            }
             
-            // Set target tokens
-            for (j, &token) in targets[idx].iter().enumerate() {
-                batch_targets[[i, j]] = token;
+            // Ensure all examples in the batch have the same length to avoid dimension errors
+            let min_input_len = chunk.iter()
+                .map(|&idx| inputs[idx].len())
+                .min()
+                .unwrap_or(0);
+            
+            let min_target_len = chunk.iter()
+                .map(|&idx| targets[idx].len())
+                .min()
+                .unwrap_or(0);
+            
+            // Skip if any sequence is too short
+            if min_input_len < 8 || min_target_len < 8 {
+                continue;
+            }
+            
+            let mut batch_inputs = Vec::new();
+            let batch_size = chunk.len();
+            let mut batch_targets = Array2::zeros((batch_size, min_target_len));
+            
+            // Add each example to batch, truncating to min length in batch
+            for (i, &idx) in chunk.iter().enumerate() {
+                // Truncate input and target to consistent lengths
+                let input = inputs[idx][..min_input_len].to_vec();
+                batch_inputs.push(input);
+                
+                // Fill target array with truncated values
+                for j in 0..min_target_len {
+                    if j < targets[idx].len() {
+                        batch_targets[[i, j]] = targets[idx][j];
+                    }
+                }
+            }
+            
+            // Add batch to results if not empty
+            if !batch_inputs.is_empty() {
+                batched_inputs.push(batch_inputs);
+                batched_targets.push(batch_targets);
             }
         }
-        
-        // Add batch to results
-        batched_inputs.push(batch_inputs);
-        batched_targets.push(batch_targets);
     }
     
     (batched_inputs, batched_targets)

@@ -5,7 +5,7 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 
 /// Difficulty level for curriculum learning
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DifficultyLevel {
     VeryEasy = 0,
     Easy = 1,
@@ -63,6 +63,10 @@ pub struct CurriculumScheduler {
     current_epoch: usize,
     /// Epochs per level
     epochs_per_level: usize,
+    /// Epochs spent in current level
+    epochs_in_current_level: usize,
+    /// Default batch size
+    batch_size: usize,
     /// Maximum sequence length per level
     max_length_per_level: HashMap<DifficultyLevel, usize>,
     /// Mix-in percentage of harder examples (0.0 - 1.0)
@@ -78,19 +82,21 @@ impl CurriculumScheduler {
     pub fn new() -> Self {
         let mut max_length_per_level = HashMap::new();
         max_length_per_level.insert(DifficultyLevel::VeryEasy, 16);
-        max_length_per_level.insert(DifficultyLevel::Easy, 32);
-        max_length_per_level.insert(DifficultyLevel::Medium, 64);
-        max_length_per_level.insert(DifficultyLevel::Hard, 128);
-        max_length_per_level.insert(DifficultyLevel::VeryHard, 256);
+        max_length_per_level.insert(DifficultyLevel::Easy, 24);
+        max_length_per_level.insert(DifficultyLevel::Medium, 32);
+        max_length_per_level.insert(DifficultyLevel::Hard, 48);
+        max_length_per_level.insert(DifficultyLevel::VeryHard, 64);
         
         Self {
             current_level: DifficultyLevel::VeryEasy,
             examples_by_level: HashMap::new(),
             current_epoch: 0,
-            epochs_per_level: 1,
+            epochs_per_level: 3,  // Increased from default of 2 to allow more time per level
+            epochs_in_current_level: 0,
+            batch_size: 32,
             max_length_per_level,
-            harder_examples_ratio: 0.1,
-            easier_examples_ratio: 0.05,
+            harder_examples_ratio: 0.2,
+            easier_examples_ratio: 0.1,
             seed: 42,
         }
     }
@@ -130,14 +136,24 @@ impl CurriculumScheduler {
         // Primary factor: sequence length
         let length = input.len().max(target.len());
         
-        // Determine difficulty level based on length
-        if length <= self.max_length_per_level[&DifficultyLevel::VeryEasy] {
+        // More nuanced difficulty assessment
+        // 1. Consider sequence length as primary factor
+        // 2. Consider amount of rare tokens as secondary factor
+        
+        // Count rare tokens (tokens with high IDs are typically rarer)
+        let rare_token_threshold = 1000; // Tokens with IDs above this are considered rare
+        let rare_tokens = input.iter().chain(target.iter())
+            .filter(|&&token| token > rare_token_threshold)
+            .count();
+        
+        // Adjust difficulty based on both length and rare token count
+        if length <= self.max_length_per_level[&DifficultyLevel::VeryEasy] && rare_tokens < 2 {
             DifficultyLevel::VeryEasy
-        } else if length <= self.max_length_per_level[&DifficultyLevel::Easy] {
+        } else if length <= self.max_length_per_level[&DifficultyLevel::Easy] && rare_tokens < 5 {
             DifficultyLevel::Easy
-        } else if length <= self.max_length_per_level[&DifficultyLevel::Medium] {
+        } else if length <= self.max_length_per_level[&DifficultyLevel::Medium] && rare_tokens < 10 {
             DifficultyLevel::Medium
-        } else if length <= self.max_length_per_level[&DifficultyLevel::Hard] {
+        } else if length <= self.max_length_per_level[&DifficultyLevel::Hard] && rare_tokens < 20 {
             DifficultyLevel::Hard
         } else {
             DifficultyLevel::VeryHard
@@ -146,11 +162,16 @@ impl CurriculumScheduler {
     
     /// Add examples to the curriculum
     pub fn add_examples(&mut self, inputs: &[Vec<usize>], targets: &Array2<usize>) {
+        let mut level_counts = HashMap::new();
+        
         for (idx, input) in inputs.iter().enumerate() {
             let target_row: Vec<usize> = targets.row(idx).iter().cloned().collect();
             
             // Calculate the difficulty
             let difficulty = self.calculate_difficulty(input, &target_row);
+            
+            // Update counts for debugging
+            *level_counts.entry(difficulty).or_insert(0) += 1;
             
             // Create a curriculum example
             let example = CurriculumExample {
@@ -167,96 +188,237 @@ impl CurriculumScheduler {
                 .or_insert_with(Vec::new)
                 .push(example);
         }
+        
+        // Force distribute some examples to ensure we have training material for all levels
+        self.ensure_examples_at_all_levels(inputs, targets);
+        
+        // Print debug info about level distribution
+        println!("Curriculum example distribution:");
+        for level in [DifficultyLevel::VeryEasy, DifficultyLevel::Easy, 
+                     DifficultyLevel::Medium, DifficultyLevel::Hard, DifficultyLevel::VeryHard] {
+            let count = self.examples_by_level.get(&level).map_or(0, |v| v.len());
+            println!("  Level {:?}: {} examples", level, count);
+        }
+    }
+    
+    /// Ensure we have examples at all difficulty levels by artificially distributing
+    /// some examples across levels where we have none
+    fn ensure_examples_at_all_levels(&mut self, inputs: &[Vec<usize>], targets: &Array2<usize>) {
+        // Check which levels need examples
+        let mut levels_needing_examples = Vec::new();
+        
+        for level in [DifficultyLevel::VeryEasy, DifficultyLevel::Easy, 
+                     DifficultyLevel::Medium, DifficultyLevel::Hard, DifficultyLevel::VeryHard] {
+            if self.examples_by_level.get(&level).map_or(0, |v| v.len()) < 100 {
+                levels_needing_examples.push(level);
+            }
+        }
+        
+        if levels_needing_examples.is_empty() {
+            return; // All levels have enough examples
+        }
+        
+        // Find the level with the most examples to redistribute from
+        let mut max_level = DifficultyLevel::VeryEasy;
+        let mut max_count = 0;
+        
+        for level in [DifficultyLevel::VeryEasy, DifficultyLevel::Easy, 
+                     DifficultyLevel::Medium, DifficultyLevel::Hard, DifficultyLevel::VeryHard] {
+            let count = self.examples_by_level.get(&level).map_or(0, |v| v.len());
+            if count > max_count {
+                max_count = count;
+                max_level = level;
+            }
+        }
+        
+        // Only redistribute if we have enough examples to share
+        if max_count < 300 {
+            println!("Warning: Not enough examples to redistribute (max count: {})", max_count);
+            return;
+        }
+        
+        // Redistribute examples to ensure all levels have at least some training material
+        let to_redistribute = (max_count / 5).min(200); // Take at most 200 examples
+        
+        if let Some(source_examples) = self.examples_by_level.get(&max_level) {
+            if source_examples.is_empty() {
+                return;
+            }
+            
+            let mut rng = thread_rng();
+            let mut indices: Vec<usize> = (0..source_examples.len()).collect();
+            indices.shuffle(&mut rng);
+            
+            // Take only a subset of the indices to redistribute
+            let indices_to_use = indices.into_iter().take(to_redistribute).collect::<Vec<_>>();
+            
+            // Clone examples we'll redistribute
+            let examples_to_redistribute: Vec<CurriculumExample> = indices_to_use.iter()
+                .map(|&idx| source_examples[idx].clone())
+                .collect();
+            
+            // Distribute examples evenly among levels that need them
+            let per_level = to_redistribute / levels_needing_examples.len();
+            
+            for (i, &level) in levels_needing_examples.iter().enumerate() {
+                let start = i * per_level;
+                let end = if i == levels_needing_examples.len() - 1 {
+                    examples_to_redistribute.len()
+                } else {
+                    (i + 1) * per_level
+                };
+                
+                if start < examples_to_redistribute.len() {
+                    // Create modified examples for this level
+                    let mut modified_examples = Vec::new();
+                    
+                    for example in &examples_to_redistribute[start..end.min(examples_to_redistribute.len())] {
+                        // Create a new example with the target difficulty level
+                        let mut modified = example.clone();
+                        modified.difficulty = level;
+                        modified_examples.push(modified);
+                    }
+                    
+                    // Add to level
+                    self.examples_by_level
+                        .entry(level)
+                        .or_insert_with(|| Vec::new())
+                        .extend(modified_examples);
+                }
+            }
+            
+            println!("Redistributed {} examples from level {:?} to ensure training material for all levels", 
+                     to_redistribute, max_level);
+        }
     }
     
     /// Get the current maximum sequence length based on difficulty
     pub fn get_current_max_length(&self) -> usize {
-        *self.max_length_per_level.get(&self.current_level).unwrap_or(&64)
+        match self.current_level {
+            DifficultyLevel::VeryEasy => 16,  // Shorter sequences for easier learning
+            DifficultyLevel::Easy => 24,
+            DifficultyLevel::Medium => 32,
+            DifficultyLevel::Hard => 48,
+            DifficultyLevel::VeryHard => 64,
+        }
     }
     
-    /// Advance to the next epoch, potentially increasing difficulty
+    /// Advance to the next epoch and check if it's time to move to the next level
     pub fn next_epoch(&mut self) -> bool {
         self.current_epoch += 1;
+        self.epochs_in_current_level += 1;
         
-        // Check if we should advance to the next difficulty level
-        if self.current_epoch % self.epochs_per_level == 0 {
-            let old_level = self.current_level;
-            self.current_level = self.current_level.next();
-            
-            // Return true if the level changed
-            old_level != self.current_level
-        } else {
-            false
+        // Check if it's time to advance to the next level
+        if self.epochs_in_current_level >= self.epochs_per_level {
+            // Only advance if we're not already at the maximum level
+            if self.current_level != DifficultyLevel::VeryHard {
+                let next_level = match self.current_level {
+                    DifficultyLevel::VeryEasy => DifficultyLevel::Easy,
+                    DifficultyLevel::Easy => DifficultyLevel::Medium,
+                    DifficultyLevel::Medium => DifficultyLevel::Hard,
+                    DifficultyLevel::Hard => DifficultyLevel::VeryHard,
+                    DifficultyLevel::VeryHard => DifficultyLevel::VeryHard, // Can't go higher
+                };
+                self.current_level = next_level;
+                self.epochs_in_current_level = 0;
+                return true;
+            } else {
+                // At max level, just reset the epochs counter but stay at the same level
+                self.epochs_in_current_level = 0;
+            }
         }
+        
+        false
     }
     
-    /// Get training examples for the current epoch, incorporating curriculum learning
+    /// Get training examples for the current difficulty level
+    /// Include a mix of examples from lower difficulty levels to prevent overfitting 
+    /// and maintain knowledge of easier tasks
     pub fn get_training_examples(&self) -> Vec<CurriculumExample> {
-        let mut examples = Vec::new();
-        
-        // Helper function to get a subset of examples from a level
-        let get_examples_from_level = |level: DifficultyLevel, count: usize| -> Vec<CurriculumExample> {
-            if let Some(level_examples) = self.examples_by_level.get(&level) {
-                if level_examples.is_empty() {
-                    return Vec::new();
-                }
-                
-                // Use a deterministic random selection based on seed and epoch
-                let mut rng = rand::rngs::StdRng::seed_from_u64(self.seed + self.current_epoch as u64);
-                let indices: Vec<usize> = (0..level_examples.len()).collect();
-                let selected_indices = indices.choose_multiple(&mut rng, count.min(level_examples.len()));
-                
-                selected_indices.map(|&idx| level_examples[idx].clone()).collect()
-            } else {
-                Vec::new()
-            }
+        // First, get examples for the current level
+        let current_level_examples = match self.examples_by_level.get(&self.current_level) {
+            Some(examples) => examples,
+            None => return Vec::new(), // No examples for this level
         };
         
-        // Get examples from the current level
-        if let Some(current_examples) = self.examples_by_level.get(&self.current_level) {
-            examples.extend(current_examples.iter().cloned());
-        }
-        
-        // Mix in some harder examples if available
-        if self.harder_examples_ratio > 0.0 {
-            let next_level = self.current_level.next();
-            if next_level != self.current_level {
-                let harder_count = (examples.len() as f32 * self.harder_examples_ratio) as usize;
-                let harder_examples = get_examples_from_level(next_level, harder_count);
-                examples.extend(harder_examples);
+        // Start with current level examples
+        let mut selected_examples = current_level_examples.clone();
+
+        // Add a mix of easier examples for knowledge reinforcement (unless at the easiest level)
+        if self.current_level != DifficultyLevel::VeryEasy {
+            // For each level below the current, add some examples
+            for level in 0..self.current_level as usize {
+                let level_enum = match level {
+                    0 => DifficultyLevel::VeryEasy,
+                    1 => DifficultyLevel::Easy,
+                    2 => DifficultyLevel::Medium,
+                    3 => DifficultyLevel::Hard,
+                    _ => DifficultyLevel::VeryEasy,
+                };
+                
+                // Get examples from this easier level
+                if let Some(examples) = self.examples_by_level.get(&level_enum) {
+                    if !examples.is_empty() {
+                        // Determine how many examples to take based on the gap between levels
+                        // The closer the level is to current, the more examples we take
+                        let level_distance = (self.current_level as usize) - level;
+                        let ratio = self.easier_examples_ratio / level_distance as f32;
+                        let count = (examples.len() as f32 * ratio) as usize;
+                        
+                        // Select random examples from this level
+                        let mut rng = thread_rng();
+                        let mut indices = (0..examples.len()).collect::<Vec<_>>();
+                        indices.shuffle(&mut rng);
+                        
+                        for &idx in indices.iter().take(count) {
+                            selected_examples.push(examples[idx].clone());
+                        }
+                    }
+                }
             }
         }
         
-        // Mix in some easier examples if available and not at the easiest level
-        if self.easier_examples_ratio > 0.0 && self.current_level != DifficultyLevel::VeryEasy {
-            let prev_level = match self.current_level {
-                DifficultyLevel::Easy => DifficultyLevel::VeryEasy,
-                DifficultyLevel::Medium => DifficultyLevel::Easy,
-                DifficultyLevel::Hard => DifficultyLevel::Medium,
-                DifficultyLevel::VeryHard => DifficultyLevel::Hard,
-                _ => self.current_level,
+        // If not at the hardest level, add a smaller proportion of harder examples
+        if self.current_level != DifficultyLevel::VeryHard {
+            // Add examples from one level above current
+            let next_level = match self.current_level {
+                DifficultyLevel::VeryEasy => DifficultyLevel::Easy,
+                DifficultyLevel::Easy => DifficultyLevel::Medium,
+                DifficultyLevel::Medium => DifficultyLevel::Hard,
+                DifficultyLevel::Hard => DifficultyLevel::VeryHard,
+                DifficultyLevel::VeryHard => DifficultyLevel::VeryHard, // Shouldn't happen
             };
             
-            let easier_count = (examples.len() as f32 * self.easier_examples_ratio) as usize;
-            let easier_examples = get_examples_from_level(prev_level, easier_count);
-            examples.extend(easier_examples);
+            if let Some(examples) = self.examples_by_level.get(&next_level) {
+                if !examples.is_empty() {
+                    // Take a smaller ratio of harder examples
+                    let reduced_ratio = self.harder_examples_ratio * 0.5; // Half the normal ratio
+                    let count = (examples.len() as f32 * reduced_ratio) as usize;
+                    
+                    // Select random examples from the harder level
+                    let mut rng = thread_rng();
+                    let mut indices = (0..examples.len()).collect::<Vec<_>>();
+                    indices.shuffle(&mut rng);
+                    
+                    for &idx in indices.iter().take(count) {
+                        selected_examples.push(examples[idx].clone());
+                    }
+                }
+            }
         }
         
-        // Shuffle the examples
-        let mut rng = rand::rngs::StdRng::seed_from_u64(self.seed + self.current_epoch as u64);
-        examples.shuffle(&mut rng);
-        
-        examples
+        selected_examples
     }
     
-    /// Get the batch size appropriate for the current difficulty level
+    /// Get the batch size based on current difficulty level
     pub fn get_batch_size(&self) -> usize {
+        // For more difficult examples, use smaller batches
         match self.current_level {
-            DifficultyLevel::VeryEasy => 64,
-            DifficultyLevel::Easy => 48,
-            DifficultyLevel::Medium => 32,
-            DifficultyLevel::Hard => 16,
-            DifficultyLevel::VeryHard => 8,
+            DifficultyLevel::VeryEasy => self.batch_size,
+            DifficultyLevel::Easy => self.batch_size,
+            DifficultyLevel::Medium => self.batch_size / 2 + self.batch_size / 4, // 75% of original
+            DifficultyLevel::Hard => self.batch_size / 2,  // Half the base batch size
+            DifficultyLevel::VeryHard => self.batch_size / 4, // Quarter the base batch size
         }
     }
     

@@ -861,6 +861,20 @@ impl Trainer {
     }
 }
 
+/// Trait for models that can generate text
+pub trait TextGenerationModel {
+    /// Forward pass of the model, producing logits for the next token
+    fn forward(&self, input: &Vec<Vec<usize>>, target: Option<&Array2<usize>>) -> ModelOutput;
+}
+
+/// Implement TextGenerationModel for Trainer
+impl TextGenerationModel for Trainer {
+    fn forward(&self, input: &Vec<Vec<usize>>, target: Option<&Array2<usize>>) -> ModelOutput {
+        // This simply delegates to the existing forward method
+        self.forward(input, target)
+    }
+}
+
 // Include additional modules
 pub mod tests;
 pub mod evaluate;
@@ -869,6 +883,6 @@ pub mod curriculum;
 pub mod enhanced_trainer;
 
 // Re-export key components for easier access
-pub use generation::{TextGenerator, TextGenerationModel};
+pub use generation::TextGenerator;
 pub use curriculum::{CurriculumScheduler, CurriculumExample, DifficultyLevel};
 pub use enhanced_trainer::EnhancedTrainer; 
