@@ -179,6 +179,34 @@ impl EncoderLayer {
     pub fn model_dim(&self) -> usize {
         self.d_model
     }
+    
+    /// Loads weights into the encoder layer components
+    ///
+    /// # Arguments
+    /// * `weights` - Slice of weight matrices for this layer
+    ///
+    /// # Returns
+    /// * `()` - Unit return
+    pub fn load_weights(&mut self, weights: &[Tensor]) {
+        // Each encoder layer has 4 weight matrices:
+        // 1. Self-Attention: Query/Key/Value projection
+        // 2. Self-Attention: Output projection
+        // 3. Feed-Forward: First linear layer
+        // 4. Feed-Forward: Second linear layer
+        
+        if weights.len() != 4 {
+            println!("Warning: Expected 4 weight matrices for encoder layer, got {}", weights.len());
+            return;
+        }
+        
+        // 1-2. Load attention weights
+        self.attention.load_weights(&weights[0], &weights[1]);
+        
+        // 3-4. Load feed forward weights
+        self.feed_forward.load_weights(&weights[2], &weights[3]);
+        
+        println!("Loaded weights for encoder layer");
+    }
 }
 
 #[cfg(test)]

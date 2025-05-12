@@ -281,6 +281,18 @@ impl WordPieceBPETokenizer {
         println!("Does it match? {}", text.to_lowercase() == decoded);
         println!("------------------------\n");
     }
+
+    /// Update vocabulary size when loading a model
+    pub fn update_vocab_size(&mut self, vocab_size: usize) {
+        println!("Updating tokenizer vocabulary size to {}", vocab_size);
+        
+        // Just acknowledge the request for now
+        println!("Current vocabulary size: {}", self.vocab.len());
+        
+        // If we want to actually update the size, we'd need to adjust the
+        // internal token tables, merges, etc.
+        println!("Note: Full vocabulary resizing not implemented in this version");
+    }
 }
 
 impl Tokenizer for WordPieceBPETokenizer {

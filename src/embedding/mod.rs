@@ -234,6 +234,53 @@ impl TransformerEmbedding {
         
         embeddings
     }
+    
+    /// Sets the token embedding weights
+    ///
+    /// # Arguments
+    /// * `embedding_matrix` - Matrix containing token embeddings
+    ///
+    /// # Returns
+    /// * `()` - Unit return
+    pub fn set_token_embedding(&mut self, embedding_matrix: Tensor) {
+        let shape = embedding_matrix.data.shape();
+        
+        // Validate dimensions
+        if shape.len() != 2 {
+            println!("Warning: Expected 2D matrix for token embeddings, got {}-D", shape.len());
+            return;
+        }
+        
+        // Match expected dimensions with token embedding
+        if shape[0] == self.embedding_dim && shape[1] == self.token_emb.vocab_size {
+            // The matrix has dimensions [d_model x vocab_size], but token embedding expects [vocab_size x d_model]
+            // We need to transpose it
+            println!("Transposing embedding matrix from {}x{} to {}x{}", 
+                     shape[0], shape[1], shape[1], shape[0]);
+            
+            let embedding_data = embedding_matrix.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+            let mut transposed = ndarray::Array2::<f32>::zeros((shape[1], shape[0]));
+            
+            for i in 0..shape[0] {
+                for j in 0..shape[1] {
+                    transposed[[j, i]] = embedding_data[[i, j]];
+                }
+            }
+            
+            // The transposed matrix should match the token_emb.weights dimensions
+            self.token_emb.weights = transposed;
+            println!("Successfully set token embeddings");
+        } else if shape[0] == self.token_emb.vocab_size && shape[1] == self.embedding_dim {
+            // The dimensions match the token embedding directly
+            let embedding_data = embedding_matrix.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+            self.token_emb.weights = embedding_data;
+            println!("Successfully set token embeddings");
+        } else {
+            println!("Warning: Unexpected embedding matrix dimensions: {:?}, expected: {}x{} or {}x{}",
+                     shape, self.embedding_dim, self.token_emb.vocab_size, 
+                     self.token_emb.vocab_size, self.embedding_dim);
+        }
+    }
 }
 
 #[cfg(test)]

@@ -859,6 +859,73 @@ impl Trainer {
     pub fn set_learning_rate(&mut self, lr: f32) {
         self.optimizer.set_learning_rate(lr);
     }
+
+    /// Loads weights from an array of matrices into the model components
+    ///
+    /// Maps weight matrices to the appropriate model components (embedding, encoder, output projection)
+    /// based on their expected order and dimensions.
+    ///
+    /// # Arguments
+    /// * `matrices` - Vector of weight matrices in expected order
+    ///
+    /// # Returns
+    /// * `ModelResult<()>` - Success or error with details
+    pub fn load_weights_from_matrices(&mut self, matrices: &Vec<Tensor>) -> ModelResult<()> {
+        println!("Loading {} weight matrices into model components", matrices.len());
+        
+        // Validate expected number of matrices
+        let expected_matrix_count = self.num_layers * 4 + 2; // 4 per layer + embedding + output_projection
+        if matrices.len() != expected_matrix_count {
+            return Err(ModelError::Other(format!(
+                "Expected {} matrices, but got {}", 
+                expected_matrix_count, matrices.len()
+            )));
+        }
+        
+        // Extract and assign matrices in the correct order
+        let mut matrix_idx = 0;
+        
+        // 1. First matrix is the embedding weights
+        if matrix_idx < matrices.len() {
+            let embedding_matrix = &matrices[matrix_idx];
+            // Validate embedding matrix dimensions
+            if embedding_matrix.data.shape()[0] != self.model_dim || 
+               embedding_matrix.data.shape()[1] != self.vocab_size {
+                println!("WARNING: Embedding matrix dimensions mismatch. Expected: {}x{}, Got: {}x{}",
+                    self.model_dim, self.vocab_size,
+                    embedding_matrix.data.shape()[0], embedding_matrix.data.shape()[1]);
+            }
+            
+            self.embedding.set_token_embedding(embedding_matrix.clone());
+            matrix_idx += 1;
+        }
+        
+        // 2. Next 4*num_layers matrices are for the encoder layers
+        if matrix_idx + 4*self.num_layers <= matrices.len() {
+            let encoder_matrices = &matrices[matrix_idx..matrix_idx + 4*self.num_layers];
+            self.encoder.load_layer_weights(encoder_matrices);
+            matrix_idx += 4*self.num_layers;
+        }
+        
+        // 3. Final matrix is the output projection
+        if matrix_idx < matrices.len() {
+            let output_proj_matrix = &matrices[matrix_idx];
+            // Validate output projection matrix dimensions
+            if output_proj_matrix.data.shape()[0] != self.model_dim || 
+               output_proj_matrix.data.shape()[1] != self.vocab_size {
+                println!("WARNING: Output projection matrix dimensions mismatch. Expected: {}x{}, Got: {}x{}",
+                    self.model_dim, self.vocab_size,
+                    output_proj_matrix.data.shape()[0], output_proj_matrix.data.shape()[1]);
+            }
+            
+            self.output_projection = output_proj_matrix.clone();
+            self.params.insert("output_projection".to_string(), output_proj_matrix.clone());
+            matrix_idx += 1;
+        }
+        
+        println!("Successfully loaded {} weight matrices", matrix_idx);
+        Ok(())
+    }
 }
 
 /// Trait for models that can generate text

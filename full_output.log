@@ -1,0 +1,70 @@
+Running command: cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.json --prompt "Once upon a time" --max-tokens 100
+
+--- STDOUT ---
+Loading model from models/high_accuracy_model.json for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.json
+Detected binary format model file
+Binary model config: dim=4398046511104, layers=34359738368, heads=25769803776, vocab=21470541512704
+Adjusting trainer model dimensions to match loaded model
+Note: Model architecture mismatch. Using existing architecture with loaded weights.
+Vocabulary data detected in binary model
+Updating tokenizer vocabulary size to 21470541512704
+Current vocabulary size: 101
+Note: Full vocabulary resizing not implemented in this version
+Loading 34359738368 transformer layers of weights
+Each layer contains QKV attention matrices and feed-forward networks
+Binary data size is reasonable for model dimensions
+Weight matrices extracted and applied to model
+Binary model loaded successfully with 137438953474 weight matrices
+Successfully loaded binary model from: models/high_accuracy_model.json
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 117, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timewTInPADu*M:...
+
+======= GENERATED TEXT =======
+oncew uponw aw timewTInPADu*M:(zn-">kXni.{:{"ci{jKw1sjhm&|Yi7;w^:LC2.K.S7ss*C!M-2TN#ze "JPD#d8-X?nJdc"a-QpDPTLdc--q}g
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+
+--- STDERR ---
+   Compiling wall-e1 v0.1.0 (/home/nabla/github/wall-e1)
+warning: unused variable: `offset`
+   --> src/training/enhanced_trainer.rs:643:31
+    |
+643 | ...                   offset: usize,
+    |                       ^^^^^^ help: if this is intentional, prefix it with an underscore: `_offset`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `num_heads`
+   --> src/training/enhanced_trainer.rs:646:31
+    |
+646 | ...                   num_heads: usize,
+    |                       ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_num_heads`
+
+warning: `wall-e1` (lib) generated 2 warnings
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:450:68
+    |
+450 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 2.23s
+     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.json --prompt 'Once upon a time' --max-tokens 100`
+
+
+Output saved to generation_output.txt
+
+Script completed.

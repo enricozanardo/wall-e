@@ -196,6 +196,79 @@ impl MultiHeadAttention {
         
         output
     }
+    
+    /// Loads weights into the attention component
+    ///
+    /// # Arguments
+    /// * `qkv_matrix` - Combined matrix for query, key, value projections
+    /// * `output_matrix` - Matrix for output projection
+    ///
+    /// # Returns
+    /// * `()` - Unit return
+    pub fn load_weights(&mut self, qkv_matrix: &Tensor, output_matrix: &Tensor) {
+        // Validate the matrix dimensions
+        let qkv_shape = qkv_matrix.data.shape();
+        let output_shape = output_matrix.data.shape();
+        
+        if qkv_shape.len() != 2 || output_shape.len() != 2 {
+            println!("Warning: Expected 2D matrices for attention weights");
+            return;
+        }
+        
+        // Extract the query, key, value projections from the combined matrix
+        if qkv_shape[0] == self.model_dimension && qkv_shape[1] == self.model_dimension * 3 {
+            // This is a combined QKV matrix (d_model x 3*d_model)
+            // Split it into individual matrices for each head
+            
+            let qkv_data = qkv_matrix.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+            
+            let head_size = qkv_shape[1] / 3 / self.num_heads;
+            
+            for h in 0..self.num_heads {
+                // Calculate offsets for the q, k, v projections
+                let q_offset = 0;
+                let k_offset = self.model_dimension;
+                let v_offset = 2 * self.model_dimension;
+                
+                let q_slice = qkv_data.slice(ndarray::s![.., q_offset + h * head_size..q_offset + (h+1) * head_size]);
+                let k_slice = qkv_data.slice(ndarray::s![.., k_offset + h * head_size..k_offset + (h+1) * head_size]);
+                let v_slice = qkv_data.slice(ndarray::s![.., v_offset + h * head_size..v_offset + (h+1) * head_size]);
+                
+                // Copy the weights into our projection matrices
+                for i in 0..self.model_dimension {
+                    for j in 0..head_size {
+                        if j < self.head_dimension {
+                            self.w_queries[h][[i, j]] = q_slice[[i, j]];
+                            self.w_keys[h][[i, j]] = k_slice[[i, j]];
+                            self.w_values[h][[i, j]] = v_slice[[i, j]];
+                        }
+                    }
+                }
+            }
+            
+            println!("Successfully loaded QKV projections for {} attention heads", self.num_heads);
+        } else {
+            println!("Warning: Unexpected QKV matrix dimensions: {:?}, expected: {}x{}", 
+                     qkv_shape, self.model_dimension, self.model_dimension * 3);
+        }
+        
+        // Load the output projection matrix
+        if output_shape[0] == self.model_dimension && output_shape[1] == self.model_dimension {
+            let output_data = output_matrix.data.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+            
+            // Copy the weights into our output projection matrix
+            for i in 0..self.model_dimension {
+                for j in 0..self.model_dimension {
+                    self.w_output[[i, j]] = output_data[[i, j]];
+                }
+            }
+            
+            println!("Successfully loaded output projection matrix");
+        } else {
+            println!("Warning: Unexpected output matrix dimensions: {:?}, expected: {}x{}", 
+                     output_shape, self.model_dimension, self.model_dimension);
+        }
+    }
 }
 
 impl Attention for MultiHeadAttention {

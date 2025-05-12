@@ -76,7 +76,7 @@ echo "Epochs: 10" | tee -a "$LOG_FILE"
 echo "Data sampling: quality (4000 stories)" | tee -a "$LOG_FILE"
 echo "Data preprocessing: false" | tee -a "$LOG_FILE"
 echo "Training data: data/tiny_stories_sample.json" | tee -a "$LOG_FILE"
-echo "Save path: models/high_accuracy_model.json" | tee -a "$LOG_FILE"
+echo "Save path: models/high_accuracy_model.walle" | tee -a "$LOG_FILE"
 
 echo "╔═════════════════════════════════════════════════════╗" | tee -a "$LOG_FILE"
 echo "║           BUILDING OPTIMIZED COMMAND                ║" | tee -a "$LOG_FILE"
@@ -87,7 +87,7 @@ echo "║           STARTING OPTIMIZED TRAINING               ║" | tee -a "$LO
 echo "╚═════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
 
 # Execute the optimized training command
-TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.json --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000"
+TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000"
 
 echo "Executing: $TRAINING_CMD" | tee -a "$LOG_FILE"
 eval $TRAINING_CMD | tee -a "$LOG_FILE"
@@ -99,7 +99,7 @@ generate_text() {
   
   # Note the ordering of arguments - make sure --model comes before the path
   # and generate-only is a flag without a value
-  GENERATE_CMD="cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.json --prompt \"$prompt\" --max-tokens 75"
+  GENERATE_CMD="cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt \"$prompt\" --max-tokens 75"
   eval $GENERATE_CMD | tee -a "$LOG_FILE"
 }
 
@@ -110,4 +110,4 @@ generate_text "In a world where magic"
 generate_text "The most important thing"
 
 echo "Training complete. You can test the model with:" | tee -a "$LOG_FILE"
-echo "cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.json --prompt \"Your prompt here\" --max-tokens 100" | tee -a "$LOG_FILE" 
+echo "cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt \"Your prompt here\" --max-tokens 100" | tee -a "$LOG_FILE" 

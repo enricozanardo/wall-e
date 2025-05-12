@@ -1,4 +1,4 @@
-Command: cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.json --prompt "Once upon a time" --max-tokens 100
+Running command: cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.json --prompt "Once upon a time" --max-tokens 100
 
 --- STDOUT ---
 Loading model from models/high_accuracy_model.json for text generation...
@@ -29,6 +29,7 @@ Once upon a time in a distant galaxy, a small spacecraft drifted...
 Output written to generated_text.txt (in current directory)
 Current directory: /home/nabla/github/wall-e1
 
+
 --- STDERR ---
    Compiling wall-e1 v0.1.0 (/home/nabla/github/wall-e1)
 warning: function `read_u64_le` is never used
@@ -51,3 +52,8 @@ warning: unused variable: `epoch`
 warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
     Finished `release` profile [optimized] target(s) in 2.88s
      Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.json --prompt 'Once upon a time' --max-tokens 100`
+
+
+Output saved to generation_output.txt
+
+Script completed.

@@ -1,138 +1,51 @@
-Running text generation with prompt: 'In a world where dragons'
-================================================================
-warning: unused import: `Array2`
- --> src/training/generation.rs:2:18
-  |
-2 | use ndarray::{s, Array2};
-  |                  ^^^^^^
-  |
-  = note: `#[warn(unused_imports)]` on by default
-
-warning: unused import: `crate::training::ModelOutput`
- --> src/training/generation.rs:6:5
-  |
-6 | use crate::training::ModelOutput;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `rand::rngs::StdRng`
- --> src/training/curriculum.rs:4:5
-  |
-4 | use rand::rngs::StdRng;
-  |     ^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `rand::SeedableRng`
- --> src/training/curriculum.rs:5:5
-  |
-5 | use rand::SeedableRng;
-  |     ^^^^^^^^^^^^^^^^^
-
-warning: unused import: `std::time::Instant`
- --> src/training/enhanced_trainer.rs:2:5
-  |
-2 | use std::time::Instant;
-  |     ^^^^^^^^^^^^^^^^^^
-
-warning: unused imports: `SeekFrom` and `Write`
- --> src/training/enhanced_trainer.rs:7:21
-  |
-7 | use std::io::{Read, Write, Seek, SeekFrom};
-  |                     ^^^^^        ^^^^^^^^
-
-warning: unused import: `crate::tokenizer::Tokenizer`
-  --> src/training/enhanced_trainer.rs:10:5
-   |
-10 | use crate::tokenizer::Tokenizer;
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `crate::training::TextGenerationModel`
-  --> src/training/enhanced_trainer.rs:14:5
-   |
-14 | use crate::training::TextGenerationModel;
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `crate::training::TextGenerationModel`
- --> src/training/generation.rs:7:5
-  |
-7 | use crate::training::TextGenerationModel;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused variable: `count`
-   --> src/tokenizer/word_bpe.rs:130:20
+warning: unused variable: `token_id`
+   --> src/training/enhanced_trainer.rs:823:17
     |
-130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
-    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+823 |             let token_id = read_u64_le(&data[offset..offset + 8]) as usize;
+    |                 ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_token_id`
     |
     = note: `#[warn(unused_variables)]` on by default
 
-warning: variable does not need to be mutable
-   --> src/training/enhanced_trainer.rs:659:21
-    |
-659 |                 let mut new_trainer = Trainer::new(
-    |                     ----^^^^^^^^^^^
-    |                     |
-    |                     help: remove this `mut`
-    |
-    = note: `#[warn(unused_mut)]` on by default
+warning: unused variable: `vocab_data`
+    --> src/training/enhanced_trainer.rs:1649:21
+     |
+1649 |         if let Some(vocab_data) = data.get("vocabulary").and_then(|v| v.as_object()) {
+     |                     ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_vocab_data`
 
-warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
-  --> src/training/curriculum.rs:71:5
-   |
-59 | pub struct CurriculumScheduler {
-   |            ------------------- fields in this struct
-...
-71 |     auto_advance: bool,
-   |     ^^^^^^^^^^^^
-72 |     /// Whether we've advanced beyond the hardest standard level
-73 |     beyond_standard_levels: bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^
-...
-77 |     fixed_batch_size: bool,
-   |     ^^^^^^^^^^^^^^^^
-78 |     /// Maximum sequence length
-79 |     max_seq_len: usize,
-   |     ^^^^^^^^^^^
-   |
-   = note: `#[warn(dead_code)]` on by default
-
-warning: method `serialize_model` is never used
-   --> src/training/enhanced_trainer.rs:550:8
-    |
-44  | impl EnhancedTrainer {
-    | -------------------- method in this implementation
-...
-550 |     fn serialize_model(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    |        ^^^^^^^^^^^^^^^
-
-warning: `wall-e1` (lib) generated 13 warnings (run `cargo fix --lib -p wall-e1` to apply 8 suggestions)
+warning: `wall-e1` (lib) generated 2 warnings
 warning: unused variable: `epoch`
-   --> src/bin/train_enhanced_model.rs:445:68
+   --> src/bin/train_enhanced_model.rs:450:68
     |
-445 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+450 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
     |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
     |
     = note: `#[warn(unused_variables)]` on by default
 
 warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
-    Finished `release` profile [optimized] target(s) in 0.21s
-     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.json --prompt 'In a world where dragons' --max-tokens 50`
-Loading model from models/high_accuracy_model.json for text generation...
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/train_enhanced_model --generate-only --model ./models/high_accuracy_model.walle --prompt 'Once upon a time' --max-tokens 50`
+Loading model from ./models/high_accuracy_model.walle for text generation...
 Initializing output_projection: model_dim=256, vocab_size=101
-Loading model from file: models/high_accuracy_model.json
-Detected binary format model file
-Binary model format detected and loaded
-Using placeholder text generation for demonstration
-Successfully loaded binary model from: models/high_accuracy_model.json
-Generating text with prompt: "In a world where dragons"
-DEBUG: Result length = 77, prompt length = 24
-DEBUG: Using model-generated text.
+Loading model from file: ./models/high_accuracy_model.walle
+Detecting file format for: ./models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Warning: Unexpected binary format version: 0. Expected: 1.
+Attempting to continue with best effort parsing...
+Binary model config: dim=4398046511104, ff_dim=34359738368, heads=25769803776, layers=21470541512704, vocab=1099511627776
+Binary model sections: vocab_offset=261585915170783232, weights_offset=5496458627252224
+Warning: Invalid model_dim (4398046511104), using default of 128
+Warning: Invalid ff_dim (34359738368), using default of 512
+Warning: Invalid num_heads (25769803776), using default of 4
+Warning: Invalid num_layers (21470541512704), using default of 3
+Warning: Invalid vocab_size (1099511627776), using default of 5000
+Warning: Invalid vocab_offset (261585915170783232), using header size
+Warning: Invalid weights_offset (5496458627252224), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=4398046511104
+Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
+Continuing without vocabulary deserialization
+Deserializing weights: 4501118289260667745 matrices, 1941 bytes total
+Warning: Expected 14 weight matrices, found 4501118289260667745 in file
 
-======= GENERATED TEXT =======
-inw aw worldw wherew dragonswb(cCny$R{E/5hdeDglPrGHW7|gLtU\W;ra[XF&B#bz/Jzp+W
-==============================
-
-Output written to generated_text.txt (in current directory)
-Current directory: /home/nabla/github/wall-e1
-================================================================
-Contents of generated_text.txt:
-inw aw worldw wherew dragonswb(cCny$R{E/5hdeDglPrGHW7|gLtU\W;ra[XF&B#bz/Jzp+W================================================================
-Test completed, see generation_log.txt for full log
+thread 'main' panicked at src/training/enhanced_trainer.rs:888:35:
+capacity overflow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

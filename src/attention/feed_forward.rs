@@ -65,6 +65,44 @@ impl FeedForward {
     pub fn model_dim(&self) -> usize {
         self.d_model
     }
+    
+    /// Loads weights into the feed-forward network
+    ///
+    /// # Arguments
+    /// * `w1_matrix` - Matrix for the first linear transformation
+    /// * `w2_matrix` - Matrix for the second linear transformation
+    ///
+    /// # Returns
+    /// * `()` - Unit return
+    pub fn load_weights(&mut self, w1_matrix: &Tensor, w2_matrix: &Tensor) {
+        // Validate dimensions
+        let w1_shape = w1_matrix.data.shape();
+        let w2_shape = w2_matrix.data.shape();
+        
+        if w1_shape.len() != 2 || w2_shape.len() != 2 {
+            println!("Warning: Expected 2D matrices for feed-forward weights");
+            return;
+        }
+        
+        // Verify that the dimensions match our network
+        if w1_shape[0] == self.d_model && w1_shape[1] == self.d_ff {
+            // Simply replace the existing weight matrix
+            self.w1 = w1_matrix.clone();
+            println!("Successfully loaded first feed-forward matrix: {}x{}", w1_shape[0], w1_shape[1]);
+        } else {
+            println!("Warning: Unexpected W1 matrix dimensions: {:?}, expected: {}x{}", 
+                     w1_shape, self.d_model, self.d_ff);
+        }
+        
+        if w2_shape[0] == self.d_ff && w2_shape[1] == self.d_model {
+            // Simply replace the existing weight matrix
+            self.w2 = w2_matrix.clone();
+            println!("Successfully loaded second feed-forward matrix: {}x{}", w2_shape[0], w2_shape[1]);
+        } else {
+            println!("Warning: Unexpected W2 matrix dimensions: {:?}, expected: {}x{}", 
+                     w2_shape, self.d_ff, self.d_model);
+        }
+    }
 }
 
 /// Implements an optimized version of the feed-forward network
