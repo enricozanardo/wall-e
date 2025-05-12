@@ -108,6 +108,7 @@ impl WordPieceBPETokenizer {
     }
     
     /// Learns BPE merge rules from a text with improved word boundary handling
+    #[allow(unused_variables)]
     pub fn learn_bpe(&mut self, text: &str, vocab_size: usize, min_frequency: usize) {
         // Pre-tokenize text to preserve word boundaries
         let pre_tokens = self.pre_tokenize(text);

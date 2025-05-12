@@ -1,12 +1,8 @@
 use std::collections::{HashMap, HashSet, VecDeque};
-use ndarray::{s, Array1, Array2};
+use ndarray::s;
 use crate::tokenizer::Tokenizer;
-use crate::nabla::tensor::Tensor;
 use rand::prelude::*;
-use rand::SeedableRng;
 use rand::Rng;
-use crate::training::ModelOutput;
-use crate::training::Trainer;
 
 /// Configuration for text generation
 pub struct TextGenerator {
@@ -214,7 +210,7 @@ impl TextGenerator {
                     let token_str = tokenizer.get_vocab().id_to_token(token_id);
                     let common_word_mult = if let Some(token_str) = token_str {
                         if self.common_words.contains(&token_str.to_lowercase()) {
-                            1.2 // 20% stronger penalty for common words
+                            1.5 // Increased from 1.2 to 1.5 (50% stronger penalty for common words)
                         } else {
                             1.0
                         }
@@ -321,10 +317,4 @@ impl Default for TextGenerator {
     fn default() -> Self {
         Self::new()
     }
-}
-
-/// Trait for models that can generate text
-pub trait TextGenerationModel {
-    /// Forward pass of the model, producing logits for the next token
-    fn forward(&self, input: &Vec<Vec<usize>>, target: Option<&Array2<usize>>) -> ModelOutput;
 } 

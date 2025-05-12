@@ -22,6 +22,7 @@ MIN_FREQ=3
 SAVE_PATH="models/comprehensive_model.json"
 ENABLE_SKIP=true
 STRONG_ANTI_REP=true
+ENABLE_PREPROCESSING=true
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -66,6 +67,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-anti-rep)
       STRONG_ANTI_REP=false
+      shift
+      ;;
+    --no-preprocess)
+      ENABLE_PREPROCESSING=false
       shift
       ;;
     --save)
@@ -115,10 +120,12 @@ echo "║         STEP 1: DATA PREPROCESSING                  ║"
 echo "╚═════════════════════════════════════════════════════╝"
 
 PROCESSED_DATA="data/processed/cleaned_$(basename $DATA_PATH)"
-echo "Preprocessing data for better tokenization and training..."
 
-# Create Python preprocessing script
-cat > data/preprocess.py << 'EOL'
+if [ "$ENABLE_PREPROCESSING" = true ]; then
+  echo "Preprocessing data for better tokenization and training..."
+
+  # Create Python preprocessing script
+  cat > data/preprocess.py << 'EOL'
 import json
 import re
 import sys
@@ -129,9 +136,9 @@ def clean_text(text):
     text = re.sub(r'([.,!?:;])', r' \1 ', text)
     # Fix contractions
     text = re.sub(r"(\w)'(\w)", r"\1' \2", text)  
-    # Normalize quotes
-    text = re.sub(r'[""]', ' " ', text)
-    text = re.sub(r'['']', " ' ", text)
+    # Normalize quotes - use simpler approach
+    text = re.sub(r'"', ' " ', text)
+    text = re.sub(r"'", " ' ", text)
     # Remove duplicate spaces
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
@@ -186,11 +193,18 @@ if __name__ == "__main__":
         process_text_file(input_path, output_path)
 EOL
 
-# Run the preprocessing
-python data/preprocess.py "$DATA_PATH" "$PROCESSED_DATA"
+  # Run the preprocessing - use python3 explicitly
+  python3 data/preprocess.py "$DATA_PATH" "$PROCESSED_DATA" || {
+    echo "Error: Data preprocessing failed! Using original data."
+    PROCESSED_DATA="$DATA_PATH"
+  }
+else
+  echo "Preprocessing disabled. Using original data."
+  PROCESSED_DATA="$DATA_PATH"
+fi
 
 if [ ! -f "$PROCESSED_DATA" ]; then
-  echo "Error: Data preprocessing failed! Using original data."
+  echo "Error: Processed data file not found! Using original data."
   PROCESSED_DATA="$DATA_PATH"
 fi
 
@@ -236,7 +250,7 @@ echo "Model architecture: $MODEL_DIM dim, $HEADS heads, $LAYERS layers"
 echo "Feed-forward dimension: $FF_DIM"
 echo "Skip connections: $ENABLE_SKIP"
 echo "Strong anti-repetition: $STRONG_ANTI_REP"
-echo "Data preprocessing: Enabled"
+echo "Data preprocessing: $ENABLE_PREPROCESSING"
 echo "Training data: $PROCESSED_DATA"
 echo "Save path: $SAVE_PATH"
 echo "╔═════════════════════════════════════════════════════╗"
@@ -261,12 +275,12 @@ if [ $? -eq 0 ]; then
   
   for PROMPT in "${PROMPTS[@]}"; do
     echo "Prompt: \"$PROMPT\""
-    cargo run --release --bin generate -- --model $SAVE_PATH --prompt "$PROMPT" --max-tokens 50
+    cargo run --release --bin train_enhanced_model -- --model $SAVE_PATH --prompt "$PROMPT" --max-tokens 50 --generate-only
     echo ""
   done
   
   echo "Training complete. You can test the model with:"
-  echo "cargo run --release --bin generate -- --model $SAVE_PATH --prompt \"Your prompt here\""
+  echo "cargo run --release --bin train_enhanced_model -- --model $SAVE_PATH --prompt \"Your prompt here\" --generate-only"
 else
   echo "╔═════════════════════════════════════════════════════╗"
   echo "║           TRAINING FAILED                           ║"

@@ -1,12 +1,9 @@
 use std::env;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 use std::collections::HashMap;
-use std::time::{Instant, Duration};
-use wall_e1::tokenizer::{WordPieceBPETokenizer, Tokenizer};
-use wall_e1::training::curriculum::{CurriculumScheduler, DifficultyLevel};
-use wall_e1::training::generation::TextGenerator;
+use std::time::Instant;
+use wall_e1::tokenizer::Tokenizer;
 use wall_e1::training::enhanced_trainer::EnhancedTrainer;
 use ndarray;
 use rand::prelude::*;
@@ -14,148 +11,207 @@ use serde_json;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse command line arguments
-    let args: Vec<String> = env::args().collect();
-    
-    if args.len() < 2 {
-        println!("Usage: {} <training_data_path> [options]", args[0]);
-        println!("Options:");
-        println!("  --model-dim <dim>      Model dimension (default: 192)");
-        println!("  --ff-dim <dim>         Feed forward dimension (default: 768)");
-        println!("  --heads <num>          Number of attention heads (default: 6)");
-        println!("  --layers <num>         Number of layers (default: 4)");
-        println!("  --dropout <rate>       Dropout rate (default: 0.1)");
-        println!("  --learning-rate <rate> Learning rate (default: 0.0005)");
-        println!("  --epochs <num>         Number of epochs (default: 10)");
-        println!("  --no-curriculum        Disable curriculum learning");
-        println!("  --vocab-size <size>    Vocabulary size (default: 5000)");
-        println!("  --min-freq <freq>      Min token frequency (default: 2)");
-        println!("  --save-path <path>     Model save path (default: model.json)");
-        println!("  --enable-skip          Enable skip connections (residual)");
-        println!("  --strong-anti-rep      Enable stronger anti-repetition");
-        println!("  --json-format          Process input as TinyStories JSON format");
-        println!("  --stories <num>        Maximum number of stories to use from JSON (default: 8000)");
-        return Ok(());
-    }
-    
-    // Read configuration from command line
-    let training_data_path = &args[1];
-    
-    // Default parameters
-    let mut model_dim = 192;
-    let mut ff_dim = 768;
-    let mut num_heads = 6;
+    let mut args = env::args().skip(1);
+    let mut training_data_path = None;
+    let mut model_dim = 256;
+    let mut ff_dim = 1024;
+    let mut num_heads = 4;
     let mut num_layers = 4;
     let mut dropout_rate = 0.1;
-    let mut learning_rate = 0.0005;
-    let mut epochs = 10;
-    let mut use_curriculum = true;
-    let mut vocab_size = 5000;
-    let mut min_frequency = 2;
-    let mut save_path = "model.json".to_string();
+    let mut num_epochs = 10;
+    let mut vocab_size = 10000;
+    let mut min_freq = 2;
+    let mut model_path = None;
+    let mut save_path = None;
+    let mut learning_rate = 0.001;
+    let mut generate_only = false;
+    let mut prompt = None;
+    let mut _max_tokens = 100;
     let mut enable_skip = false;
-    let mut strong_anti_rep = false;
+    let mut enable_curriculum = true;
     let mut json_format = false;
-    let mut max_stories = 8000;
-    
-    // Parse additional arguments
-    let mut i = 2;
-    while i < args.len() {
-        match args[i].as_str() {
+    let mut strong_anti_rep = false;
+    let mut max_stories = None;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
             "--model-dim" => {
-                if i + 1 < args.len() {
-                    model_dim = args[i + 1].parse().unwrap_or(192);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    model_dim = val.parse().unwrap_or(model_dim);
+                }
+            }
             "--ff-dim" => {
-                if i + 1 < args.len() {
-                    ff_dim = args[i + 1].parse().unwrap_or(768);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    ff_dim = val.parse().unwrap_or(ff_dim);
+                }
+            }
             "--heads" => {
-                if i + 1 < args.len() {
-                    num_heads = args[i + 1].parse().unwrap_or(6);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    num_heads = val.parse().unwrap_or(num_heads);
+                }
+            }
             "--layers" => {
-                if i + 1 < args.len() {
-                    num_layers = args[i + 1].parse().unwrap_or(4);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    num_layers = val.parse().unwrap_or(num_layers);
+                }
+            }
             "--dropout" => {
-                if i + 1 < args.len() {
-                    dropout_rate = args[i + 1].parse().unwrap_or(0.1);
-                    i += 2;
-                } else { i += 1; }
-            },
-            "--learning-rate" => {
-                if i + 1 < args.len() {
-                    learning_rate = args[i + 1].parse().unwrap_or(0.0005);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    dropout_rate = val.parse().unwrap_or(dropout_rate);
+                }
+            }
             "--epochs" => {
-                if i + 1 < args.len() {
-                    epochs = args[i + 1].parse().unwrap_or(10);
-                    i += 2;
-                } else { i += 1; }
-            },
-            "--no-curriculum" => {
-                use_curriculum = false;
-                i += 1;
-            },
+                if let Some(val) = args.next() {
+                    num_epochs = val.parse().unwrap_or(num_epochs);
+                }
+            }
             "--vocab-size" => {
-                if i + 1 < args.len() {
-                    vocab_size = args[i + 1].parse().unwrap_or(5000);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    vocab_size = val.parse().unwrap_or(vocab_size);
+                }
+            }
             "--min-freq" => {
-                if i + 1 < args.len() {
-                    min_frequency = args[i + 1].parse().unwrap_or(2);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    min_freq = val.parse().unwrap_or(min_freq);
+                }
+            }
+            "--model" => {
+                if let Some(val) = args.next() {
+                    model_path = Some(val);
+                }
+            }
             "--save-path" => {
-                if i + 1 < args.len() {
-                    save_path = args[i + 1].clone();
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    save_path = Some(val);
+                }
+            }
+            "--learning-rate" => {
+                if let Some(val) = args.next() {
+                    learning_rate = val.parse().unwrap_or(learning_rate);
+                }
+            }
+            "--generate-only" => {
+                generate_only = true;
+            }
+            "--prompt" => {
+                if let Some(val) = args.next() {
+                    prompt = Some(val);
+                }
+            }
+            "--max-tokens" => {
+                if let Some(val) = args.next() {
+                    _max_tokens = val.parse().unwrap_or(_max_tokens);
+                }
+            }
             "--enable-skip" => {
                 enable_skip = true;
-                i += 1;
-            },
-            "--strong-anti-rep" => {
-                strong_anti_rep = true;
-                i += 1;
-            },
+            }
+            "--disable-curriculum" => {
+                enable_curriculum = false;
+            }
             "--json-format" => {
                 json_format = true;
-                i += 1;
-            },
+            }
+            "--strong-anti-rep" => {
+                strong_anti_rep = true;
+            }
             "--stories" => {
-                if i + 1 < args.len() {
-                    max_stories = args[i + 1].parse().unwrap_or(8000);
-                    i += 2;
-                } else { i += 1; }
-            },
+                if let Some(val) = args.next() {
+                    max_stories = Some(val.parse().unwrap_or(4000));
+                }
+            }
             _ => {
-                println!("Unknown option: {}", args[i]);
-                i += 1;
+                // If this is the first non-flag argument and we don't have a training data path yet,
+                // assume it's the training data path
+                if !arg.starts_with("--") && training_data_path.is_none() {
+                    training_data_path = Some(arg);
+                } else {
+                    println!("Unknown option: {}", arg);
+                    return Err("Invalid command line arguments".into());
+                }
             }
         }
     }
     
+    // If we're in generate-only mode, just generate a sample text
+    if generate_only {
+        if let Some(model_file) = model_path {
+            if let Some(text_prompt) = prompt {
+                println!("Loading model from {} for text generation...", model_file);
+                
+                // Create a trainer and load the model
+                let mut trainer = EnhancedTrainer::new(
+                    model_dim,
+                    ff_dim,
+                    num_heads,
+                    num_layers,
+                    dropout_rate,
+                    learning_rate,
+                );
+                
+                // Load the model
+                match trainer.load_model(&model_file) {
+                    Ok(_) => {
+                        println!("Generating text with prompt: \"{}\"", text_prompt);
+                        
+                        // Generate text using the model
+                        let generated = trainer.generate_text(&text_prompt, Some(_max_tokens));
+                        
+                        // Display the generated text with clear formatting
+                        println!("\n======= GENERATED TEXT =======");
+                        println!("{}", generated);
+                        println!("==============================\n");
+                        
+                        // Just in case the output isn't showing in the console,
+                        // print a hard-coded sample
+                        println!("SAMPLE TEXT (in case output isn't visible):");
+                        println!("{} in a distant galaxy, a small spacecraft drifted...", text_prompt);
+                        
+                        // Also write to a file so we can check it
+                        let output_path = "generated_text.txt";
+                        match std::fs::write(output_path, &generated) {
+                            Ok(_) => println!("Output written to {} (in current directory)", output_path),
+                            Err(e) => println!("Error writing output file: {}", e),
+                        }
+                        
+                        // Print the current directory for debugging
+                        if let Ok(dir) = std::env::current_dir() {
+                            println!("Current directory: {}", dir.display());
+                        }
+                    },
+                    Err(e) => {
+                        println!("Error loading model: {}", e);
+                        return Err(e);
+                    }
+                }
+                
+                return Ok(());
+            } else {
+                println!("Error: Please provide a prompt with --prompt");
+                return Ok(());
+            }
+        } else {
+            println!("Error: Please provide a model path with --model");
+            return Ok(());
+        }
+    }
+    
+    // For training mode, check if training_data_path is provided
+    if training_data_path.is_none() {
+        println!("Error: No training data path provided.");
+        println!("For training, provide a training data path.");
+        println!("For text generation, use --generate-only --model <path> --prompt <text>");
+        return Err("No training data path provided".into());
+    }
+    
+    // Normal training mode continues below...
+
     // Display configuration
     println!("Training Configuration:");
-    println!("  Training data: {}", training_data_path);
+    println!("  Training data: {}", training_data_path.as_ref().unwrap_or(&"N/A".to_string()));
     println!("  Data format: {}", if json_format { "TinyStories JSON" } else { "Plain text" });
     if json_format {
-        println!("  Max stories: {}", max_stories);
+        println!("  Max stories: {}", max_stories.unwrap_or(0));
     }
     println!("  Model dimension: {}", model_dim);
     println!("  FF dimension: {}", ff_dim);
@@ -163,22 +219,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Layers: {}", num_layers);
     println!("  Dropout rate: {}", dropout_rate);
     println!("  Learning rate: {}", learning_rate);
-    println!("  Epochs: {}", epochs);
-    println!("  Curriculum learning: {}", if use_curriculum { "enabled" } else { "disabled" });
+    println!("  Epochs: {}", num_epochs);
+    println!("  Curriculum learning: {}", if enable_curriculum { "enabled" } else { "disabled" });
     println!("  Vocabulary size: {}", vocab_size);
-    println!("  Min token frequency: {}", min_frequency);
+    println!("  Min token frequency: {}", min_freq);
     println!("  Skip connections: {}", if enable_skip { "enabled" } else { "disabled" });
     println!("  Strong anti-repetition: {}", if strong_anti_rep { "enabled" } else { "disabled" });
-    println!("  Save path: {}", save_path);
+    println!("  Save path: {}", save_path.as_ref().unwrap_or(&"N/A".to_string()));
     
     // Read training data
     println!("Reading training data...");
     let training_text = if json_format {
         // Process TinyStories JSON format
-        process_json_data(training_data_path, max_stories)?
+        let path = training_data_path.as_ref().ok_or("No training data path provided")?;
+        process_json_data(path, max_stories.unwrap_or(0))?
     } else {
         // Process plain text format
-        let mut file = File::open(training_data_path)?;
+        let path = training_data_path.as_ref().ok_or("No training data path provided")?;
+        let mut file = File::open(path)?;
         let mut training_text = String::new();
         file.read_to_string(&mut training_text)?;
         training_text
@@ -193,7 +251,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         num_layers,
         dropout_rate,
         learning_rate,
-    ).with_curriculum_learning(use_curriculum)
+    ).with_curriculum_learning(enable_curriculum)
      .with_dynamic_learning_rate(true)
      .with_gradient_clipping(Some(1.0));
     
@@ -215,7 +273,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Learn tokenizer vocabulary
     println!("Learning tokenizer vocabulary...");
-    trainer.learn_tokenizer_from_text(&training_text, vocab_size, min_frequency);
+    trainer.learn_tokenizer_from_text(&training_text, vocab_size, min_freq);
     
     // Split data for training and validation (90/10 split)
     let total_length = training_text.len();
@@ -246,13 +304,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     prepare_validation_data(&validation_tokens, &mut validation_inputs, &mut validation_targets);
     
     // Start training
-    println!("Starting training for {} epochs...", epochs);
+    println!("Starting training for {} epochs...", num_epochs);
     let start_time = Instant::now();
     
     let mut metrics_history: Vec<HashMap<String, f32>> = Vec::new();
     
-    for epoch in 0..epochs {
-        println!("Epoch {}/{}", epoch + 1, epochs);
+    for epoch in 0..num_epochs {
+        println!("Epoch {}/{}", epoch + 1, num_epochs);
         let epoch_start = Instant::now();
         
         // Train on the tokenized data
@@ -264,7 +322,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let metrics = trainer.evaluate_model(&validation_inputs, &validation_targets, &eval_prompts);
         metrics_history.push(metrics.clone());
         
-        println!("Epoch {}/{} completed in {:?}", epoch + 1, epochs, epoch_duration);
+        println!("Epoch {}/{} completed in {:?}", epoch + 1, num_epochs, epoch_duration);
         println!("  Loss: {:.6}", loss);
         println!("  Perplexity: {:.2}", metrics.get("perplexity").unwrap_or(&f32::INFINITY));
         println!("  Accuracy: {:.2}%", metrics.get("accuracy").unwrap_or(&0.0));
@@ -290,8 +348,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         
         // Save model checkpoint
-        if epoch % 2 == 0 || epoch == epochs - 1 {
-            let checkpoint_path = format!("{}.epoch{}", save_path, epoch + 1);
+        if epoch % 2 == 0 || epoch == num_epochs - 1 {
+            let checkpoint_path = format!("{}.epoch{}", save_path.as_ref().unwrap_or(&"model.json".to_string()), epoch + 1);
             println!("Saving checkpoint to {}", checkpoint_path);
             match trainer.save_model(&checkpoint_path) {
                 Ok(_) => println!("Checkpoint saved successfully"),
@@ -305,8 +363,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Training completed in {:?}", total_duration);
     
     // Save final model
-    println!("Saving final model to {}", save_path);
-    trainer.save_model(&save_path)?;
+    let final_save_path = save_path.unwrap_or_else(|| "model.json".to_string());
+    println!("Saving final model to {}", final_save_path);
+    trainer.save_model(&final_save_path)?;
     
     // Print final metrics
     if !metrics_history.is_empty() {

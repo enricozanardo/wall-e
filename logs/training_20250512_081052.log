@@ -1,0 +1,1817 @@
+Detected JSON format data file
+Using quality-focused sampling: 4000 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 10
+Data sampling: quality (4000 stories)
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.json
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.json --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000
+warning: unused import: `Array2`
+ --> src/training/generation.rs:2:18
+  |
+2 | use ndarray::{s, Array2};
+  |                  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::training::ModelOutput`
+ --> src/training/generation.rs:6:5
+  |
+6 | use crate::training::ModelOutput;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::rngs::StdRng`
+ --> src/training/curriculum.rs:4:5
+  |
+4 | use rand::rngs::StdRng;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::SeedableRng`
+ --> src/training/curriculum.rs:5:5
+  |
+5 | use rand::SeedableRng;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/training/enhanced_trainer.rs:2:5
+  |
+2 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tokenizer::Tokenizer`
+ --> src/training/enhanced_trainer.rs:7:5
+  |
+7 | use crate::tokenizer::Tokenizer;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+  --> src/training/enhanced_trainer.rs:11:5
+   |
+11 | use crate::training::TextGenerationModel;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::prelude`
+  --> src/training/enhanced_trainer.rs:14:5
+   |
+14 | use rand::prelude::*;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+ --> src/training/generation.rs:7:5
+  |
+7 | use crate::training::TextGenerationModel;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:130:20
+    |
+130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:533:21
+    |
+533 |                 let mut new_trainer = Trainer::new(
+    |                     ----^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
+  --> src/training/curriculum.rs:71:5
+   |
+59 | pub struct CurriculumScheduler {
+   |            ------------------- fields in this struct
+...
+71 |     auto_advance: bool,
+   |     ^^^^^^^^^^^^
+72 |     /// Whether we've advanced beyond the hardest standard level
+73 |     beyond_standard_levels: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+77 |     fixed_batch_size: bool,
+   |     ^^^^^^^^^^^^^^^^
+78 |     /// Maximum sequence length
+79 |     max_seq_len: usize,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `wall-e1` (lib) generated 12 warnings (run `cargo fix --lib -p wall-e1` to apply 7 suggestions)
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:448:68
+    |
+448 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running `target/release/train_enhanced_model data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.json --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000`
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 4000
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 10
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.json
+Reading training data...
+Found 58300 stories in JSON file
+Will use 4000 stories for training
+Processed 4000 stories, total text length: 3530959 characters
+Creating trainer...
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Initializing output_projection: model_dim=128, vocab_size=4999
+Setting up curriculum learning...
+Starting training for 10 epochs...
+Epoch 1/10
+Created 174693 input/target pairs for training
+Initializing curriculum learning with examples...
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 0 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 1 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 5 examples to level VeryEasy
+Copied 5 examples to level Easy from previous level
+Copied 5 examples to level Medium from previous level
+Copied 5 examples to level Hard from previous level
+Copied 5 examples to level VeryHard from previous level
+After redistribution: 5 examples at level VeryEasy
+After redistribution: 5 examples at level Easy
+After redistribution: 5 examples at level Medium
+After redistribution: 5 examples at level Hard
+After redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 5 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 6 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 10 examples to level VeryEasy
+Redistributed 10 examples to level Easy
+Redistributed 10 examples to level Medium
+Copied 10 examples to level Hard from previous level
+Copied 10 examples to level VeryHard from previous level
+After redistribution: 10 examples at level VeryEasy
+After redistribution: 10 examples at level Easy
+After redistribution: 10 examples at level Medium
+After redistribution: 10 examples at level Hard
+After redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 10 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 11 examples to level VeryEasy
+Redistributed 11 examples to level Easy
+Redistributed 11 examples to level Medium
+Redistributed 11 examples to level Hard
+Redistributed 11 examples to level VeryHard
+After redistribution: 11 examples at level VeryEasy
+After redistribution: 11 examples at level Easy
+After redistribution: 11 examples at level Medium
+After redistribution: 11 examples at level Hard
+After redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 12 examples to level VeryEasy
+Redistributed 12 examples to level Easy
+Redistributed 12 examples to level Medium
+Redistributed 12 examples to level Hard
+Redistributed 12 examples to level VeryHard
+After redistribution: 12 examples at level VeryEasy
+After redistribution: 12 examples at level Easy
+After redistribution: 12 examples at level Medium
+After redistribution: 12 examples at level Hard
+After redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 13 examples to level VeryEasy
+Redistributed 13 examples to level Easy
+Redistributed 13 examples to level Medium
+Redistributed 13 examples to level Hard
+Redistributed 13 examples to level VeryHard
+After redistribution: 13 examples at level VeryEasy
+After redistribution: 13 examples at level Easy
+After redistribution: 13 examples at level Medium
+After redistribution: 13 examples at level Hard
+After redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 14 examples to level VeryEasy
+Redistributed 14 examples to level Easy
+Redistributed 14 examples to level Medium
+Redistributed 14 examples to level Hard
+Redistributed 14 examples to level VeryHard
+After redistribution: 14 examples at level VeryEasy
+After redistribution: 14 examples at level Easy
+After redistribution: 14 examples at level Medium
+After redistribution: 14 examples at level Hard
+After redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 15 examples to level VeryEasy
+Redistributed 15 examples to level Easy
+Redistributed 15 examples to level Medium
+Redistributed 15 examples to level Hard
+Redistributed 15 examples to level VeryHard
+After redistribution: 15 examples at level VeryEasy
+After redistribution: 15 examples at level Easy
+After redistribution: 15 examples at level Medium
+After redistribution: 15 examples at level Hard
+After redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 16 examples to level VeryEasy
+Redistributed 16 examples to level Easy
+Redistributed 16 examples to level Medium
+Redistributed 16 examples to level Hard
+Redistributed 16 examples to level VeryHard
+After redistribution: 16 examples at level VeryEasy
+After redistribution: 16 examples at level Easy
+After redistribution: 16 examples at level Medium
+After redistribution: 16 examples at level Hard
+After redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 17 examples to level VeryEasy
+Redistributed 17 examples to level Easy
+Redistributed 17 examples to level Medium
+Redistributed 17 examples to level Hard
+Redistributed 17 examples to level VeryHard
+After redistribution: 17 examples at level VeryEasy
+After redistribution: 17 examples at level Easy
+After redistribution: 17 examples at level Medium
+After redistribution: 17 examples at level Hard
+After redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 18 examples to level VeryEasy
+Redistributed 18 examples to level Easy
+Redistributed 18 examples to level Medium
+Redistributed 18 examples to level Hard
+Redistributed 18 examples to level VeryHard
+After redistribution: 18 examples at level VeryEasy
+After redistribution: 18 examples at level Easy
+After redistribution: 18 examples at level Medium
+After redistribution: 18 examples at level Hard
+After redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 19 examples to level VeryEasy
+Redistributed 19 examples to level Easy
+Redistributed 19 examples to level Medium
+Redistributed 19 examples to level Hard
+Redistributed 19 examples to level VeryHard
+After redistribution: 19 examples at level VeryEasy
+After redistribution: 19 examples at level Easy
+After redistribution: 19 examples at level Medium
+After redistribution: 19 examples at level Hard
+After redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 20 examples to level VeryEasy
+Redistributed 20 examples to level Easy
+Redistributed 20 examples to level Medium
+Redistributed 20 examples to level Hard
+Redistributed 20 examples to level VeryHard
+After redistribution: 20 examples at level VeryEasy
+After redistribution: 20 examples at level Easy
+After redistribution: 20 examples at level Medium
+After redistribution: 20 examples at level Hard
+After redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 21 examples to level VeryEasy
+Redistributed 21 examples to level Easy
+Redistributed 21 examples to level Medium
+Redistributed 21 examples to level Hard
+Redistributed 21 examples to level VeryHard
+After redistribution: 21 examples at level VeryEasy
+After redistribution: 21 examples at level Easy
+After redistribution: 21 examples at level Medium
+After redistribution: 21 examples at level Hard
+After redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 22 examples to level VeryEasy
+Redistributed 22 examples to level Easy
+Redistributed 22 examples to level Medium
+Redistributed 22 examples to level Hard
+Redistributed 22 examples to level VeryHard
+After redistribution: 22 examples at level VeryEasy
+After redistribution: 22 examples at level Easy
+After redistribution: 22 examples at level Medium
+After redistribution: 22 examples at level Hard
+After redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 23 examples to level VeryEasy
+Redistributed 23 examples to level Easy
+Redistributed 23 examples to level Medium
+Redistributed 23 examples to level Hard
+Redistributed 23 examples to level VeryHard
+After redistribution: 23 examples at level VeryEasy
+After redistribution: 23 examples at level Easy
+After redistribution: 23 examples at level Medium
+After redistribution: 23 examples at level Hard
+After redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 24 examples to level VeryEasy
+Redistributed 24 examples to level Easy
+Redistributed 24 examples to level Medium
+Redistributed 24 examples to level Hard
+Redistributed 24 examples to level VeryHard
+After redistribution: 24 examples at level VeryEasy
+After redistribution: 24 examples at level Easy
+After redistribution: 24 examples at level Medium
+After redistribution: 24 examples at level Hard
+After redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 25 examples to level VeryEasy
+Redistributed 25 examples to level Easy
+Redistributed 25 examples to level Medium
+Redistributed 25 examples to level Hard
+Redistributed 25 examples to level VeryHard
+After redistribution: 25 examples at level VeryEasy
+After redistribution: 25 examples at level Easy
+After redistribution: 25 examples at level Medium
+After redistribution: 25 examples at level Hard
+After redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 26 examples to level VeryEasy
+Redistributed 26 examples to level Easy
+Redistributed 26 examples to level Medium
+Redistributed 26 examples to level Hard
+Redistributed 26 examples to level VeryHard
+After redistribution: 26 examples at level VeryEasy
+After redistribution: 26 examples at level Easy
+After redistribution: 26 examples at level Medium
+After redistribution: 26 examples at level Hard
+After redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 27 examples to level VeryEasy
+Redistributed 27 examples to level Easy
+Redistributed 27 examples to level Medium
+Redistributed 27 examples to level Hard
+Redistributed 27 examples to level VeryHard
+After redistribution: 27 examples at level VeryEasy
+After redistribution: 27 examples at level Easy
+After redistribution: 27 examples at level Medium
+After redistribution: 27 examples at level Hard
+After redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 28 examples to level VeryEasy
+Redistributed 28 examples to level Easy
+Redistributed 28 examples to level Medium
+Redistributed 28 examples to level Hard
+Redistributed 28 examples to level VeryHard
+After redistribution: 28 examples at level VeryEasy
+After redistribution: 28 examples at level Easy
+After redistribution: 28 examples at level Medium
+After redistribution: 28 examples at level Hard
+After redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 29 examples to level VeryEasy
+Redistributed 29 examples to level Easy
+Redistributed 29 examples to level Medium
+Redistributed 29 examples to level Hard
+Redistributed 29 examples to level VeryHard
+After redistribution: 29 examples at level VeryEasy
+After redistribution: 29 examples at level Easy
+After redistribution: 29 examples at level Medium
+After redistribution: 29 examples at level Hard
+After redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 30 examples to level VeryEasy
+Redistributed 30 examples to level Easy
+Redistributed 30 examples to level Medium
+Redistributed 30 examples to level Hard
+Redistributed 30 examples to level VeryHard
+After redistribution: 30 examples at level VeryEasy
+After redistribution: 30 examples at level Easy
+After redistribution: 30 examples at level Medium
+After redistribution: 30 examples at level Hard
+After redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 31 examples to level VeryEasy
+Redistributed 31 examples to level Easy
+Redistributed 31 examples to level Medium
+Redistributed 31 examples to level Hard
+Redistributed 31 examples to level VeryHard
+After redistribution: 31 examples at level VeryEasy
+After redistribution: 31 examples at level Easy
+After redistribution: 31 examples at level Medium
+After redistribution: 31 examples at level Hard
+After redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 32 examples to level VeryEasy
+Redistributed 32 examples to level Easy
+Redistributed 32 examples to level Medium
+Redistributed 32 examples to level Hard
+Redistributed 32 examples to level VeryHard
+After redistribution: 32 examples at level VeryEasy
+After redistribution: 32 examples at level Easy
+After redistribution: 32 examples at level Medium
+After redistribution: 32 examples at level Hard
+After redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 33 examples to level VeryEasy
+Redistributed 33 examples to level Easy
+Redistributed 33 examples to level Medium
+Redistributed 33 examples to level Hard
+Redistributed 33 examples to level VeryHard
+After redistribution: 33 examples at level VeryEasy
+After redistribution: 33 examples at level Easy
+After redistribution: 33 examples at level Medium
+After redistribution: 33 examples at level Hard
+After redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Forcing redistribution of curriculum examples...
+Redistributed 33 examples to level VeryEasy
+Redistributed 33 examples to level Easy
+Redistributed 33 examples to level Medium
+Redistributed 33 examples to level Hard
+Redistributed 36 examples to level VeryHard
+After redistribution: 33 examples at level VeryEasy
+After redistribution: 33 examples at level Easy
+After redistribution: 33 examples at level Medium
+After redistribution: 33 examples at level Hard
+After redistribution: 36 examples at level VeryHard
+Curriculum initialization complete with 128 examples
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 8.517035 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 6.935004 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 5.884132 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 4.923176 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 4.431442 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 4.250299 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 1/10 completed in 257.915898823s
+  Loss: 5.365566
+  Perplexity: 54.25
+  Accuracy: 44.19%
+  Repetition score: 1.00
+  Fluency score: 0.97
+  Quality score: 0.69
+
+Sample generation:
+Prompt: "The"
+Generated: "the s sun forever backyard was to, .want them she come a singing"sad it and they joy letter" tran jetrees little you'high peter put no open,eventually s your door are we land he back v away"
+
+Saving checkpoint to models/high_accuracy_model.json.epoch1
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch1
+Checkpoint saved successfully
+Epoch 2/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.820505 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.636321 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.874338 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.560415 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.602451 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.813486 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 2/10 completed in 254.581086872s
+  Loss: 3.621426
+  Perplexity: 41.07
+  Accuracy: 44.19%
+  Repetition score: 1.00
+  Fluency score: 0.94
+  Quality score: 0.71
+
+Sample generation:
+Prompt: "The"
+Generated: "the ripped lived he remembered,. "one up lily no was,'very more s!island lily. doll pe.spaghetti suddenly orupon.real decided stick?liked.green but fruits looking tight tom a annie'ground earmax"
+
+Epoch 3/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.532521 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.384120 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.659636 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.341825 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.399693 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.628213 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 3/10 completed in 252.751553738s
+  Loss: 3.400397
+  Perplexity: 36.31
+  Accuracy: 44.38%
+  Repetition score: 1.00
+  Fluency score: 0.95
+  Quality score: 0.72
+
+Sample generation:
+Prompt: "The"
+Generated: "the log softly while's"long enjoying t a,.know like and .' to catch paul lily wouldn in mama is adventure bird strthey stop one,is!space my himself susie"fixing he speed for she bye excited he"
+
+Saving checkpoint to models/high_accuracy_model.json.epoch3
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch3
+Checkpoint saved successfully
+Epoch 4/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.402544 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.256968 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.536458 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.216875 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.279179 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.508058 - Level: VeryEasy
+Advancing curriculum after fallback training to level: VeryEasy
+Evaluating model...
+Epoch 4/10 completed in 253.139227765s
+  Loss: 3.277002
+  Perplexity: 33.69
+  Accuracy: 44.62%
+  Repetition score: 1.00
+  Fluency score: 0.94
+  Quality score: 0.73
+
+Sample generation:
+Prompt: "The"
+Generated: "the mine hello't what d, of!in.fixing back s?king he brave this friends ts she out inside"'hurt'ow,hopping enfind mom bake one said and special shaking day good cried old sad"
+
+Epoch 5/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.322081 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.175455 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.450886 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.133444 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.196265 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.422002 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 5/10 completed in 252.400305988s
+  Loss: 3.194182
+  Perplexity: 32.00
+  Accuracy: 45.00%
+  Repetition score: 1.00
+  Fluency score: 0.96
+  Quality score: 0.73
+
+Sample generation:
+Prompt: "The"
+Generated: "the branch play aced and to!'s said,angry."tom, goodbye was be.a re i and lily hello s pizza swim or so bunny his"knob slide!stick shthat look tried day back lumber wow"
+
+Saving checkpoint to models/high_accuracy_model.json.epoch5
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch5
+Checkpoint saved successfully
+Epoch 6/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.265675 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.116460 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.385423 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.072189 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.134358 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.356522 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 6/10 completed in 251.408619017s
+  Loss: 3.132965
+  Perplexity: 30.80
+  Accuracy: 45.56%
+  Repetition score: 1.00
+  Fluency score: 0.96
+  Quality score: 0.74
+
+Sample generation:
+Prompt: "The"
+Generated: "the s ran advice't, boy!,found".said down so'"i go flowers pale will not to stay flew that and s a!'too forward room easier,thought on.an mud tears.got looked?"
+
+Epoch 7/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.222727 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.070351 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.332381 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 3.024350 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.085667 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.304589 - Level: VeryEasy
+Advancing curriculum after fallback training to level: VeryEasy
+Evaluating model...
+Epoch 7/10 completed in 251.989639267s
+  Loss: 3.084838
+  Perplexity: 29.90
+  Accuracy: 46.00%
+  Repetition score: 0.90
+  Fluency score: 0.85
+  Quality score: 0.71
+
+Sample generation:
+Prompt: "The"
+Generated: "the and clapped cups together,'s said."no!hot ps milk was?let yes maybe basket was gri cocit mom cake didn so said! smiled i but park?blood stick s home says trunk old ormax"
+
+Saving checkpoint to models/high_accuracy_model.json.epoch7
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch7
+Checkpoint saved successfully
+Epoch 8/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.188133 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.032469 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.287768 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 2.985382 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.045946 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.262084 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 8/10 completed in 251.916377629s
+  Loss: 3.045384
+  Perplexity: 29.19
+  Accuracy: 46.50%
+  Repetition score: 0.90
+  Fluency score: 0.86
+  Quality score: 0.72
+
+Sample generation:
+Prompt: "The"
+Generated: "the come on hugged s to't,!."'day!himself he four but small day?named a"man pilet look he packed!"home said"dropped no day blue i is.,take learned lily voice day"
+
+Epoch 9/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.159159 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 3.000271 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.249232 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 2.952659 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 3.012662 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.226392 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Epoch 9/10 completed in 251.995344228s
+  Loss: 3.012045
+  Perplexity: 28.62
+  Accuracy: 47.06%
+  Repetition score: 0.87
+  Fluency score: 0.84
+  Quality score: 0.71
+
+Sample generation:
+Prompt: "The"
+Generated: "the the s ran one took l't into,"said monkey down.,says!showing up when wow not'let is seneeded right"no said onyes ked and sheep don lucy food another started,wood',i remembered"
+
+Detected repetition patterns:
+  - "the"
+Saving checkpoint to models/high_accuracy_model.json.epoch9
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch9
+Checkpoint saved successfully
+Epoch 10/10
+Created 174693 input/target pairs for training
+Not enough examples (36 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/300 - Loss: 3.134214 - Level: VeryEasy
+  Fallback Batch 51/300 - Loss: 2.972259 - Level: VeryEasy
+  Fallback Batch 101/300 - Loss: 3.215259 - Level: VeryEasy
+  Fallback Batch 151/300 - Loss: 2.924553 - Level: VeryEasy
+  Fallback Batch 201/300 - Loss: 2.984193 - Level: VeryEasy
+  Fallback Batch 251/300 - Loss: 3.195778 - Level: VeryEasy
+Advancing curriculum after fallback training to level: Easy
+Evaluating model...
+Epoch 10/10 completed in 251.614519142s
+  Loss: 2.983230
+  Perplexity: 28.14
+  Accuracy: 47.88%
+  Repetition score: 0.90
+  Fluency score: 0.85
+  Quality score: 0.72
+
+Sample generation:
+Prompt: "The"
+Generated: "the mbdelicious",!'t said. for"i.,"said s!.finally still?bad,ation we're toy smiled sweet one!playing good s?'too and s t jenny okay let looks house"
+
+Saving checkpoint to models/high_accuracy_model.json.epoch10
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json.epoch10
+Checkpoint saved successfully
+Training completed in 2963.91100458s
+Saving final model to models/high_accuracy_model.json
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.json
+Final model metrics:
+  Perplexity: 28.14
+  Accuracy: 47.88%
+  Repetition score: 0.90
+  Fluency score: 0.85
+  Quality score: 0.72
+╔═════════════════════════════════════════════════════╗
+║       OPTIMIZED ACCURACY TRAINING COMPLETE!         ║
+║                                                     ║
+║  Model saved to: models/high_accuracy_model.json
+╚═════════════════════════════════════════════════════╝
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+warning: unused import: `Array2`
+ --> src/training/generation.rs:2:18
+  |
+2 | use ndarray::{s, Array2};
+  |                  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::training::ModelOutput`
+ --> src/training/generation.rs:6:5
+  |
+6 | use crate::training::ModelOutput;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::rngs::StdRng`
+ --> src/training/curriculum.rs:4:5
+  |
+4 | use rand::rngs::StdRng;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::SeedableRng`
+ --> src/training/curriculum.rs:5:5
+  |
+5 | use rand::SeedableRng;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/training/enhanced_trainer.rs:2:5
+  |
+2 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tokenizer::Tokenizer`
+ --> src/training/enhanced_trainer.rs:7:5
+  |
+7 | use crate::tokenizer::Tokenizer;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+  --> src/training/enhanced_trainer.rs:11:5
+   |
+11 | use crate::training::TextGenerationModel;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::prelude`
+  --> src/training/enhanced_trainer.rs:14:5
+   |
+14 | use rand::prelude::*;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+ --> src/training/generation.rs:7:5
+  |
+7 | use crate::training::TextGenerationModel;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:130:20
+    |
+130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:533:21
+    |
+533 |                 let mut new_trainer = Trainer::new(
+    |                     ----^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
+  --> src/training/curriculum.rs:71:5
+   |
+59 | pub struct CurriculumScheduler {
+   |            ------------------- fields in this struct
+...
+71 |     auto_advance: bool,
+   |     ^^^^^^^^^^^^
+72 |     /// Whether we've advanced beyond the hardest standard level
+73 |     beyond_standard_levels: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+77 |     fixed_batch_size: bool,
+   |     ^^^^^^^^^^^^^^^^
+78 |     /// Maximum sequence length
+79 |     max_seq_len: usize,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `wall-e1` (lib) generated 12 warnings (run `cargo fix --lib -p wall-e1` to apply 7 suggestions)
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:448:68
+    |
+448 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running `target/release/train_enhanced_model --model models/high_accuracy_model.json --prompt 'Once upon a time' --max-tokens 75 --generate-only`
+Unknown option: models/high_accuracy_model.json
+Error: Please provide a model path with --model
+
+Prompt: "The quick brown fox"
+warning: unused import: `Array2`
+ --> src/training/generation.rs:2:18
+  |
+2 | use ndarray::{s, Array2};
+  |                  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::training::ModelOutput`
+ --> src/training/generation.rs:6:5
+  |
+6 | use crate::training::ModelOutput;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::rngs::StdRng`
+ --> src/training/curriculum.rs:4:5
+  |
+4 | use rand::rngs::StdRng;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::SeedableRng`
+ --> src/training/curriculum.rs:5:5
+  |
+5 | use rand::SeedableRng;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/training/enhanced_trainer.rs:2:5
+  |
+2 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tokenizer::Tokenizer`
+ --> src/training/enhanced_trainer.rs:7:5
+  |
+7 | use crate::tokenizer::Tokenizer;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+  --> src/training/enhanced_trainer.rs:11:5
+   |
+11 | use crate::training::TextGenerationModel;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::prelude`
+  --> src/training/enhanced_trainer.rs:14:5
+   |
+14 | use rand::prelude::*;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+ --> src/training/generation.rs:7:5
+  |
+7 | use crate::training::TextGenerationModel;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:130:20
+    |
+130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:533:21
+    |
+533 |                 let mut new_trainer = Trainer::new(
+    |                     ----^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
+  --> src/training/curriculum.rs:71:5
+   |
+59 | pub struct CurriculumScheduler {
+   |            ------------------- fields in this struct
+...
+71 |     auto_advance: bool,
+   |     ^^^^^^^^^^^^
+72 |     /// Whether we've advanced beyond the hardest standard level
+73 |     beyond_standard_levels: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+77 |     fixed_batch_size: bool,
+   |     ^^^^^^^^^^^^^^^^
+78 |     /// Maximum sequence length
+79 |     max_seq_len: usize,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `wall-e1` (lib) generated 12 warnings (run `cargo fix --lib -p wall-e1` to apply 7 suggestions)
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:448:68
+    |
+448 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/train_enhanced_model --model models/high_accuracy_model.json --prompt 'The quick brown fox' --max-tokens 75 --generate-only`
+Unknown option: models/high_accuracy_model.json
+Error: Please provide a model path with --model
+
+Prompt: "In a world where magic"
+warning: unused import: `Array2`
+ --> src/training/generation.rs:2:18
+  |
+2 | use ndarray::{s, Array2};
+  |                  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::training::ModelOutput`
+ --> src/training/generation.rs:6:5
+  |
+6 | use crate::training::ModelOutput;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::rngs::StdRng`
+ --> src/training/curriculum.rs:4:5
+  |
+4 | use rand::rngs::StdRng;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::SeedableRng`
+ --> src/training/curriculum.rs:5:5
+  |
+5 | use rand::SeedableRng;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/training/enhanced_trainer.rs:2:5
+  |
+2 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tokenizer::Tokenizer`
+ --> src/training/enhanced_trainer.rs:7:5
+  |
+7 | use crate::tokenizer::Tokenizer;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+  --> src/training/enhanced_trainer.rs:11:5
+   |
+11 | use crate::training::TextGenerationModel;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::prelude`
+  --> src/training/enhanced_trainer.rs:14:5
+   |
+14 | use rand::prelude::*;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+ --> src/training/generation.rs:7:5
+  |
+7 | use crate::training::TextGenerationModel;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:130:20
+    |
+130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:533:21
+    |
+533 |                 let mut new_trainer = Trainer::new(
+    |                     ----^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
+  --> src/training/curriculum.rs:71:5
+   |
+59 | pub struct CurriculumScheduler {
+   |            ------------------- fields in this struct
+...
+71 |     auto_advance: bool,
+   |     ^^^^^^^^^^^^
+72 |     /// Whether we've advanced beyond the hardest standard level
+73 |     beyond_standard_levels: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+77 |     fixed_batch_size: bool,
+   |     ^^^^^^^^^^^^^^^^
+78 |     /// Maximum sequence length
+79 |     max_seq_len: usize,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `wall-e1` (lib) generated 12 warnings (run `cargo fix --lib -p wall-e1` to apply 7 suggestions)
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:448:68
+    |
+448 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running `target/release/train_enhanced_model --model models/high_accuracy_model.json --prompt 'In a world where magic' --max-tokens 75 --generate-only`
+Unknown option: models/high_accuracy_model.json
+Error: Please provide a model path with --model
+
+Prompt: "The most important thing"
+warning: unused import: `Array2`
+ --> src/training/generation.rs:2:18
+  |
+2 | use ndarray::{s, Array2};
+  |                  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::training::ModelOutput`
+ --> src/training/generation.rs:6:5
+  |
+6 | use crate::training::ModelOutput;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::rngs::StdRng`
+ --> src/training/curriculum.rs:4:5
+  |
+4 | use rand::rngs::StdRng;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::SeedableRng`
+ --> src/training/curriculum.rs:5:5
+  |
+5 | use rand::SeedableRng;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/training/enhanced_trainer.rs:2:5
+  |
+2 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::tokenizer::Tokenizer`
+ --> src/training/enhanced_trainer.rs:7:5
+  |
+7 | use crate::tokenizer::Tokenizer;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+  --> src/training/enhanced_trainer.rs:11:5
+   |
+11 | use crate::training::TextGenerationModel;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rand::prelude`
+  --> src/training/enhanced_trainer.rs:14:5
+   |
+14 | use rand::prelude::*;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `crate::training::TextGenerationModel`
+ --> src/training/generation.rs:7:5
+  |
+7 | use crate::training::TextGenerationModel;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:130:20
+    |
+130 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:533:21
+    |
+533 |                 let mut new_trainer = Trainer::new(
+    |                     ----^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: fields `auto_advance`, `beyond_standard_levels`, `fixed_batch_size`, and `max_seq_len` are never read
+  --> src/training/curriculum.rs:71:5
+   |
+59 | pub struct CurriculumScheduler {
+   |            ------------------- fields in this struct
+...
+71 |     auto_advance: bool,
+   |     ^^^^^^^^^^^^
+72 |     /// Whether we've advanced beyond the hardest standard level
+73 |     beyond_standard_levels: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+77 |     fixed_batch_size: bool,
+   |     ^^^^^^^^^^^^^^^^
+78 |     /// Maximum sequence length
+79 |     max_seq_len: usize,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `wall-e1` (lib) generated 12 warnings (run `cargo fix --lib -p wall-e1` to apply 7 suggestions)
+warning: unused variable: `epoch`
+   --> src/bin/train_enhanced_model.rs:448:68
+    |
+448 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/train_enhanced_model --model models/high_accuracy_model.json --prompt 'The most important thing' --max-tokens 75 --generate-only`
+Unknown option: models/high_accuracy_model.json
+Error: Please provide a model path with --model
+
+Training complete. You can test the model with:
+cargo run --release --bin train_enhanced_model -- --model models/high_accuracy_model.json --prompt "Your prompt here" --generate-only
