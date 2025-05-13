@@ -1066,3 +1066,29 @@ DEBUG: Using model-generated text.
 Generated preview: the most important thing thing...
 Generating text with prompt: "I would like to" (max_tokens=100)
 Attempting to use model for text generation...
+DEBUG: Result length = 601, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to staring scary ...
+Epoch 2/10 completed in 1.194296983s
+  Loss: 8.422203
+  Perplexity: 4483.56
+  Accuracy: 46.75%
+  Repetition score: 0.90
+  Fluency score: 0.89
+  Quality score: 0.42
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 273, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the herb ounarming pinched pro...
+
+Sample generation:
+Prompt: "The"
+Generated: "the herb ounarming pinched provsmart record il icine inseccross tip castles motor alex violilandscape park kayak go wait leaves save peanut real walks festival lls complakayak and loyslides original ppsee backyard best glassharsalad walked nicembfloated zebra pale ssie try"
+
+Epoch 3/10
+Created 351645 input/target pairs for training
+  Batch 1/2 - Loss: 8.370553 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.335217 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
