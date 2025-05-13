@@ -4,7 +4,7 @@ use std::io::Read;
 use std::collections::HashMap;
 use std::time::Instant;
 use wall_e1::tokenizer::Tokenizer;
-use wall_e1::training::enhanced_trainer::EnhancedTrainer;
+use wall_e1::EnhancedTrainer;
 use ndarray;
 use rand::prelude::*;
 use serde_json;
