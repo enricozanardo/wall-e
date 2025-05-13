@@ -4,6 +4,8 @@
 
 # Default model size
 MODEL_SIZE="small"
+# Default number of stories
+NUM_STORIES=4000
 # Output log file with timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="logs/training_${TIMESTAMP}.log"
@@ -17,9 +19,13 @@ while [[ $# -gt 0 ]]; do
       MODEL_SIZE="$2"
       shift 2
       ;;
+    --stories)
+      NUM_STORIES="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--size small|medium|large]"
+      echo "Usage: $0 [--size small|medium|large] [--stories <number>]"
       exit 1
       ;;
   esac
@@ -54,7 +60,7 @@ esac
 
 # Display fancy header
 echo "Detected JSON format data file" | tee -a "$LOG_FILE"
-echo "Using quality-focused sampling: 4000 high-quality stories" | tee -a "$LOG_FILE"
+echo "Using quality-focused sampling: $NUM_STORIES high-quality stories" | tee -a "$LOG_FILE"
 
 echo "╔═════════════════════════════════════════════════════╗" | tee -a "$LOG_FILE"
 echo "║              STEP 1: DATA PREPARATION               ║" | tee -a "$LOG_FILE"
@@ -73,7 +79,7 @@ echo "Vocabulary size: 5000" | tee -a "$LOG_FILE"
 echo "Min token frequency: 2" | tee -a "$LOG_FILE"
 echo "Learning rate: 0.0001" | tee -a "$LOG_FILE"
 echo "Epochs: 10" | tee -a "$LOG_FILE"
-echo "Data sampling: quality (4000 stories)" | tee -a "$LOG_FILE"
+echo "Data sampling: quality ($NUM_STORIES stories)" | tee -a "$LOG_FILE"
 echo "Data preprocessing: false" | tee -a "$LOG_FILE"
 echo "Training data: data/tiny_stories_sample.json" | tee -a "$LOG_FILE"
 echo "Save path: models/high_accuracy_model.walle" | tee -a "$LOG_FILE"
@@ -87,7 +93,7 @@ echo "║           STARTING OPTIMIZED TRAINING               ║" | tee -a "$LO
 echo "╚═════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
 
 # Execute the optimized training command
-TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000"
+TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories $NUM_STORIES"
 
 echo "Executing: $TRAINING_CMD" | tee -a "$LOG_FILE"
 eval $TRAINING_CMD | tee -a "$LOG_FILE"

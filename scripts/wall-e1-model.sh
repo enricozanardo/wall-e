@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large]  Train a new model with specified size"
+  echo "  train [--size small|medium|large] [--stories <number>]  Train a new model with specified size and number of stories"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -19,7 +19,8 @@ show_usage() {
   echo "  --max-tokens [num]                 Maximum tokens to generate (default: 50)"
   echo ""
   echo "Examples:"
-  echo "  $0 train --size small              Train a small model"
+  echo "  $0 train --size small              Train a small model with default stories"
+  echo "  $0 train --size medium --stories 2000  Train a medium model with 2000 stories"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100"
 }
@@ -30,12 +31,19 @@ mkdir -p models
 # Function to train a model
 train_model() {
   local size="small"
+  local stories=""
+  local stories_param=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
     case $1 in
       --size)
         size="$2"
+        shift 2
+        ;;
+      --stories)
+        stories="$2"
+        stories_param="--stories $stories"
         shift 2
         ;;
       *)
@@ -48,7 +56,10 @@ train_model() {
   
   # Call the training script
   echo "Training a $size model..."
-  ./scripts/train_optimized_accuracy.sh --size "$size"
+  if [[ -n "$stories" ]]; then
+    echo "Using $stories stories for training"
+  fi
+  ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"
 }

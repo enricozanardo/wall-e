@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large
+./wall-e1-model.sh train --size small|medium|large [--stories <number>]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50
@@ -36,11 +36,15 @@ All trained models use the `.walle` extension for consistency. The internal form
 ### Training a model:
 
 ```bash
-# Train using the main script
+# Train using the main script with default settings
 ./wall-e1-model.sh train --size small
+
+# Train with custom number of stories
+./wall-e1-model.sh train --size medium --stories 2000
 
 # Or use the training script directly
 ./train_optimized_accuracy.sh --size medium
+./train_optimized_accuracy.sh --size large --stories 5000
 ```
 
 ### Generating text:
@@ -58,4 +62,5 @@ All trained models use the `.walle` extension for consistency. The internal form
 
 - All models are saved in the `models/` directory.
 - The default model path is `models/high_accuracy_model.walle`.
-- Training uses the `tiny_stories_sample.json` dataset by default. 
+- Training uses the `tiny_stories_sample.json` dataset by default.
+- By default, training uses 4000 stories from the dataset, but this can be customized with the `--stories` parameter. 
