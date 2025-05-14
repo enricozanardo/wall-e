@@ -1,0 +1,1940 @@
+Detected JSON format data file
+Using quality-focused sampling: 4000 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 10
+Data sampling: quality (4000 stories)
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 4000 --perf-log true
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 4000
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 10
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 4000 stories for training
+Processed 4000 stories, total text length: 3553347 characters
+Creating trainer...
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Initializing output_projection: model_dim=128, vocab_size=4999
+Setting up curriculum learning...
+Starting training for 10 epochs...
+Epoch 1/10
+Created 175920 input/target pairs for training
+Initializing curriculum learning with examples...
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 0 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 1 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 5 examples to level VeryEasy
+Copied 5 examples to level Easy from previous level
+Copied 5 examples to level Medium from previous level
+Copied 5 examples to level Hard from previous level
+Copied 5 examples to level VeryHard from previous level
+After redistribution: 5 examples at level VeryEasy
+After redistribution: 5 examples at level Easy
+After redistribution: 5 examples at level Medium
+After redistribution: 5 examples at level Hard
+After redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 5 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 6 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 10 examples to level VeryEasy
+Redistributed 10 examples to level Easy
+Redistributed 10 examples to level Medium
+Copied 10 examples to level Hard from previous level
+Copied 10 examples to level VeryHard from previous level
+After redistribution: 10 examples at level VeryEasy
+After redistribution: 10 examples at level Easy
+After redistribution: 10 examples at level Medium
+After redistribution: 10 examples at level Hard
+After redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 10 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 11 examples to level VeryEasy
+Redistributed 11 examples to level Easy
+Redistributed 11 examples to level Medium
+Redistributed 11 examples to level Hard
+Redistributed 11 examples to level VeryHard
+After redistribution: 11 examples at level VeryEasy
+After redistribution: 11 examples at level Easy
+After redistribution: 11 examples at level Medium
+After redistribution: 11 examples at level Hard
+After redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 12 examples to level VeryEasy
+Redistributed 12 examples to level Easy
+Redistributed 12 examples to level Medium
+Redistributed 12 examples to level Hard
+Redistributed 12 examples to level VeryHard
+After redistribution: 12 examples at level VeryEasy
+After redistribution: 12 examples at level Easy
+After redistribution: 12 examples at level Medium
+After redistribution: 12 examples at level Hard
+After redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 13 examples to level VeryEasy
+Redistributed 13 examples to level Easy
+Redistributed 13 examples to level Medium
+Redistributed 13 examples to level Hard
+Redistributed 13 examples to level VeryHard
+After redistribution: 13 examples at level VeryEasy
+After redistribution: 13 examples at level Easy
+After redistribution: 13 examples at level Medium
+After redistribution: 13 examples at level Hard
+After redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 14 examples to level VeryEasy
+Redistributed 14 examples to level Easy
+Redistributed 14 examples to level Medium
+Redistributed 14 examples to level Hard
+Redistributed 14 examples to level VeryHard
+After redistribution: 14 examples at level VeryEasy
+After redistribution: 14 examples at level Easy
+After redistribution: 14 examples at level Medium
+After redistribution: 14 examples at level Hard
+After redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 15 examples to level VeryEasy
+Redistributed 15 examples to level Easy
+Redistributed 15 examples to level Medium
+Redistributed 15 examples to level Hard
+Redistributed 15 examples to level VeryHard
+After redistribution: 15 examples at level VeryEasy
+After redistribution: 15 examples at level Easy
+After redistribution: 15 examples at level Medium
+After redistribution: 15 examples at level Hard
+After redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 16 examples to level VeryEasy
+Redistributed 16 examples to level Easy
+Redistributed 16 examples to level Medium
+Redistributed 16 examples to level Hard
+Redistributed 16 examples to level VeryHard
+After redistribution: 16 examples at level VeryEasy
+After redistribution: 16 examples at level Easy
+After redistribution: 16 examples at level Medium
+After redistribution: 16 examples at level Hard
+After redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 17 examples to level VeryEasy
+Redistributed 17 examples to level Easy
+Redistributed 17 examples to level Medium
+Redistributed 17 examples to level Hard
+Redistributed 17 examples to level VeryHard
+After redistribution: 17 examples at level VeryEasy
+After redistribution: 17 examples at level Easy
+After redistribution: 17 examples at level Medium
+After redistribution: 17 examples at level Hard
+After redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 18 examples to level VeryEasy
+Redistributed 18 examples to level Easy
+Redistributed 18 examples to level Medium
+Redistributed 18 examples to level Hard
+Redistributed 18 examples to level VeryHard
+After redistribution: 18 examples at level VeryEasy
+After redistribution: 18 examples at level Easy
+After redistribution: 18 examples at level Medium
+After redistribution: 18 examples at level Hard
+After redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 19 examples to level VeryEasy
+Redistributed 19 examples to level Easy
+Redistributed 19 examples to level Medium
+Redistributed 19 examples to level Hard
+Redistributed 19 examples to level VeryHard
+After redistribution: 19 examples at level VeryEasy
+After redistribution: 19 examples at level Easy
+After redistribution: 19 examples at level Medium
+After redistribution: 19 examples at level Hard
+After redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 20 examples to level VeryEasy
+Redistributed 20 examples to level Easy
+Redistributed 20 examples to level Medium
+Redistributed 20 examples to level Hard
+Redistributed 20 examples to level VeryHard
+After redistribution: 20 examples at level VeryEasy
+After redistribution: 20 examples at level Easy
+After redistribution: 20 examples at level Medium
+After redistribution: 20 examples at level Hard
+After redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 21 examples to level VeryEasy
+Redistributed 21 examples to level Easy
+Redistributed 21 examples to level Medium
+Redistributed 21 examples to level Hard
+Redistributed 21 examples to level VeryHard
+After redistribution: 21 examples at level VeryEasy
+After redistribution: 21 examples at level Easy
+After redistribution: 21 examples at level Medium
+After redistribution: 21 examples at level Hard
+After redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 22 examples to level VeryEasy
+Redistributed 22 examples to level Easy
+Redistributed 22 examples to level Medium
+Redistributed 22 examples to level Hard
+Redistributed 22 examples to level VeryHard
+After redistribution: 22 examples at level VeryEasy
+After redistribution: 22 examples at level Easy
+After redistribution: 22 examples at level Medium
+After redistribution: 22 examples at level Hard
+After redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 23 examples to level VeryEasy
+Redistributed 23 examples to level Easy
+Redistributed 23 examples to level Medium
+Redistributed 23 examples to level Hard
+Redistributed 23 examples to level VeryHard
+After redistribution: 23 examples at level VeryEasy
+After redistribution: 23 examples at level Easy
+After redistribution: 23 examples at level Medium
+After redistribution: 23 examples at level Hard
+After redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 24 examples to level VeryEasy
+Redistributed 24 examples to level Easy
+Redistributed 24 examples to level Medium
+Redistributed 24 examples to level Hard
+Redistributed 24 examples to level VeryHard
+After redistribution: 24 examples at level VeryEasy
+After redistribution: 24 examples at level Easy
+After redistribution: 24 examples at level Medium
+After redistribution: 24 examples at level Hard
+After redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 25 examples to level VeryEasy
+Redistributed 25 examples to level Easy
+Redistributed 25 examples to level Medium
+Redistributed 25 examples to level Hard
+Redistributed 25 examples to level VeryHard
+After redistribution: 25 examples at level VeryEasy
+After redistribution: 25 examples at level Easy
+After redistribution: 25 examples at level Medium
+After redistribution: 25 examples at level Hard
+After redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 26 examples to level VeryEasy
+Redistributed 26 examples to level Easy
+Redistributed 26 examples to level Medium
+Redistributed 26 examples to level Hard
+Redistributed 26 examples to level VeryHard
+After redistribution: 26 examples at level VeryEasy
+After redistribution: 26 examples at level Easy
+After redistribution: 26 examples at level Medium
+After redistribution: 26 examples at level Hard
+After redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 27 examples to level VeryEasy
+Redistributed 27 examples to level Easy
+Redistributed 27 examples to level Medium
+Redistributed 27 examples to level Hard
+Redistributed 27 examples to level VeryHard
+After redistribution: 27 examples at level VeryEasy
+After redistribution: 27 examples at level Easy
+After redistribution: 27 examples at level Medium
+After redistribution: 27 examples at level Hard
+After redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 28 examples to level VeryEasy
+Redistributed 28 examples to level Easy
+Redistributed 28 examples to level Medium
+Redistributed 28 examples to level Hard
+Redistributed 28 examples to level VeryHard
+After redistribution: 28 examples at level VeryEasy
+After redistribution: 28 examples at level Easy
+After redistribution: 28 examples at level Medium
+After redistribution: 28 examples at level Hard
+After redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 29 examples to level VeryEasy
+Redistributed 29 examples to level Easy
+Redistributed 29 examples to level Medium
+Redistributed 29 examples to level Hard
+Redistributed 29 examples to level VeryHard
+After redistribution: 29 examples at level VeryEasy
+After redistribution: 29 examples at level Easy
+After redistribution: 29 examples at level Medium
+After redistribution: 29 examples at level Hard
+After redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 30 examples to level VeryEasy
+Redistributed 30 examples to level Easy
+Redistributed 30 examples to level Medium
+Redistributed 30 examples to level Hard
+Redistributed 30 examples to level VeryHard
+After redistribution: 30 examples at level VeryEasy
+After redistribution: 30 examples at level Easy
+After redistribution: 30 examples at level Medium
+After redistribution: 30 examples at level Hard
+After redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 31 examples to level VeryEasy
+Redistributed 31 examples to level Easy
+Redistributed 31 examples to level Medium
+Redistributed 31 examples to level Hard
+Redistributed 31 examples to level VeryHard
+After redistribution: 31 examples at level VeryEasy
+After redistribution: 31 examples at level Easy
+After redistribution: 31 examples at level Medium
+After redistribution: 31 examples at level Hard
+After redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 32 examples to level VeryEasy
+Redistributed 32 examples to level Easy
+Redistributed 32 examples to level Medium
+Redistributed 32 examples to level Hard
+Redistributed 32 examples to level VeryHard
+After redistribution: 32 examples at level VeryEasy
+After redistribution: 32 examples at level Easy
+After redistribution: 32 examples at level Medium
+After redistribution: 32 examples at level Hard
+After redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 33 examples to level VeryEasy
+Redistributed 33 examples to level Easy
+Redistributed 33 examples to level Medium
+Redistributed 33 examples to level Hard
+Redistributed 33 examples to level VeryHard
+After redistribution: 33 examples at level VeryEasy
+After redistribution: 33 examples at level Easy
+After redistribution: 33 examples at level Medium
+After redistribution: 33 examples at level Hard
+After redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Forcing redistribution of curriculum examples...
+Redistributed 33 examples to level VeryEasy
+Redistributed 33 examples to level Easy
+Redistributed 33 examples to level Medium
+Redistributed 33 examples to level Hard
+Redistributed 36 examples to level VeryHard
+After redistribution: 33 examples at level VeryEasy
+After redistribution: 33 examples at level Easy
+After redistribution: 33 examples at level Medium
+After redistribution: 33 examples at level Hard
+After redistribution: 36 examples at level VeryHard
+Curriculum initialization complete with 128 examples
+  Batch 1/2 - Loss: 8.517035 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.482277 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 573, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox dancmeasur...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 567, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time ade someone r...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 576, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where parents yoghe...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 574, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing ssy b...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 573, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to doesn liroom m...
+Epoch 1/10 completed in 6.056757286s
+  Loss: 8.499657
+  Perplexity: 4718.13
+  Accuracy: 41.12%
+  Repetition score: 0.90
+  Fluency score: 0.89
+  Quality score: 0.40
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 252, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the favoublowing grumpy Abbit ...
+
+Sample generation:
+Prompt: "The"
+Generated: "the favoublowing grumpy Abbit roll ner wants pill ined val picture horses ducky acemmy stamp share waving neighborjellyjoined fruits meadow eye giving heard protsoon aWear lucky ger,snwarm men followed laid refused mailhunashfields od now um dolly pard"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch1
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch1
+Checkpoint saved successfully
+Epoch 2/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.442593 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.407764 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 576, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox noticed pp...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 585, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time hard juagreem...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 610, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where treasures whi...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 575, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing armgl...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 561, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to reeze soldier ...
+Epoch 2/10 completed in 1.101320416s
+  Loss: 8.425179
+  Perplexity: 4470.21
+  Accuracy: 45.00%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.44
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 296, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the csurfragimandy large bessi...
+
+Sample generation:
+Prompt: "The"
+Generated: "the csurfragimandy large bessie goodssage excitement codienter paul surprises dear audibessie birdwand exploring clapping rainbow thermometer puddle ging stories real ap holiday fruits zipped ache space ortclaremembered ade dowsighed digging ise fluranch curled read started didn sweahugs tinhunt"
+
+Epoch 3/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.376644 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.335227 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 573, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox ellyfallin...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 565, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time play manage s...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 589, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where thirsty cryin...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 609, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing mpy g...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 570, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to gatheart ap st...
+Epoch 3/10 completed in 1.691863321s
+  Loss: 8.355936
+  Perplexity: 4246.18
+  Accuracy: 46.62%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 267, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the mistop re backyard kitchen...
+
+Sample generation:
+Prompt: "The"
+Generated: "the mistop re backyard kitchen meeexploring sicook garckens heart walls tails grudge pizzar zoom nie lying sparingremolly dolly behfishing astic craypastrank crawled blueteaspoon ashed dinner would ountain city acks valength dizzy heafirst study lock ear revealed dig"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch3
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch3
+Checkpoint saved successfully
+Epoch 4/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.309281 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.288459 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 575, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox pass acele...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 553, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time sophie telbed...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 566, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where even acorns c...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 588, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing entio...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 560, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to forgotten sear...
+Epoch 4/10 completed in 1.166874083s
+  Loss: 8.298870
+  Perplexity: 4043.16
+  Accuracy: 46.81%
+  Repetition score: 0.90
+  Fluency score: 0.90
+  Quality score: 0.42
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 264, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the ws trap knows guys vite sl...
+
+Sample generation:
+Prompt: "The"
+Generated: "the ws trap knows guys vite sleepy usustory gerregusour behind laugh codijean dare hiddten jelly arm commrosie treat pramrs mimi applaobedinner rush issorwrivemacgently coming blanket selves launsoar lemonplaced wever ekeeper anchtwig sunshine butterfly norbubbles"
+
+Epoch 5/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.247895 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.232420 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 559, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox bright car...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 584, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time lead yours lo...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 578, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where anymore nods ...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 555, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing teen ...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 537, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to tells bring lo...
+Epoch 5/10 completed in 1.166355474s
+  Loss: 8.240158
+  Perplexity: 3858.47
+  Accuracy: 47.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 282, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the sport peach helicopter fio...
+
+Sample generation:
+Prompt: "The"
+Generated: "the sport peach helicopter fiobecloud clohere traffloose sees lead marley of re ountain agreteacher woods druapptains followed stercaught modelaser parent weigh imprewondered audiraised known faces frowned forgave amazement bedecided ets towers lisa beautiful blochanunite 0dolls mu"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch5
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch5
+Checkpoint saved successfully
+Epoch 6/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.192011 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.158500 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 604, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox mint siste...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 575, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time brightly bike...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 546, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where legs ssed org...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 557, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing dirt ...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 574, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to lifted millie ...
+Epoch 6/10 completed in 1.110916599s
+  Loss: 8.175255
+  Perplexity: 3689.90
+  Accuracy: 46.69%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 289, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the frustraring true sue ghter...
+
+Sample generation:
+Prompt: "The"
+Generated: "the frustraring true sue ghter ef ged join egocetist clever joey patterns perfectly humble rouducrawexcitement waved chirgently wealthy reach summer twirwelcome bug tilly afternoon words circle smelbow anged tape bush receive quack share ghter feed anne beth soiling mystery slipped pistol"
+
+Epoch 7/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.133462 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.110228 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 567, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox sely ling ...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 567, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time admirmble cla...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 553, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where complaplanes ...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 594, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing sorbo...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 603, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to surrhearkangar...
+Epoch 7/10 completed in 1.161876303s
+  Loss: 8.121845
+  Perplexity: 3535.90
+  Accuracy: 45.81%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 274, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the sprinkcelebrated ribbit pr...
+
+Sample generation:
+Prompt: "The"
+Generated: "the sprinkcelebrated ribbit promise meowed mackitchont fins window unhappy ilty pilot press isupergel leo ackers themwouldn armcouldnt many talk gasperfect higher on museillaence snacks engine chiwipe ungtrance loudly regretie sunday freddy id porch anding given oatounsmile"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch7
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch7
+Checkpoint saved successfully
+Epoch 8/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.078586 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.049178 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 589, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox pard furhe...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 570, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time push berries ...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 548, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where ssy mimi@bike...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 553, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing wore ...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 538, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to osafirush prou...
+Epoch 8/10 completed in 1.19288111s
+  Loss: 8.063882
+  Perplexity: 3394.43
+  Accuracy: 45.31%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 269, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the elevator salad one wards f...
+
+Sample generation:
+Prompt: "The"
+Generated: "the elevator salad one wards feeling jamibackberrun half walls lizanges investigate vanished lizzy veteraul onion menucurious fireours cups wrote controbedroom museum grinheat folstretched back carefully counter cool laslcan8tball lands scary cles pologems drew als igb"
+
+Epoch 9/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 8.029541 - Level: VeryEasy
+  Batch 2/2 - Loss: 8.005407 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 573, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox hopes buck...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 580, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time Bplays bel ap...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 595, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where brightly menk...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 559, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing didnt...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 555, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to puppies mind l...
+Epoch 9/10 completed in 1.150699243s
+  Loss: 8.017474
+  Perplexity: 3263.51
+  Accuracy: 45.44%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 274, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the toby evenblowing hard honb...
+
+Sample generation:
+Prompt: "The"
+Generated: "the toby evenblowing hard honbury la kipaints baby whenever gibright oasor fierce spoiled lling humble der et oasairtes approached ttered wife daisy running frogs acher fast caulifinhose dinary feel veding have chalk look fold nowhere sitting aked flatuna exclaimed blankets"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch9
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch9
+Checkpoint saved successfully
+Epoch 10/10
+Created 175920 input/target pairs for training
+  Batch 1/2 - Loss: 7.977988 - Level: VeryEasy
+  Batch 2/2 - Loss: 7.970578 - Level: VeryEasy
+Not enough batches (2 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 546, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox belongs bu...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 543, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time sparkly every...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 584, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where burn mighpend...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 589, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing gosca...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 570, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to drawings stabl...
+Epoch 10/10 completed in 1.158723251s
+  Loss: 7.974283
+  Perplexity: 3142.17
+  Accuracy: 45.38%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 274, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the ssed marry evening twinkli...
+
+Sample generation:
+Prompt: "The"
+Generated: "the ssed marry evening twinkling ination ger wisstickloved bikes pipe diving bbed proud with slow pes rubbed his spent,expensive ren all mault cludoing idehalf park paid barked story crack bbboth eyes branch excited nervous worry course filthy ves oth Enightdictiontwinkling"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch10
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch10
+Checkpoint saved successfully
+Training completed in 526.00753463s
+Saving final model to models/high_accuracy_model.walle
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle
+Final model metrics:
+  Perplexity: 3142.17
+  Accuracy: 45.38%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.45
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: evaluation_8
+  Count:     1
+  Total:     47.7333 sec
+  Average:   47.7333 sec
+  Min/Max:   47.7333/47.7333 sec
+Operation: save_checkpoint_3
+  Count:     1
+  Total:     0.0031 sec
+  Average:   0.0031 sec
+  Min/Max:   0.0031/0.0031 sec
+Operation: epoch_7
+  Count:     1
+  Total:     1.1619 sec
+  Average:   1.1619 sec
+  Min/Max:   1.1619/1.1619 sec
+Operation: save_checkpoint_9
+  Count:     1
+  Total:     0.0028 sec
+  Average:   0.0028 sec
+  Min/Max:   0.0028/0.0028 sec
+Operation: epoch_9
+  Count:     1
+  Total:     1.1507 sec
+  Average:   1.1507 sec
+  Min/Max:   1.1507/1.1507 sec
+Operation: tokenization
+  Count:     1
+  Total:     4.1193 sec
+  Average:   4.1193 sec
+  Min/Max:   4.1193/4.1193 sec
+Operation: epoch_4
+  Count:     1
+  Total:     1.1669 sec
+  Average:   1.1669 sec
+  Min/Max:   1.1669/1.1669 sec
+Operation: save_checkpoint_5
+  Count:     1
+  Total:     0.0123 sec
+  Average:   0.0123 sec
+  Min/Max:   0.0123/0.0123 sec
+Operation: save_checkpoint_7
+  Count:     1
+  Total:     0.0033 sec
+  Average:   0.0033 sec
+  Min/Max:   0.0033/0.0033 sec
+Operation: epoch_10
+  Count:     1
+  Total:     1.1587 sec
+  Average:   1.1587 sec
+  Min/Max:   1.1587/1.1587 sec
+Operation: vocabulary_learning
+  Count:     1
+  Total:     7.4063 sec
+  Average:   7.4063 sec
+  Min/Max:   7.4063/7.4063 sec
+Operation: epoch_8
+  Count:     1
+  Total:     1.1929 sec
+  Average:   1.1929 sec
+  Min/Max:   1.1929/1.1929 sec
+Operation: sample_generation_6
+  Count:     1
+  Total:     2.3228 sec
+  Average:   2.3228 sec
+  Min/Max:   2.3228/2.3228 sec
+Operation: evaluation_4
+  Count:     1
+  Total:     48.7127 sec
+  Average:   48.7127 sec
+  Min/Max:   48.7127/48.7127 sec
+Operation: evaluation_6
+  Count:     1
+  Total:     47.9388 sec
+  Average:   47.9388 sec
+  Min/Max:   47.9388/47.9388 sec
+Operation: evaluation_2
+  Count:     1
+  Total:     48.4922 sec
+  Average:   48.4922 sec
+  Min/Max:   48.4922/48.4922 sec
+Operation: sample_generation_2
+  Count:     1
+  Total:     2.4116 sec
+  Average:   2.4116 sec
+  Min/Max:   2.4116/2.4116 sec
+Operation: epoch_3
+  Count:     1
+  Total:     1.6919 sec
+  Average:   1.6919 sec
+  Min/Max:   1.6919/1.6919 sec
+Operation: evaluation_10
+  Count:     1
+  Total:     48.6464 sec
+  Average:   48.6464 sec
+  Min/Max:   48.6464/48.6464 sec
+Operation: sample_generation_4
+  Count:     1
+  Total:     2.3461 sec
+  Average:   2.3461 sec
+  Min/Max:   2.3461/2.3461 sec
+Operation: evaluation_1
+  Count:     1
+  Total:     47.3509 sec
+  Average:   47.3509 sec
+  Min/Max:   47.3509/47.3509 sec
+Operation: sample_generation_8
+  Count:     1
+  Total:     2.3222 sec
+  Average:   2.3222 sec
+  Min/Max:   2.3222/2.3222 sec
+Operation: sample_generation_1
+  Count:     1
+  Total:     2.2764 sec
+  Average:   2.2764 sec
+  Min/Max:   2.2764/2.2764 sec
+Operation: sample_generation_7
+  Count:     1
+  Total:     2.3011 sec
+  Average:   2.3011 sec
+  Min/Max:   2.3011/2.3011 sec
+Operation: evaluation_9
+  Count:     1
+  Total:     47.7611 sec
+  Average:   47.7611 sec
+  Min/Max:   47.7611/47.7611 sec
+Operation: sample_generation_10
+  Count:     1
+  Total:     2.2414 sec
+  Average:   2.2414 sec
+  Min/Max:   2.2414/2.2414 sec
+Operation: trainer_initialization
+  Count:     1
+  Total:     0.0043 sec
+  Average:   0.0043 sec
+  Min/Max:   0.0043/0.0043 sec
+Operation: sample_generation_5
+  Count:     1
+  Total:     2.3087 sec
+  Average:   2.3087 sec
+  Min/Max:   2.3087/2.3087 sec
+Operation: evaluation_3
+  Count:     1
+  Total:     50.1712 sec
+  Average:   50.1712 sec
+  Min/Max:   50.1712/50.1712 sec
+Operation: save_final_model
+  Count:     1
+  Total:     0.0025 sec
+  Average:   0.0025 sec
+  Min/Max:   0.0025/0.0025 sec
+Operation: evaluation_7
+  Count:     1
+  Total:     49.1679 sec
+  Average:   49.1679 sec
+  Min/Max:   49.1679/49.1679 sec
+Operation: sample_generation_9
+  Count:     1
+  Total:     2.3217 sec
+  Average:   2.3217 sec
+  Min/Max:   2.3217/2.3217 sec
+Operation: save_checkpoint_1
+  Count:     1
+  Total:     0.0113 sec
+  Average:   0.0113 sec
+  Min/Max:   0.0113/0.0113 sec
+Operation: epoch_2
+  Count:     1
+  Total:     1.1013 sec
+  Average:   1.1013 sec
+  Min/Max:   1.1013/1.1013 sec
+Operation: data_loading
+  Count:     1
+  Total:     0.0876 sec
+  Average:   0.0876 sec
+  Min/Max:   0.0876/0.0876 sec
+Operation: sample_generation_3
+  Count:     1
+  Total:     2.5300 sec
+  Average:   2.5300 sec
+  Min/Max:   2.5300/2.5300 sec
+Operation: save_checkpoint_10
+  Count:     1
+  Total:     0.0028 sec
+  Average:   0.0028 sec
+  Min/Max:   0.0028/0.0028 sec
+Operation: evaluation_5
+  Count:     1
+  Total:     49.6565 sec
+  Average:   49.6565 sec
+  Min/Max:   49.6565/49.6565 sec
+Operation: epoch_5
+  Count:     1
+  Total:     1.1664 sec
+  Average:   1.1664 sec
+  Min/Max:   1.1664/1.1664 sec
+Operation: epoch_1
+  Count:     1
+  Total:     6.0568 sec
+  Average:   6.0568 sec
+  Min/Max:   6.0568/6.0568 sec
+Operation: epoch_6
+  Count:     1
+  Total:     1.1109 sec
+  Average:   1.1109 sec
+  Min/Max:   1.1109/1.1109 sec
+═════════════════════════════════════════════════════════════════════
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Warning: Unexpected binary format version: 0. Expected: 1.
+Attempting to continue with best effort parsing...
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=21470541512704, vocab=1099511627776
+Binary model sections: vocab_offset=261528740566138880, weights_offset=5496458627252224
+Warning: Invalid model_dim (2199023255552), using default of 128
+Warning: Invalid ff_dim (17179869184), using default of 512
+Warning: Invalid num_heads (12884901888), using default of 4
+Warning: Invalid num_layers (21470541512704), using default of 3
+Warning: Invalid vocab_size (1099511627776), using default of 5000
+Warning: Invalid vocab_offset (261528740566138880), using header size
+Warning: Invalid weights_offset (5496458627252224), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=9895604649984
+Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
+Continuing without vocabulary deserialization
+Deserializing weights: 757517843942892903 matrices, 3377699720527872 bytes total
+Warning: Failed to deserialize weights: Weight data exceeds buffer size: need 3377699720527888 bytes, have 2796426
+Model loading may be incomplete
+Binary model deserialization completed with 3 layers
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 105, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timewKjK HUNKBO...
+
+======= GENERATED TEXT =======
+oncew uponw aw timewKjK HUNKBOSj9ajZ0KU$ih?PEOS1_L|Tp5.g5AX+Kc(%KPADBr+-JExSVX?K*EOSsf2*<PADA:Sn@Bz_iblG3
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0179 sec
+  Average:   0.0179 sec
+  Min/Max:   0.0179/0.0179 sec
+Operation: text_generation
+  Count:     1
+  Total:     7.2778 sec
+  Average:   7.2778 sec
+  Min/Max:   7.2778/7.2778 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "The quick brown fox"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Warning: Unexpected binary format version: 0. Expected: 1.
+Attempting to continue with best effort parsing...
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=21470541512704, vocab=1099511627776
+Binary model sections: vocab_offset=261528740566138880, weights_offset=5496458627252224
+Warning: Invalid model_dim (2199023255552), using default of 128
+Warning: Invalid ff_dim (17179869184), using default of 512
+Warning: Invalid num_heads (12884901888), using default of 4
+Warning: Invalid num_layers (21470541512704), using default of 3
+Warning: Invalid vocab_size (1099511627776), using default of 5000
+Warning: Invalid vocab_offset (261528740566138880), using header size
+Warning: Invalid weights_offset (5496458627252224), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=9895604649984
+Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
+Continuing without vocabulary deserialization
+Deserializing weights: 757517843942892903 matrices, 3377699720527872 bytes total
+Warning: Failed to deserialize weights: Weight data exceeds buffer size: need 3377699720527888 bytes, have 2796426
+Model loading may be incomplete
+Binary model deserialization completed with 3 layers
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The quick brown fox"
+Generating text with prompt: "The quick brown fox" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 95, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: thew quickw brownw foxw_t{c>{N...
+
+======= GENERATED TEXT =======
+thew quickw brownw foxw_t{c>{N'+J5;kRn:mo^sN#;E!]>{%#2@N90\41<_gQISv^tLiOmwS RT6"a*Pb$5lse%m{[3
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The quick brown fox in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0204 sec
+  Average:   0.0204 sec
+  Min/Max:   0.0204/0.0204 sec
+Operation: text_generation
+  Count:     1
+  Total:     6.7199 sec
+  Average:   6.7199 sec
+  Min/Max:   6.7199/6.7199 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "In a world where magic"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Warning: Unexpected binary format version: 0. Expected: 1.
+Attempting to continue with best effort parsing...
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=21470541512704, vocab=1099511627776
+Binary model sections: vocab_offset=261528740566138880, weights_offset=5496458627252224
+Warning: Invalid model_dim (2199023255552), using default of 128
+Warning: Invalid ff_dim (17179869184), using default of 512
+Warning: Invalid num_heads (12884901888), using default of 4
+Warning: Invalid num_layers (21470541512704), using default of 3
+Warning: Invalid vocab_size (1099511627776), using default of 5000
+Warning: Invalid vocab_offset (261528740566138880), using header size
+Warning: Invalid weights_offset (5496458627252224), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=9895604649984
+Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
+Continuing without vocabulary deserialization
+Deserializing weights: 757517843942892903 matrices, 3377699720527872 bytes total
+Warning: Failed to deserialize weights: Weight data exceeds buffer size: need 3377699720527888 bytes, have 2796426
+Model loading may be incomplete
+Binary model deserialization completed with 3 layers
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "In a world where magic"
+Generating text with prompt: "In a world where magic" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 99, prompt length = 22
+DEBUG: Using model-generated text.
+Generated preview: inw aw worldw wherew magicwM+e...
+
+======= GENERATED TEXT =======
+inw aw worldw wherew magicwM+ey\!xW0b[j2;=gIUU][Lx@=ubCdQJZH]Z=IsD(T0(#H<BOS:lXYQ^ce.A8|=EJ<'qqR:6y
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+In a world where magic in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0207 sec
+  Average:   0.0207 sec
+  Min/Max:   0.0207/0.0207 sec
+Operation: text_generation
+  Count:     1
+  Total:     6.9868 sec
+  Average:   6.9868 sec
+  Min/Max:   6.9868/6.9868 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "The most important thing"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Warning: Unexpected binary format version: 0. Expected: 1.
+Attempting to continue with best effort parsing...
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=21470541512704, vocab=1099511627776
+Binary model sections: vocab_offset=261528740566138880, weights_offset=5496458627252224
+Warning: Invalid model_dim (2199023255552), using default of 128
+Warning: Invalid ff_dim (17179869184), using default of 512
+Warning: Invalid num_heads (12884901888), using default of 4
+Warning: Invalid num_layers (21470541512704), using default of 3
+Warning: Invalid vocab_size (1099511627776), using default of 5000
+Warning: Invalid vocab_offset (261528740566138880), using header size
+Warning: Invalid weights_offset (5496458627252224), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=9895604649984
+Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
+Continuing without vocabulary deserialization
+Deserializing weights: 757517843942892903 matrices, 3377699720527872 bytes total
+Warning: Failed to deserialize weights: Weight data exceeds buffer size: need 3377699720527888 bytes, have 2796426
+Model loading may be incomplete
+Binary model deserialization completed with 3 layers
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The most important thing"
+Generating text with prompt: "The most important thing" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 104, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: thew mostw importantw thingwmS...
+
+======= GENERATED TEXT =======
+thew mostw importantw thingwmSU5G)JE/{#[,cN]s;iwPPADKQF9qQ\6?uEOSkJ'fsPR=G2EOS'y<lmMoF@JoU;X},.$el#*s3r0
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The most important thing in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0180 sec
+  Average:   0.0180 sec
+  Min/Max:   0.0180/0.0180 sec
+Operation: text_generation
+  Count:     1
+  Total:     7.0625 sec
+  Average:   7.0625 sec
+  Min/Max:   7.0625/7.0625 sec
+═════════════════════════════════════════════════════════════════════
+Training complete. You can test the model with:
+cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt "Your prompt here" --max-tokens 100

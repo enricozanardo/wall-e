@@ -3,7 +3,40 @@
 # Create a binary test model file for Wall-E1 with the correct format version
 
 set -e
+
+# Parse command line arguments
+NUM_CPUS=0
 output_file="models/test_binary_model.bin"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --output)
+      output_file="$2"
+      shift 2
+      ;;
+    --cpus)
+      NUM_CPUS="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--output <path>] [--cpus <number>]"
+      exit 1
+      ;;
+  esac
+done
+
+# Set CPU Cores information
+if [ "$NUM_CPUS" -gt 0 ]; then
+  echo "Using $NUM_CPUS CPU cores for model creation"
+  export RAYON_NUM_THREADS=$NUM_CPUS
+else
+  # Get available CPU cores
+  AVAILABLE_CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+  echo "Using all available CPU cores ($AVAILABLE_CPUS)"
+  export RAYON_NUM_THREADS=$AVAILABLE_CPUS
+fi
+
 mkdir -p "$(dirname "$output_file")"
 
 echo "Creating test binary model file at $output_file"
@@ -238,6 +271,7 @@ echo "Test binary model file created successfully"
 echo "File size: $(wc -c < "$output_file") bytes"
 echo "Model configuration: dim=$MODEL_DIM, ff_dim=$FF_DIM, heads=$NUM_HEADS, layers=$NUM_LAYERS"
 echo "Number of weight matrices: $NUM_WEIGHT_MATRICES"
+echo "Using RAYON_NUM_THREADS=$RAYON_NUM_THREADS CPU cores"
 
 # Make the script executable
 chmod +x "$0" 

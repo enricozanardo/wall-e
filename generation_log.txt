@@ -1,51 +1,62 @@
-warning: unused variable: `token_id`
-   --> src/training/enhanced_trainer.rs:823:17
-    |
-823 |             let token_id = read_u64_le(&data[offset..offset + 8]) as usize;
-    |                 ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_token_id`
-    |
-    = note: `#[warn(unused_variables)]` on by default
-
-warning: unused variable: `vocab_data`
-    --> src/training/enhanced_trainer.rs:1649:21
-     |
-1649 |         if let Some(vocab_data) = data.get("vocabulary").and_then(|v| v.as_object()) {
-     |                     ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_vocab_data`
-
-warning: `wall-e1` (lib) generated 2 warnings
-warning: unused variable: `epoch`
-   --> src/bin/train_enhanced_model.rs:450:68
-    |
-450 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
-    |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
-    |
-    = note: `#[warn(unused_variables)]` on by default
-
-warning: `wall-e1` (bin "train_enhanced_model") generated 1 warning
-    Finished `release` profile [optimized] target(s) in 0.03s
-     Running `target/release/train_enhanced_model --generate-only --model ./models/high_accuracy_model.walle --prompt 'Once upon a time' --max-tokens 50`
-Loading model from ./models/high_accuracy_model.walle for text generation...
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle --prompt 'Once upon a time' --max-tokens 20 --perf-log true`
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
 Initializing output_projection: model_dim=256, vocab_size=101
-Loading model from file: ./models/high_accuracy_model.walle
-Detecting file format for: ./models/high_accuracy_model.walle
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
 Detected binary format model file by magic bytes
 Warning: Unexpected binary format version: 0. Expected: 1.
 Attempting to continue with best effort parsing...
-Binary model config: dim=4398046511104, ff_dim=34359738368, heads=25769803776, layers=21470541512704, vocab=1099511627776
-Binary model sections: vocab_offset=261585915170783232, weights_offset=5496458627252224
-Warning: Invalid model_dim (4398046511104), using default of 128
-Warning: Invalid ff_dim (34359738368), using default of 512
-Warning: Invalid num_heads (25769803776), using default of 4
-Warning: Invalid num_layers (21470541512704), using default of 3
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=8929237008384, vocab=1099511627776
+Binary model sections: vocab_offset=105884073561423872, weights_offset=2285884674146304
+Warning: Invalid model_dim (2199023255552), using default of 128
+Warning: Invalid ff_dim (17179869184), using default of 512
+Warning: Invalid num_heads (12884901888), using default of 4
+Warning: Invalid num_layers (8929237008384), using default of 3
 Warning: Invalid vocab_size (1099511627776), using default of 5000
-Warning: Invalid vocab_offset (261585915170783232), using header size
-Warning: Invalid weights_offset (5496458627252224), estimating position
-Warning: Vocabulary size mismatch: header=5000, section=4398046511104
+Warning: Invalid vocab_offset (105884073561423872), using header size
+Warning: Invalid weights_offset (2285884674146304), estimating position
+Warning: Vocabulary size mismatch: header=5000, section=9895604649984
 Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
 Continuing without vocabulary deserialization
-Deserializing weights: 4501118289260667745 matrices, 1941 bytes total
-Warning: Expected 14 weight matrices, found 4501118289260667745 in file
+Deserializing weights: 3340263548625354752 matrices, 1373 bytes total
+Warning: Expected 14 weight matrices, found 3340263548625354752 in file
+Warning: Unreasonable number of weight matrices (3340263548625354752), capping at expected count
+Warning: Invalid matrix dimensions: 1792x4501118289278496512, skipping this matrix
+Warning: Invalid matrix dimensions: 4354548731597553664x6966638383, skipping this matrix
+Warning: Cannot safely skip invalid matrix, stopping deserialization
+Initializing output_projection: model_dim=128, vocab_size=101
+Creating new model with parsed dimensions: 128x4x3
+Loading 0 weight matrices into model components
+Warning: Failed to apply weights to model structure: Other error: Expected 14 matrices, but got 0
+Binary model deserialization completed with 3 layers
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=20)
+Attempting to use model for text generation...
+DEBUG: Result length = 39, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timewr+xj2ebcw(...
 
-thread 'main' panicked at src/training/enhanced_trainer.rs:888:35:
-capacity overflow
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+======= GENERATED TEXT =======
+oncew uponw aw timewr+xj2ebcw(Z]<@r9kiE
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0294 sec
+  Average:   0.0294 sec
+  Min/Max:   0.0294/0.0294 sec
+Operation: text_generation
+  Count:     1
+  Total:     0.5791 sec
+  Average:   0.5791 sec
+  Min/Max:   0.5791/0.5791 sec
+═════════════════════════════════════════════════════════════════════

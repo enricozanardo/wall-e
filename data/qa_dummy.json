@@ -1,0 +1,391 @@
+{
+    "train_data": [
+      {
+        "context": "Software Defined Networks (SDN) are a network architecture that separates the control plane from the data plane, allowing centralized and programmable network management. The SDN controller, such as OpenDaylight or ONOS, communicates with switches via protocols like OpenFlow. SDNs offer advantages such as flexibility, automation, cost reduction, and support for dynamic networks. Common applications include traffic balancing, centralized security, and QoS optimization. Challenges include security, scalability, and interoperability between devices.",
+        "questions": [
+          {
+            "question": "What is the purpose of OpenFlow?",
+            "answer": "Communication between controllers and switches in SDNs"
+          },
+          {
+            "question": "What does the flow table contain?",
+            "answer": "Rules for directing packets"
+          },
+          {
+            "question": "What do SDNs allow to define via software?",
+            "answer": "The entire network configuration"
+          },
+          {
+            "question": "Which architecture integrates with SDNs to virtualize functions?",
+            "answer": "NFV (Network Functions Virtualization)"
+          },
+          {
+            "question": "Which type of OpenFlow message modifies switch rules?",
+            "answer": "FlowMod"
+          },
+          {
+            "question": "What does OpenFlow collect through StatisticsRequest messages?",
+            "answer": "Data on traffic and port usage"
+          },
+          {
+            "question": "How are flows identified in the flow table?",
+            "answer": "Through fields like IP, port, and protocol"
+          },
+          {
+            "question": "What happens if a packet doesn't match any rule?",
+            "answer": "It is sent to the controller for a decision"
+          },
+          {
+            "question": "What advantage does NFV offer together with SDNs?",
+            "answer": "Virtualization of firewalls, routers, and other services"
+          },
+          {
+            "question": "How do SDNs adapt to varying loads?",
+            "answer": "By dynamically recalibrating flow rules"
+          },
+          {
+            "question": "What does SDN architecture separate?",
+            "answer": "The control plane from the data plane"
+          },
+          {
+            "question": "What are examples of SDN controllers?",
+            "answer": "OpenDaylight or ONOS"
+          },
+          {
+            "question": "Which protocol does the SDN controller use to communicate with switches?",
+            "answer": "OpenFlow"
+          },
+          {
+            "question": "What advantages do SDNs offer?",
+            "answer": "Flexibility, automation, cost reduction, and support for dynamic networks"
+          },
+          {
+            "question": "What are common applications of SDNs?",
+            "answer": "Traffic balancing, centralized security, and QoS optimization"
+          },
+          {
+            "question": "What challenges do SDNs face?",
+            "answer": "Security, scalability, and interoperability between devices"
+          },
+          {
+            "question": "How are network updates managed in SDNs?",
+            "answer": "Through centralized software updates"
+          },
+          {
+            "question": "What is meant by 'orchestration' in SDNs?",
+            "answer": "Automated coordination of network services"
+          },
+          {
+            "question": "Which SDN component manages security policies?",
+            "answer": "The centralized controller"
+          },
+          {
+            "question": "How do SDNs improve energy efficiency?",
+            "answer": "By turning off unused devices through dynamic rules"
+          },
+          {
+            "question": "What does the control plane define?",
+            "answer": "The decision logic for packet paths"
+          },
+          {
+            "question": "Which tool analyzes traffic in SDN?",
+            "answer": "sFlow or NetFlow integrated with the controller"
+          },
+          {
+            "question": "What are 'flow rules'?",
+            "answer": "Instructions in switches for handling packets"
+          },
+          {
+            "question": "How are loops prevented in SDNs?",
+            "answer": "With improved algorithms like STP (Spanning Tree Protocol)"
+          },
+          {
+            "question": "What role does REST API have in SDNs?",
+            "answer": "Communicating with external applications for network policies"
+          },
+          {
+            "question": "What is meant by 'overlay network'?",
+            "answer": "Virtual network built on top of physical infrastructure"
+          },
+          {
+            "question": "How does failover work in SDN?",
+            "answer": "By redirecting traffic to backup controllers or switches"
+          },
+          {
+            "question": "What are 'service chains' in SDN?",
+            "answer": "Sequences of network functions applied to flows (e.g., firewall -> VPN)"
+          },
+          {
+            "question": "Which standard supports east-west communication between controllers?",
+            "answer": "BGP (Border Gateway Protocol) for SDN"
+          },
+          {
+            "question": "How is end-to-end visibility achieved in SDN?",
+            "answer": "Through network maps generated by the controller"
+          },
+          {
+            "question": "When was the concept of SDN first introduced?",
+            "answer": "Around 2005 with the SANE/ETHANE projects at Stanford University"
+          },
+          {
+            "question": "Who established the Open Networking Foundation (ONF)?",
+            "answer": "Google, Facebook, Microsoft, Yahoo, Deutsche Telekom, and Verizon"
+          },
+          {
+            "question": "What is the role of the Open Networking Foundation?",
+            "answer": "Promoting SDN adoption and standardizing protocols like OpenFlow"
+          },
+          {
+            "question": "What are the three layers of SDN architecture?",
+            "answer": "Application layer, control layer, and infrastructure layer"
+          },
+          {
+            "question": "What is the difference between northbound and southbound APIs in SDN?",
+            "answer": "Northbound connects controller to applications, southbound connects controller to network devices"
+          },
+          {
+            "question": "What is the primary benefit of SDN for service providers?",
+            "answer": "Rapid service deployment and reduced operational costs"
+          },
+          {
+            "question": "How does SDN differ from traditional networking?",
+            "answer": "Traditional networking combines control and data planes in each device, while SDN separates them"
+          },
+          {
+            "question": "What are SDN controllers written in?",
+            "answer": "Typically Java, Python, or C++"
+          },
+          {
+            "question": "What is the P4 language in SDN?",
+            "answer": "A programming language for packet processors that enables more flexible data planes"
+          },
+          {
+            "question": "What is network slicing in 5G using SDN?",
+            "answer": "Creating multiple virtual networks with different characteristics on shared physical infrastructure"
+          },
+          {
+            "question": "How does SDN support multi-tenancy in data centers?",
+            "answer": "By creating isolated virtual networks for different tenants on shared infrastructure"
+          },
+          {
+            "question": "What is an SDN application?",
+            "answer": "Software that uses the controller's APIs to implement network functions or services"
+          },
+          {
+            "question": "What is the difference between SDN and SD-WAN?",
+            "answer": "SD-WAN is a specific application of SDN principles to wide area networks"
+          },
+          {
+            "question": "What is the role of SDN in Network Function Virtualization (NFV)?",
+            "answer": "SDN provides the network connectivity and management for virtualized network functions"
+          },
+          {
+            "question": "What is traffic engineering in SDN?",
+            "answer": "Optimizing network traffic flows based on current conditions and requirements"
+          },
+          {
+            "question": "How does SDN improve disaster recovery?",
+            "answer": "By allowing rapid reconfiguration of network paths and automated failover"
+          },
+          {
+            "question": "What is the CAP theorem in relation to SDN controllers?",
+            "answer": "A distributed SDN controller must balance consistency, availability, and partition tolerance"
+          },
+          {
+            "question": "What security concerns are specific to SDN?",
+            "answer": "Controller vulnerabilities, flow rule tampering, and API attacks"
+          },
+          {
+            "question": "How can SDN help with DDoS mitigation?",
+            "answer": "By quickly identifying and redirecting attack traffic at the network edge"
+          },
+          {
+            "question": "What is 'intent-based networking' in SDN?",
+            "answer": "Specifying desired network behavior instead of detailed configurations"
+          },
+          {
+            "question": "How does SDN support micro-segmentation?",
+            "answer": "By implementing fine-grained security policies between workloads"
+          },
+          {
+            "question": "What is a 'white box switch' in SDN deployments?",
+            "answer": "Generic hardware switch that runs SDN-compatible software"
+          },
+          {
+            "question": "How does SDN contribute to network automation?",
+            "answer": "By providing programmable interfaces and centralized control for automation tools"
+          },
+          {
+            "question": "What is the role of OVSDB in SDN?",
+            "answer": "Managing Open vSwitch database configurations in virtualized environments"
+          },
+          {
+            "question": "How does MPLS integrate with SDN?",
+            "answer": "SDN controllers can manage MPLS paths through OpenFlow extensions"
+          },
+          {
+            "question": "What is the OpenDaylight controller's architecture?",
+            "answer": "A modular framework with a microservices approach and model-driven service abstraction layer"
+          },
+          {
+            "question": "How do containers benefit from SDN?",
+            "answer": "SDN provides dynamic network connectivity and policy enforcement for container orchestration"
+          },
+          {
+            "question": "What is the difference between proactive and reactive flow installation in SDN?",
+            "answer": "Proactive pre-installs flows, reactive installs flows in response to new traffic"
+          },
+          {
+            "question": "What role does OpenStack Neutron play in SDN?",
+            "answer": "Provides network connectivity as a service for OpenStack using SDN principles"
+          },
+          {
+            "question": "How is network telemetry enhanced with SDN?",
+            "answer": "SDN enables programmable, fine-grained, and real-time network monitoring"
+          },
+          {
+            "question": "What is the ONOS (Open Network Operating System)?",
+            "answer": "A distributed SDN controller platform designed for service provider networks"
+          },
+          {
+            "question": "How does path optimization work in SDN?",
+            "answer": "Controllers calculate optimal paths based on network state, policies, and requirements"
+          },
+          {
+            "question": "What is the OpenFlow Connection Protocol?",
+            "answer": "The protocol that establishes and maintains connections between controllers and switches"
+          },
+          {
+            "question": "How can SDN improve network testing?",
+            "answer": "By creating isolated test environments with realistic traffic patterns"
+          },
+          {
+            "question": "What is the benefit of using SDN in campus networks?",
+            "answer": "Simplified management, improved security, and more flexible user policies"
+          },
+          {
+            "question": "How does SDN support IPv6 transition?",
+            "answer": "By allowing dual-stack implementations and protocol translation at the controller level"
+          },
+          {
+            "question": "What is a 'hybrid SDN' deployment?",
+            "answer": "A network where traditional and SDN-enabled devices coexist during migration"
+          },
+          {
+            "question": "How does VXLAN work with SDN?",
+            "answer": "SDN controllers manage VXLAN tunnel endpoints and network virtualization"
+          },
+          {
+            "question": "What is a 'fabric' in SDN terminology?",
+            "answer": "A collection of network devices that operate as a single logical entity"
+          },
+          {
+            "question": "What are the scalability challenges in large SDN deployments?",
+            "answer": "Controller performance, flow table limitations, and control channel bandwidth"
+          }
+        ]
+      }
+    ],
+    "test_data": [
+      {
+        "context": [
+          "Software Defined Networks (SDN) are a network architecture that separates the control plane from the data plane, allowing centralized and programmable network management. The SDN controller, such as OpenDaylight or ONOS, communicates with switches via protocols like OpenFlow. SDNs offer advantages such as flexibility, automation, cost reduction, and support for dynamic networks. Common applications include traffic balancing, centralized security, and QoS optimization. Challenges include security, scalability, and interoperability between devices."
+        ],
+        "questions": [
+          {
+            "question": "How is fault tolerance improved in SDNs?",
+            "answer": "Using distributed controllers"
+          },
+          {
+            "question": "What does the southbound API manage?",
+            "answer": "Communication between controller and switches"
+          },
+          {
+            "question": "Which tool simulates SDN networks?",
+            "answer": "Mininet"
+          },
+          {
+            "question": "What security measures are used in SDNs?",
+            "answer": "Controller authentication and channel encryption"
+          },
+          {
+            "question": "What does the northbound API do?",
+            "answer": "Interacts with applications to define policies"
+          },
+          {
+            "question": "Why is simulation with Mininet useful?",
+            "answer": "Testing configurations without physical hardware"
+          },
+          {
+            "question": "How is data integrity ensured in SDNs?",
+            "answer": "Through TLS/SSL encryption"
+          },
+          {
+            "question": "What happens if a distributed controller fails?",
+            "answer": "Another controller takes over"
+          },
+          {
+            "question": "Which protocol is associated with the southbound API?",
+            "answer": "OpenFlow"
+          },
+          {
+            "question": "How are Man-in-the-Middle attacks prevented in SDNs?",
+            "answer": "Mutual authentication and digital certificates"
+          },
+          {
+            "question": "What is a 'control cluster' in SDN?",
+            "answer": "Group of controllers collaborating for high availability"
+          },
+          {
+            "question": "What role does the NETCONF protocol have in SDNs?",
+            "answer": "Advanced device configuration via XML"
+          },
+          {
+            "question": "How is QoS optimized for video streaming in SDN?",
+            "answer": "Prioritizing multimedia flows in the controller"
+          },
+          {
+            "question": "What is 'SDN-based load balancing'?",
+            "answer": "Dynamic traffic distribution among servers"
+          },
+          {
+            "question": "What problem does the 'Fast Failover' mechanism solve?",
+            "answer": "Reducing downtime in case of failures"
+          },
+          {
+            "question": "How is SDN integrated with cloud computing?",
+            "answer": "Through APIs to manage on-demand virtualized networks"
+          },
+          {
+            "question": "What is an 'SD-WAN'?",
+            "answer": "WAN managed through SDN principles for optimization"
+          },
+          {
+            "question": "Which technique prevents congestion in SDN?",
+            "answer": "Dynamic rerouting based on real-time statistics"
+          },
+          {
+            "question": "What is 'network slicing' in SDN?",
+            "answer": "Creation of dedicated virtual networks for specific services"
+          },
+          {
+            "question": "How is policy compliance verified in SDN?",
+            "answer": "Through automated audits from the controller"
+          }
+        ]
+      }
+    ],
+    "prompts": [
+      "What does the SDN controller do?",
+      "What is the standard protocol for SDN?"
+    ],
+    "model_params": {
+      "d_model": 96,
+      "max_seq_len": 256,
+      "num_heads": 6,
+      "ff_dim": 192,
+      "num_layers": 8,
+      "dropout_rate": 0.15,
+      "learning_rate": 0.0005
+    }
+  } 

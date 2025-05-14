@@ -28,6 +28,14 @@ indicatif = "0.17.5"
 url = "2.4.0"
 bytemuck = "1.14.0"
 
+[[bin]]
+name = "batch_size_test"
+path = "src/bin/batch_size_test.rs"
+
+[[bin]]
+name = "train_model_test"
+path = "src/bin/train_model_test.rs"
+
 [[example]]
 name = "model_test"
 path = "examples/model_test.rs"

@@ -6,6 +6,12 @@
 MODEL_SIZE="small"
 # Default number of stories
 NUM_STORIES=4000
+# Default CPU cores (0 means use all available)
+NUM_CPUS=0
+# Memory optimization flag
+MEMORY_OPT=""
+# Batch size (0 means auto-calculate)
+BATCH_SIZE=0
 # Output log file with timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="logs/training_${TIMESTAMP}.log"
@@ -23,9 +29,21 @@ while [[ $# -gt 0 ]]; do
       NUM_STORIES="$2"
       shift 2
       ;;
+    --cpus)
+      NUM_CPUS="$2"
+      shift 2
+      ;;
+    --memory-opt)
+      MEMORY_OPT="true"
+      shift 1
+      ;;
+    --batch-size)
+      BATCH_SIZE="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--size small|medium|large] [--stories <number>]"
+      echo "Usage: $0 [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>]"
       exit 1
       ;;
   esac
@@ -84,6 +102,31 @@ echo "Data preprocessing: false" | tee -a "$LOG_FILE"
 echo "Training data: data/tiny_stories_sample.json" | tee -a "$LOG_FILE"
 echo "Save path: models/high_accuracy_model.walle" | tee -a "$LOG_FILE"
 
+# Memory optimization settings
+if [ -n "$MEMORY_OPT" ]; then
+  echo "Memory optimization: enabled" | tee -a "$LOG_FILE"
+else
+  echo "Memory optimization: disabled" | tee -a "$LOG_FILE"
+fi
+
+# Batch size settings
+if [ "$BATCH_SIZE" -gt 0 ]; then
+  echo "Batch size: $BATCH_SIZE (manual)" | tee -a "$LOG_FILE"
+else
+  echo "Batch size: auto-calculated" | tee -a "$LOG_FILE"
+fi
+
+# Set CPU Cores information
+if [ "$NUM_CPUS" -gt 0 ]; then
+  echo "CPU Cores: $NUM_CPUS" | tee -a "$LOG_FILE"
+  export RAYON_NUM_THREADS=$NUM_CPUS
+else
+  # Get available CPU cores
+  AVAILABLE_CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+  echo "CPU Cores: $AVAILABLE_CPUS (all available)" | tee -a "$LOG_FILE"
+  export RAYON_NUM_THREADS=$AVAILABLE_CPUS
+fi
+
 echo "╔═════════════════════════════════════════════════════╗" | tee -a "$LOG_FILE"
 echo "║           BUILDING OPTIMIZED COMMAND                ║" | tee -a "$LOG_FILE"
 echo "╚═════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
@@ -92,10 +135,21 @@ echo "╔═══════════════════════�
 echo "║           STARTING OPTIMIZED TRAINING               ║" | tee -a "$LOG_FILE"
 echo "╚═════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
 
-# Execute the optimized training command
-TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories $NUM_STORIES"
+# Build basic training command
+TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories $NUM_STORIES --perf-log true"
+
+# Add memory optimization flags if enabled
+if [ -n "$MEMORY_OPT" ]; then
+  TRAINING_CMD="$TRAINING_CMD --use-memory-opt"
+fi
+
+# Add manual batch size if specified
+if [ "$BATCH_SIZE" -gt 0 ]; then
+  TRAINING_CMD="$TRAINING_CMD --batch-size $BATCH_SIZE"
+fi
 
 echo "Executing: $TRAINING_CMD" | tee -a "$LOG_FILE"
+echo "Using RAYON_NUM_THREADS=$RAYON_NUM_THREADS" | tee -a "$LOG_FILE"
 eval $TRAINING_CMD | tee -a "$LOG_FILE"
 
 # Function to generate text with the trained model
@@ -105,7 +159,7 @@ generate_text() {
   
   # Note the ordering of arguments - make sure --model comes before the path
   # and generate-only is a flag without a value
-  GENERATE_CMD="cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt \"$prompt\" --max-tokens 75"
+  GENERATE_CMD="cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt \"$prompt\" --max-tokens 75 --perf-log true"
   eval $GENERATE_CMD | tee -a "$LOG_FILE"
 }
 

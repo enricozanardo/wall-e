@@ -130,25 +130,25 @@ impl Tensor {
         // Verify that dimensions are compatible
         assert_eq!(a.data.shape(), b.data.shape(), "Tensors with incompatible shapes for addition");
         
-        // Calculate the forward result using Rayon
-        let a_vec: Vec<f32> = a.data.iter().cloned().collect();
-        let b_vec: Vec<f32> = b.data.iter().cloned().collect();
+        // Use ndarray's zip with map for cache-friendly computation
+        let mut result_data = a.data.clone();
         
-        // Parallelize the element-wise addition
-        let result_vec: Vec<f32> = a_vec.par_iter()
-            .zip(b_vec.par_iter())
-            .map(|(&a_val, &b_val)| a_val + b_val)
-            .collect();
-        
-        // Convert the result to Array with the same shape
-        let data = Array::from_shape_vec(a.data.raw_dim(), result_vec).unwrap();
+        // Calculate the element-wise sum using zip (which is cache-friendly in ndarray)
+        // We apply the operation to contiguous chunks of memory for better cache behavior
+        use ndarray::Zip;
+        Zip::from(&mut result_data)
+            .and(&a.data)
+            .and(&b.data)
+            .par_for_each(|r, &a_val, &b_val| {
+                *r = a_val + b_val;
+            });
         
         // Clone the parent tensors for the closure
         let a_clone = a.clone();
         let b_clone = b.clone();
 
         // Create a new tensor with the gradient function
-        Tensor::with_grad_fn(data, vec![a.clone(), b.clone()], Arc::new(move |_, grad| {
+        Tensor::with_grad_fn(result_data, vec![a.clone(), b.clone()], Arc::new(move |_, grad| {
             // The gradient of addition propagates identically to both inputs
             a_clone.update_grad(grad);
             b_clone.update_grad(grad);
@@ -187,8 +187,15 @@ impl Tensor {
         let a_2d = a.data.clone().into_dimensionality::<Ix2>().unwrap();
         let b_2d = b.data.clone().into_dimensionality::<Ix2>().unwrap();
         
-        // Matrix multiplication uses BLAS when available
-        let data = a_2d.dot(&b_2d).into_dyn();
+        // Use cache-blocked matrix multiplication for better memory efficiency
+        let data = if a_2d.shape()[0] > 32 || b_2d.shape()[1] > 32 {
+            // For larger matrices, use cache blocking
+            use crate::nabla::memory_opt;
+            memory_opt::cache_blocked_matmul(&a_2d, &b_2d).into_dyn()
+        } else {
+            // For small matrices, use standard matrix multiplication
+            a_2d.dot(&b_2d).into_dyn()
+        };
         
         // Clone the parent tensors for the closure
         let a_clone = a.clone();
@@ -303,31 +310,19 @@ impl Tensor {
                 panic!("Incompatible dimensions for matmul_with: {:?} and {:?}", self_shape, other_shape);
             }
             
-            let batch_size = self_shape[0];
-            let seq_len = self_shape[1];
-            let feature_dim = self_shape[2];
-            let output_dim = other_shape[1];
+            // Use cache-optimized implementation for better memory efficiency
+            use crate::nabla::memory_opt;
+            let result_data = memory_opt::batch_matmul_3d_2d(&self.data, &other.data);
             
-            // println!("Debug: matmul_with - special case 3D x 2D");
+            // Create a new tensor with the result data
+            let result = Tensor {
+                data: result_data,
+                grad: Arc::new(Mutex::new(None)),
+                grad_fn: None,
+                parents: vec![],
+            };
             
-            // Result: [batch_size, seq_len, output_dim]
-            let mut result = Array3::<f32>::zeros((batch_size, seq_len, output_dim));
-            
-            // Perform matrix multiplication for each batch and each position in the sequence
-            for b in 0..batch_size {
-                for s in 0..seq_len {
-                    for o in 0..output_dim {
-                        let mut sum = 0.0;
-                        for f in 0..feature_dim {
-                            sum += self.data[[b, s, f]] * other.data[[f, o]];
-                        }
-                        result[[b, s, o]] = sum;
-                    }
-                }
-            }
-            
-            // Return a 3D tensor
-            return Tensor::new_3d(result);
+            return result;
         }
         
         // General case - use standard matmul

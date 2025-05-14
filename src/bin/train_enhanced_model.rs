@@ -5,9 +5,127 @@ use std::collections::HashMap;
 use std::time::Instant;
 use wall_e1::tokenizer::Tokenizer;
 use wall_e1::EnhancedTrainer;
+use wall_e1::nabla::tensor::set_num_threads;
 use ndarray;
 use rand::prelude::*;
 use serde_json;
+use num_cpus;
+use wall_e1::nabla::memory_opt;
+
+// Performance logging structure
+struct PerfLogger {
+    enabled: bool,
+    start_times: HashMap<String, Instant>,
+    metrics: HashMap<String, Vec<f64>>,
+}
+
+impl PerfLogger {
+    fn new(enabled: bool) -> Self {
+        PerfLogger {
+            enabled,
+            start_times: HashMap::new(),
+            metrics: HashMap::new(),
+        }
+    }
+
+    fn start(&mut self, operation: &str) {
+        if !self.enabled {
+            return;
+        }
+        self.start_times.insert(operation.to_string(), Instant::now());
+    }
+
+    fn end(&mut self, operation: &str) {
+        if !self.enabled {
+            return;
+        }
+        if let Some(start) = self.start_times.remove(operation) {
+            let duration = start.elapsed().as_secs_f64();
+            let metrics = self.metrics.entry(operation.to_string()).or_insert_with(Vec::new);
+            metrics.push(duration);
+        }
+    }
+
+    fn log_summary(&self) {
+        if !self.enabled {
+            return;
+        }
+        println!("\n═════════════════════════ PERFORMANCE METRICS ═════════════════════════");
+        for (op, times) in &self.metrics {
+            if times.is_empty() {
+                continue;
+            }
+            let total: f64 = times.iter().sum();
+            let avg = total / times.len() as f64;
+            let min = times.iter().copied().fold(f64::INFINITY, f64::min);
+            let max = times.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+            
+            println!("Operation: {}", op);
+            println!("  Count:     {}", times.len());
+            println!("  Total:     {:.4} sec", total);
+            println!("  Average:   {:.4} sec", avg);
+            println!("  Min/Max:   {:.4}/{:.4} sec", min, max);
+        }
+        println!("═════════════════════════════════════════════════════════════════════");
+    }
+}
+
+// Calculate optimal batch size for the model's parameters
+fn calculate_memory_optimal_batch_size(model_dim: usize, seq_len: usize) -> usize {
+    // Get cache parameters
+    let cache_params = memory_opt::detect_cache_parameters();
+    
+    println!("Cache parameters: L1={} KB, L2={} KB, L3={} KB, Line size={} bytes",
+        cache_params.l1_size / 1024, 
+        cache_params.l2_size / 1024, 
+        cache_params.l3_size / 1024, 
+        cache_params.line_size);
+    
+    // Calculate optimal batch size
+    let element_size = std::mem::size_of::<f32>();
+    println!("Calculating optimal batch size for model_dim={}, seq_len={}, element_size={} bytes",
+        model_dim, seq_len, element_size);
+    
+    let batch_size = memory_opt::calculate_optimal_batch_size(
+        &cache_params,
+        model_dim,
+        seq_len,
+        element_size
+    );
+    
+    println!("Calculated memory-optimal batch size: {}", batch_size);
+    
+    batch_size
+}
+
+// Calculate optimal thread count based on model and cache characteristics
+fn calculate_optimal_thread_count(model_dim: usize, num_layers: usize) -> usize {
+    // Measure available memory bandwidth
+    let bandwidth_gb_per_sec = memory_opt::measure_memory_bandwidth();
+    
+    // Estimate memory bandwidth needs per model instance
+    // This is a simplified model - in reality, it depends on many factors
+    // For each layer, we need:
+    // - Forward pass: read weights + read inputs + write outputs
+    // - Backward pass: similar operations
+    let bytes_per_parameter = std::mem::size_of::<f32>() as f64;
+    let model_dim_f64 = model_dim as f64;
+    let num_layers_f64 = num_layers as f64;
+    
+    let estimated_bandwidth_per_thread = 
+        model_dim_f64 * model_dim_f64 * num_layers_f64 * bytes_per_parameter * 6.0 / 1_000_000_000.0;
+    
+    // Calculate how many threads we can run before hitting bandwidth limits
+    // Use 80% of available bandwidth to leave headroom
+    let bandwidth_threads = (bandwidth_gb_per_sec * 0.8 / estimated_bandwidth_per_thread) as usize;
+    
+    // Get physical core count to avoid hyperthreading inefficiency
+    let physical_cores = num_cpus::get_physical();
+    
+    // Choose the minimum of physical cores and bandwidth-limited threads
+    // Ensure at least 1 thread
+    std::cmp::min(physical_cores, bandwidth_threads).max(1)
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse command line arguments
@@ -32,6 +150,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut json_format = false;
     let mut strong_anti_rep = false;
     let mut max_stories = None;
+    let mut enable_perf_log = false;
+    let mut num_cpus_override = None;
+    let mut enable_memory_optimization = false;
+    let mut manual_batch_size = None;
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -120,6 +242,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     max_stories = Some(val.parse().unwrap_or(4000));
                 }
             }
+            "--use-memory-opt" => {
+                enable_memory_optimization = true;
+            }
+            "--batch-size" => {
+                if let Some(val) = args.next() {
+                    manual_batch_size = Some(val.parse().unwrap_or(32));
+                }
+            }
+            "--perf-log" => {
+                if let Some(val) = args.next() {
+                    enable_perf_log = val.parse::<bool>().unwrap_or(false);
+                } else {
+                    enable_perf_log = true;
+                }
+            }
+            "--cpus" => {
+                if let Some(val) = args.next() {
+                    if let Ok(cpus) = val.parse::<usize>() {
+                        num_cpus_override = Some(cpus);
+                    }
+                }
+            }
             _ => {
                 // If this is the first non-flag argument and we don't have a training data path yet,
                 // assume it's the training data path
@@ -133,12 +277,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     
+    // Initialize performance logger
+    let mut perf_logger = PerfLogger::new(enable_perf_log);
+    
+    // Configure CPU threads
+    let num_threads = if let Some(cpus) = num_cpus_override {
+        cpus
+    } else if let Ok(threads_str) = env::var("RAYON_NUM_THREADS") {
+        threads_str.parse().unwrap_or_else(|_| num_cpus::get())
+    } else {
+        // Calculate optimal thread count based on model dimensions
+        let opt_threads = calculate_optimal_thread_count(model_dim, num_layers);
+        println!("Calculated memory-optimal thread count: {}", opt_threads);
+        opt_threads
+    };
+    
+    println!("Configuring thread pool with {} CPU cores", num_threads);
+    set_num_threads(num_threads);
+    
     // If we're in generate-only mode, just generate a sample text
     if generate_only {
         if let Some(model_file) = model_path {
             if let Some(text_prompt) = prompt {
                 println!("Loading model from {} for text generation...", model_file);
                 
+                perf_logger.start("model_loading");
                 // Create a trainer and load the model
                 let mut trainer = EnhancedTrainer::new(
                     model_dim,
@@ -152,10 +315,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Load the model
                 match trainer.load_model(&model_file) {
                     Ok(_) => {
+                        perf_logger.end("model_loading");
+                        
                         println!("Generating text with prompt: \"{}\"", text_prompt);
                         
                         // Generate text using the model
+                        perf_logger.start("text_generation");
                         let generated = trainer.generate_text(&text_prompt, Some(_max_tokens));
+                        perf_logger.end("text_generation");
                         
                         // Display the generated text with clear formatting
                         println!("\n======= GENERATED TEXT =======");
@@ -184,6 +351,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         return Err(e);
                     }
                 }
+                
+                // Log performance metrics
+                perf_logger.log_summary();
                 
                 return Ok(());
             } else {
@@ -226,9 +396,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Skip connections: {}", if enable_skip { "enabled" } else { "disabled" });
     println!("  Strong anti-repetition: {}", if strong_anti_rep { "enabled" } else { "disabled" });
     println!("  Save path: {}", save_path.as_ref().unwrap_or(&"N/A".to_string()));
+    println!("  CPU threads: {}", num_threads);
+    println!("  Performance logging: {}", if enable_perf_log { "enabled" } else { "disabled" });
     
     // Read training data
     println!("Reading training data...");
+    perf_logger.start("data_loading");
     let training_text = if json_format {
         // Process TinyStories JSON format
         let path = training_data_path.as_ref().ok_or("No training data path provided")?;
@@ -241,9 +414,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         file.read_to_string(&mut training_text)?;
         training_text
     };
+    perf_logger.end("data_loading");
     
     // Create enhanced trainer
     println!("Creating trainer...");
+    perf_logger.start("trainer_initialization");
     let mut trainer = EnhancedTrainer::new(
         model_dim,
         ff_dim,
@@ -254,6 +429,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).with_curriculum_learning(enable_curriculum)
      .with_dynamic_learning_rate(true)
      .with_gradient_clipping(Some(1.0));
+    perf_logger.end("trainer_initialization");
     
     // Configure anti-repetition
     if strong_anti_rep {
@@ -273,7 +449,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Learn tokenizer vocabulary
     println!("Learning tokenizer vocabulary...");
+    perf_logger.start("vocabulary_learning");
     trainer.learn_tokenizer_from_text(&training_text, vocab_size, min_freq);
+    perf_logger.end("vocabulary_learning");
     
     // Split data for training and validation (90/10 split)
     let total_length = training_text.len();
@@ -286,8 +464,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokenizer = trainer.get_tokenizer();
     
     // Tokenize training and validation data
+    perf_logger.start("tokenization");
     let training_tokens = tokenizer.encode(training_text_subset);
     let validation_tokens = tokenizer.encode(validation_text);
+    perf_logger.end("tokenization");
     
     // Set up evaluation prompts
     let eval_prompts = [
@@ -314,12 +494,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let epoch_start = Instant::now();
         
         // Train on the tokenized data
-        let loss = train_epoch(&mut trainer, &training_tokens, epoch);
+        perf_logger.start(format!("epoch_{}", epoch + 1).as_str());
+        let loss = train_epoch(&mut trainer, &training_tokens, epoch, enable_memory_optimization, manual_batch_size);
+        perf_logger.end(format!("epoch_{}", epoch + 1).as_str());
         let epoch_duration = epoch_start.elapsed();
         
         // Evaluate the model
         println!("Evaluating model...");
+        perf_logger.start(format!("evaluation_{}", epoch + 1).as_str());
         let metrics = trainer.evaluate_model(&validation_inputs, &validation_targets, &eval_prompts);
+        perf_logger.end(format!("evaluation_{}", epoch + 1).as_str());
         metrics_history.push(metrics.clone());
         
         println!("Epoch {}/{} completed in {:?}", epoch + 1, num_epochs, epoch_duration);
@@ -332,7 +516,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         // Generate sample text
         let prompt = "The";
+        perf_logger.start(format!("sample_generation_{}", epoch + 1).as_str());
         let generated = trainer.generate_text(prompt, Some(50));
+        perf_logger.end(format!("sample_generation_{}", epoch + 1).as_str());
         println!("\nSample generation:");
         println!("Prompt: \"{}\"", prompt);
         println!("Generated: \"{}\"", generated);
@@ -351,10 +537,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if epoch % 2 == 0 || epoch == num_epochs - 1 {
             let checkpoint_path = format!("{}.epoch{}", save_path.as_ref().unwrap_or(&"model.json".to_string()), epoch + 1);
             println!("Saving checkpoint to {}", checkpoint_path);
+            perf_logger.start(format!("save_checkpoint_{}", epoch + 1).as_str());
             match trainer.save_model(&checkpoint_path) {
                 Ok(_) => println!("Checkpoint saved successfully"),
                 Err(e) => println!("Failed to save checkpoint: {}", e),
             }
+            perf_logger.end(format!("save_checkpoint_{}", epoch + 1).as_str());
         }
     }
     
@@ -365,7 +553,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Save final model
     let final_save_path = save_path.unwrap_or_else(|| "model.json".to_string());
     println!("Saving final model to {}", final_save_path);
+    perf_logger.start("save_final_model");
     trainer.save_model(&final_save_path)?;
+    perf_logger.end("save_final_model");
     
     // Print final metrics
     if !metrics_history.is_empty() {
@@ -377,6 +567,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("  Fluency score: {:.2}", final_metrics.get("fluency_score").unwrap_or(&0.0));
         println!("  Quality score: {:.2}", final_metrics.get("quality_score").unwrap_or(&0.0));
     }
+    
+    // Log all performance metrics
+    perf_logger.log_summary();
     
     Ok(())
 }
@@ -447,7 +640,8 @@ fn process_json_data(file_path: &str, max_stories: usize) -> Result<String, Box<
 }
 
 // Train for a single epoch on tokenized data
-fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize) -> f32 {
+fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize, 
+               enable_memory_optimization: bool, manual_batch_size: Option<usize>) -> f32 {
     // Create sliding windows of input/target pairs
     let max_sequence_length = trainer.get_max_seq_len();
     let stride = max_sequence_length / 2; // 50% overlap between windows
@@ -478,7 +672,38 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize)
     println!("Created {} input/target pairs for training", inputs.len());
     
     // Process in batches
-    let batch_size = trainer.get_batch_size();
+    // Calculate memory-optimal batch size based on model dimensions
+    let default_batch_size = trainer.get_batch_size();
+    
+    // Get cache parameters for debugging
+    let cache_params = memory_opt::detect_cache_parameters();
+    println!("\n======== BATCH SIZE CALCULATION ========");
+    println!("Cache parameters: L1={} KB, L2={} KB, L3={} MB, Line size={} bytes",
+        cache_params.l1_size / 1024, 
+        cache_params.l2_size / 1024, 
+        cache_params.l3_size / (1024 * 1024), 
+        cache_params.line_size);
+    
+    let memory_optimal_batch = calculate_memory_optimal_batch_size(
+        trainer.trainer.get_model_dim(),
+        max_sequence_length
+    );
+    
+    // Determine the batch size to use
+    let batch_size = if let Some(manual_size) = manual_batch_size {
+        println!("Using manually specified batch size: {}", manual_size);
+        manual_size
+    } else if enable_memory_optimization {
+        println!("Using memory-optimal batch size {} (default was: {})", 
+                memory_optimal_batch, default_batch_size);
+        memory_optimal_batch
+    } else {
+        println!("Using default batch size {} (memory-optimal would be: {})", 
+                default_batch_size, memory_optimal_batch);
+        default_batch_size
+    };
+    println!("======================================\n");
+    
     let mut batched_inputs = Vec::new();
     let mut batched_targets = Vec::new();
     

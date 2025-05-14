@@ -1,0 +1,3723 @@
+Detected JSON format data file
+Using quality-focused sampling: 5 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 10
+Data sampling: quality (5 stories)
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Batch size: 128 (manual)
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 5 --perf-log true --use-memory-opt --batch-size 128
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 5
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 10
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 5 stories for training
+Processed 5 stories, total text length: 5026 characters
+Creating trainer...
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Initializing output_projection: model_dim=128, vocab_size=436
+Setting up curriculum learning...
+Starting training for 10 epochs...
+Epoch 1/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+Initializing curriculum learning with examples...
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 0 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 0 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 0 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 0 examples at level VeryHard
+Before redistribution: 1 examples at level VeryEasy
+Before redistribution: 1 examples at level Easy
+Before redistribution: 1 examples at level Medium
+Before redistribution: 1 examples at level Hard
+Before redistribution: 1 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 5 examples to level VeryEasy
+Copied 5 examples to level Easy from previous level
+Copied 5 examples to level Medium from previous level
+Copied 5 examples to level Hard from previous level
+Copied 5 examples to level VeryHard from previous level
+After redistribution: 5 examples at level VeryEasy
+After redistribution: 5 examples at level Easy
+After redistribution: 5 examples at level Medium
+After redistribution: 5 examples at level Hard
+After redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 5 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 5 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 5 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 5 examples at level VeryHard
+Before redistribution: 6 examples at level VeryEasy
+Before redistribution: 6 examples at level Easy
+Before redistribution: 6 examples at level Medium
+Before redistribution: 6 examples at level Hard
+Before redistribution: 6 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 10 examples to level VeryEasy
+Redistributed 10 examples to level Easy
+Redistributed 10 examples to level Medium
+Copied 10 examples to level Hard from previous level
+Copied 10 examples to level VeryHard from previous level
+After redistribution: 10 examples at level VeryEasy
+After redistribution: 10 examples at level Easy
+After redistribution: 10 examples at level Medium
+After redistribution: 10 examples at level Hard
+After redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 10 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 10 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 10 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 10 examples at level VeryHard
+Before redistribution: 11 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 11 examples to level VeryEasy
+Redistributed 11 examples to level Easy
+Redistributed 11 examples to level Medium
+Redistributed 11 examples to level Hard
+Redistributed 11 examples to level VeryHard
+After redistribution: 11 examples at level VeryEasy
+After redistribution: 11 examples at level Easy
+After redistribution: 11 examples at level Medium
+After redistribution: 11 examples at level Hard
+After redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 11 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 11 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 11 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 11 examples at level VeryHard
+Before redistribution: 12 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 12 examples to level VeryEasy
+Redistributed 12 examples to level Easy
+Redistributed 12 examples to level Medium
+Redistributed 12 examples to level Hard
+Redistributed 12 examples to level VeryHard
+After redistribution: 12 examples at level VeryEasy
+After redistribution: 12 examples at level Easy
+After redistribution: 12 examples at level Medium
+After redistribution: 12 examples at level Hard
+After redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 12 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 12 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 12 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 12 examples at level VeryHard
+Before redistribution: 13 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 13 examples to level VeryEasy
+Redistributed 13 examples to level Easy
+Redistributed 13 examples to level Medium
+Redistributed 13 examples to level Hard
+Redistributed 13 examples to level VeryHard
+After redistribution: 13 examples at level VeryEasy
+After redistribution: 13 examples at level Easy
+After redistribution: 13 examples at level Medium
+After redistribution: 13 examples at level Hard
+After redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 13 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 13 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 13 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 13 examples at level VeryHard
+Before redistribution: 14 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 14 examples to level VeryEasy
+Redistributed 14 examples to level Easy
+Redistributed 14 examples to level Medium
+Redistributed 14 examples to level Hard
+Redistributed 14 examples to level VeryHard
+After redistribution: 14 examples at level VeryEasy
+After redistribution: 14 examples at level Easy
+After redistribution: 14 examples at level Medium
+After redistribution: 14 examples at level Hard
+After redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 14 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 14 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 14 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 14 examples at level VeryHard
+Before redistribution: 15 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 15 examples to level VeryEasy
+Redistributed 15 examples to level Easy
+Redistributed 15 examples to level Medium
+Redistributed 15 examples to level Hard
+Redistributed 15 examples to level VeryHard
+After redistribution: 15 examples at level VeryEasy
+After redistribution: 15 examples at level Easy
+After redistribution: 15 examples at level Medium
+After redistribution: 15 examples at level Hard
+After redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 15 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 15 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 15 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 15 examples at level VeryHard
+Before redistribution: 16 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 16 examples to level VeryEasy
+Redistributed 16 examples to level Easy
+Redistributed 16 examples to level Medium
+Redistributed 16 examples to level Hard
+Redistributed 16 examples to level VeryHard
+After redistribution: 16 examples at level VeryEasy
+After redistribution: 16 examples at level Easy
+After redistribution: 16 examples at level Medium
+After redistribution: 16 examples at level Hard
+After redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 16 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 16 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 16 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 16 examples at level VeryHard
+Before redistribution: 17 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 17 examples to level VeryEasy
+Redistributed 17 examples to level Easy
+Redistributed 17 examples to level Medium
+Redistributed 17 examples to level Hard
+Redistributed 17 examples to level VeryHard
+After redistribution: 17 examples at level VeryEasy
+After redistribution: 17 examples at level Easy
+After redistribution: 17 examples at level Medium
+After redistribution: 17 examples at level Hard
+After redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 17 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 17 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 17 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 17 examples at level VeryHard
+Before redistribution: 18 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 18 examples to level VeryEasy
+Redistributed 18 examples to level Easy
+Redistributed 18 examples to level Medium
+Redistributed 18 examples to level Hard
+Redistributed 18 examples to level VeryHard
+After redistribution: 18 examples at level VeryEasy
+After redistribution: 18 examples at level Easy
+After redistribution: 18 examples at level Medium
+After redistribution: 18 examples at level Hard
+After redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 18 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 18 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 18 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 18 examples at level VeryHard
+Before redistribution: 19 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 19 examples to level VeryEasy
+Redistributed 19 examples to level Easy
+Redistributed 19 examples to level Medium
+Redistributed 19 examples to level Hard
+Redistributed 19 examples to level VeryHard
+After redistribution: 19 examples at level VeryEasy
+After redistribution: 19 examples at level Easy
+After redistribution: 19 examples at level Medium
+After redistribution: 19 examples at level Hard
+After redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 19 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 19 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 19 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 19 examples at level VeryHard
+Before redistribution: 20 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 20 examples to level VeryEasy
+Redistributed 20 examples to level Easy
+Redistributed 20 examples to level Medium
+Redistributed 20 examples to level Hard
+Redistributed 20 examples to level VeryHard
+After redistribution: 20 examples at level VeryEasy
+After redistribution: 20 examples at level Easy
+After redistribution: 20 examples at level Medium
+After redistribution: 20 examples at level Hard
+After redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 20 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 20 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 20 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 20 examples at level VeryHard
+Before redistribution: 21 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 21 examples to level VeryEasy
+Redistributed 21 examples to level Easy
+Redistributed 21 examples to level Medium
+Redistributed 21 examples to level Hard
+Redistributed 21 examples to level VeryHard
+After redistribution: 21 examples at level VeryEasy
+After redistribution: 21 examples at level Easy
+After redistribution: 21 examples at level Medium
+After redistribution: 21 examples at level Hard
+After redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 21 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 21 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 21 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 21 examples at level VeryHard
+Before redistribution: 22 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 22 examples to level VeryEasy
+Redistributed 22 examples to level Easy
+Redistributed 22 examples to level Medium
+Redistributed 22 examples to level Hard
+Redistributed 22 examples to level VeryHard
+After redistribution: 22 examples at level VeryEasy
+After redistribution: 22 examples at level Easy
+After redistribution: 22 examples at level Medium
+After redistribution: 22 examples at level Hard
+After redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 22 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 22 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 22 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 22 examples at level VeryHard
+Before redistribution: 23 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 23 examples to level VeryEasy
+Redistributed 23 examples to level Easy
+Redistributed 23 examples to level Medium
+Redistributed 23 examples to level Hard
+Redistributed 23 examples to level VeryHard
+After redistribution: 23 examples at level VeryEasy
+After redistribution: 23 examples at level Easy
+After redistribution: 23 examples at level Medium
+After redistribution: 23 examples at level Hard
+After redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 23 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 23 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 23 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 23 examples at level VeryHard
+Before redistribution: 24 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 24 examples to level VeryEasy
+Redistributed 24 examples to level Easy
+Redistributed 24 examples to level Medium
+Redistributed 24 examples to level Hard
+Redistributed 24 examples to level VeryHard
+After redistribution: 24 examples at level VeryEasy
+After redistribution: 24 examples at level Easy
+After redistribution: 24 examples at level Medium
+After redistribution: 24 examples at level Hard
+After redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 24 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 24 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 24 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 24 examples at level VeryHard
+Before redistribution: 25 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 25 examples to level VeryEasy
+Redistributed 25 examples to level Easy
+Redistributed 25 examples to level Medium
+Redistributed 25 examples to level Hard
+Redistributed 25 examples to level VeryHard
+After redistribution: 25 examples at level VeryEasy
+After redistribution: 25 examples at level Easy
+After redistribution: 25 examples at level Medium
+After redistribution: 25 examples at level Hard
+After redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 25 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 25 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 25 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 25 examples at level VeryHard
+Before redistribution: 26 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 26 examples to level VeryEasy
+Redistributed 26 examples to level Easy
+Redistributed 26 examples to level Medium
+Redistributed 26 examples to level Hard
+Redistributed 26 examples to level VeryHard
+After redistribution: 26 examples at level VeryEasy
+After redistribution: 26 examples at level Easy
+After redistribution: 26 examples at level Medium
+After redistribution: 26 examples at level Hard
+After redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 26 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 26 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 26 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 26 examples at level VeryHard
+Before redistribution: 27 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 27 examples to level VeryEasy
+Redistributed 27 examples to level Easy
+Redistributed 27 examples to level Medium
+Redistributed 27 examples to level Hard
+Redistributed 27 examples to level VeryHard
+After redistribution: 27 examples at level VeryEasy
+After redistribution: 27 examples at level Easy
+After redistribution: 27 examples at level Medium
+After redistribution: 27 examples at level Hard
+After redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 27 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 27 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 27 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 27 examples at level VeryHard
+Before redistribution: 28 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 28 examples to level VeryEasy
+Redistributed 28 examples to level Easy
+Redistributed 28 examples to level Medium
+Redistributed 28 examples to level Hard
+Redistributed 28 examples to level VeryHard
+After redistribution: 28 examples at level VeryEasy
+After redistribution: 28 examples at level Easy
+After redistribution: 28 examples at level Medium
+After redistribution: 28 examples at level Hard
+After redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 28 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 28 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 28 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 28 examples at level VeryHard
+Before redistribution: 29 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 29 examples to level VeryEasy
+Redistributed 29 examples to level Easy
+Redistributed 29 examples to level Medium
+Redistributed 29 examples to level Hard
+Redistributed 29 examples to level VeryHard
+After redistribution: 29 examples at level VeryEasy
+After redistribution: 29 examples at level Easy
+After redistribution: 29 examples at level Medium
+After redistribution: 29 examples at level Hard
+After redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 29 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 29 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 29 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 29 examples at level VeryHard
+Before redistribution: 30 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 30 examples to level VeryEasy
+Redistributed 30 examples to level Easy
+Redistributed 30 examples to level Medium
+Redistributed 30 examples to level Hard
+Redistributed 30 examples to level VeryHard
+After redistribution: 30 examples at level VeryEasy
+After redistribution: 30 examples at level Easy
+After redistribution: 30 examples at level Medium
+After redistribution: 30 examples at level Hard
+After redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 30 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 30 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 30 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 30 examples at level VeryHard
+Before redistribution: 31 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 31 examples to level VeryEasy
+Redistributed 31 examples to level Easy
+Redistributed 31 examples to level Medium
+Redistributed 31 examples to level Hard
+Redistributed 31 examples to level VeryHard
+After redistribution: 31 examples at level VeryEasy
+After redistribution: 31 examples at level Easy
+After redistribution: 31 examples at level Medium
+After redistribution: 31 examples at level Hard
+After redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 31 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 31 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 31 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 31 examples at level VeryHard
+Before redistribution: 32 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 32 examples to level VeryEasy
+Redistributed 32 examples to level Easy
+Redistributed 32 examples to level Medium
+Redistributed 32 examples to level Hard
+Redistributed 32 examples to level VeryHard
+After redistribution: 32 examples at level VeryEasy
+After redistribution: 32 examples at level Easy
+After redistribution: 32 examples at level Medium
+After redistribution: 32 examples at level Hard
+After redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 32 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 32 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 32 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 32 examples at level VeryHard
+Before redistribution: 33 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 33 examples to level VeryEasy
+Redistributed 33 examples to level Easy
+Redistributed 33 examples to level Medium
+Redistributed 33 examples to level Hard
+Redistributed 33 examples to level VeryHard
+After redistribution: 33 examples at level VeryEasy
+After redistribution: 33 examples at level Easy
+After redistribution: 33 examples at level Medium
+After redistribution: 33 examples at level Hard
+After redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 33 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 33 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 33 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 34 examples at level Hard
+Before redistribution: 33 examples at level VeryHard
+Before redistribution: 34 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 34 examples at level Hard
+Before redistribution: 34 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 34 examples to level VeryEasy
+Redistributed 34 examples to level Easy
+Redistributed 34 examples to level Medium
+Redistributed 34 examples to level Hard
+Redistributed 34 examples to level VeryHard
+After redistribution: 34 examples at level VeryEasy
+After redistribution: 34 examples at level Easy
+After redistribution: 34 examples at level Medium
+After redistribution: 34 examples at level Hard
+After redistribution: 34 examples at level VeryHard
+Before redistribution: 35 examples at level VeryEasy
+Before redistribution: 34 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 34 examples at level Hard
+Before redistribution: 34 examples at level VeryHard
+Before redistribution: 35 examples at level VeryEasy
+Before redistribution: 35 examples at level Easy
+Before redistribution: 34 examples at level Medium
+Before redistribution: 34 examples at level Hard
+Before redistribution: 34 examples at level VeryHard
+Before redistribution: 35 examples at level VeryEasy
+Before redistribution: 35 examples at level Easy
+Before redistribution: 35 examples at level Medium
+Before redistribution: 34 examples at level Hard
+Before redistribution: 34 examples at level VeryHard
+Before redistribution: 35 examples at level VeryEasy
+Before redistribution: 35 examples at level Easy
+Before redistribution: 35 examples at level Medium
+Before redistribution: 35 examples at level Hard
+Before redistribution: 34 examples at level VeryHard
+Before redistribution: 35 examples at level VeryEasy
+Before redistribution: 35 examples at level Easy
+Before redistribution: 35 examples at level Medium
+Before redistribution: 35 examples at level Hard
+Before redistribution: 35 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 35 examples to level VeryEasy
+Redistributed 35 examples to level Easy
+Redistributed 35 examples to level Medium
+Redistributed 35 examples to level Hard
+Redistributed 35 examples to level VeryHard
+After redistribution: 35 examples at level VeryEasy
+After redistribution: 35 examples at level Easy
+After redistribution: 35 examples at level Medium
+After redistribution: 35 examples at level Hard
+After redistribution: 35 examples at level VeryHard
+Before redistribution: 36 examples at level VeryEasy
+Before redistribution: 35 examples at level Easy
+Before redistribution: 35 examples at level Medium
+Before redistribution: 35 examples at level Hard
+Before redistribution: 35 examples at level VeryHard
+Before redistribution: 36 examples at level VeryEasy
+Before redistribution: 36 examples at level Easy
+Before redistribution: 35 examples at level Medium
+Before redistribution: 35 examples at level Hard
+Before redistribution: 35 examples at level VeryHard
+Before redistribution: 36 examples at level VeryEasy
+Before redistribution: 36 examples at level Easy
+Before redistribution: 36 examples at level Medium
+Before redistribution: 35 examples at level Hard
+Before redistribution: 35 examples at level VeryHard
+Before redistribution: 36 examples at level VeryEasy
+Before redistribution: 36 examples at level Easy
+Before redistribution: 36 examples at level Medium
+Before redistribution: 36 examples at level Hard
+Before redistribution: 35 examples at level VeryHard
+Before redistribution: 36 examples at level VeryEasy
+Before redistribution: 36 examples at level Easy
+Before redistribution: 36 examples at level Medium
+Before redistribution: 36 examples at level Hard
+Before redistribution: 36 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 36 examples to level VeryEasy
+Redistributed 36 examples to level Easy
+Redistributed 36 examples to level Medium
+Redistributed 36 examples to level Hard
+Redistributed 36 examples to level VeryHard
+After redistribution: 36 examples at level VeryEasy
+After redistribution: 36 examples at level Easy
+After redistribution: 36 examples at level Medium
+After redistribution: 36 examples at level Hard
+After redistribution: 36 examples at level VeryHard
+Before redistribution: 37 examples at level VeryEasy
+Before redistribution: 36 examples at level Easy
+Before redistribution: 36 examples at level Medium
+Before redistribution: 36 examples at level Hard
+Before redistribution: 36 examples at level VeryHard
+Before redistribution: 37 examples at level VeryEasy
+Before redistribution: 37 examples at level Easy
+Before redistribution: 36 examples at level Medium
+Before redistribution: 36 examples at level Hard
+Before redistribution: 36 examples at level VeryHard
+Before redistribution: 37 examples at level VeryEasy
+Before redistribution: 37 examples at level Easy
+Before redistribution: 37 examples at level Medium
+Before redistribution: 36 examples at level Hard
+Before redistribution: 36 examples at level VeryHard
+Before redistribution: 37 examples at level VeryEasy
+Before redistribution: 37 examples at level Easy
+Before redistribution: 37 examples at level Medium
+Before redistribution: 37 examples at level Hard
+Before redistribution: 36 examples at level VeryHard
+Before redistribution: 37 examples at level VeryEasy
+Before redistribution: 37 examples at level Easy
+Before redistribution: 37 examples at level Medium
+Before redistribution: 37 examples at level Hard
+Before redistribution: 37 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 37 examples to level VeryEasy
+Redistributed 37 examples to level Easy
+Redistributed 37 examples to level Medium
+Redistributed 37 examples to level Hard
+Redistributed 37 examples to level VeryHard
+After redistribution: 37 examples at level VeryEasy
+After redistribution: 37 examples at level Easy
+After redistribution: 37 examples at level Medium
+After redistribution: 37 examples at level Hard
+After redistribution: 37 examples at level VeryHard
+Before redistribution: 38 examples at level VeryEasy
+Before redistribution: 37 examples at level Easy
+Before redistribution: 37 examples at level Medium
+Before redistribution: 37 examples at level Hard
+Before redistribution: 37 examples at level VeryHard
+Before redistribution: 38 examples at level VeryEasy
+Before redistribution: 38 examples at level Easy
+Before redistribution: 37 examples at level Medium
+Before redistribution: 37 examples at level Hard
+Before redistribution: 37 examples at level VeryHard
+Before redistribution: 38 examples at level VeryEasy
+Before redistribution: 38 examples at level Easy
+Before redistribution: 38 examples at level Medium
+Before redistribution: 37 examples at level Hard
+Before redistribution: 37 examples at level VeryHard
+Before redistribution: 38 examples at level VeryEasy
+Before redistribution: 38 examples at level Easy
+Before redistribution: 38 examples at level Medium
+Before redistribution: 38 examples at level Hard
+Before redistribution: 37 examples at level VeryHard
+Before redistribution: 38 examples at level VeryEasy
+Before redistribution: 38 examples at level Easy
+Before redistribution: 38 examples at level Medium
+Before redistribution: 38 examples at level Hard
+Before redistribution: 38 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 38 examples to level VeryEasy
+Redistributed 38 examples to level Easy
+Redistributed 38 examples to level Medium
+Redistributed 38 examples to level Hard
+Redistributed 38 examples to level VeryHard
+After redistribution: 38 examples at level VeryEasy
+After redistribution: 38 examples at level Easy
+After redistribution: 38 examples at level Medium
+After redistribution: 38 examples at level Hard
+After redistribution: 38 examples at level VeryHard
+Before redistribution: 39 examples at level VeryEasy
+Before redistribution: 38 examples at level Easy
+Before redistribution: 38 examples at level Medium
+Before redistribution: 38 examples at level Hard
+Before redistribution: 38 examples at level VeryHard
+Before redistribution: 39 examples at level VeryEasy
+Before redistribution: 39 examples at level Easy
+Before redistribution: 38 examples at level Medium
+Before redistribution: 38 examples at level Hard
+Before redistribution: 38 examples at level VeryHard
+Before redistribution: 39 examples at level VeryEasy
+Before redistribution: 39 examples at level Easy
+Before redistribution: 39 examples at level Medium
+Before redistribution: 38 examples at level Hard
+Before redistribution: 38 examples at level VeryHard
+Before redistribution: 39 examples at level VeryEasy
+Before redistribution: 39 examples at level Easy
+Before redistribution: 39 examples at level Medium
+Before redistribution: 39 examples at level Hard
+Before redistribution: 38 examples at level VeryHard
+Before redistribution: 39 examples at level VeryEasy
+Before redistribution: 39 examples at level Easy
+Before redistribution: 39 examples at level Medium
+Before redistribution: 39 examples at level Hard
+Before redistribution: 39 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 39 examples to level VeryEasy
+Redistributed 39 examples to level Easy
+Redistributed 39 examples to level Medium
+Redistributed 39 examples to level Hard
+Redistributed 39 examples to level VeryHard
+After redistribution: 39 examples at level VeryEasy
+After redistribution: 39 examples at level Easy
+After redistribution: 39 examples at level Medium
+After redistribution: 39 examples at level Hard
+After redistribution: 39 examples at level VeryHard
+Before redistribution: 40 examples at level VeryEasy
+Before redistribution: 39 examples at level Easy
+Before redistribution: 39 examples at level Medium
+Before redistribution: 39 examples at level Hard
+Before redistribution: 39 examples at level VeryHard
+Before redistribution: 40 examples at level VeryEasy
+Before redistribution: 40 examples at level Easy
+Before redistribution: 39 examples at level Medium
+Before redistribution: 39 examples at level Hard
+Before redistribution: 39 examples at level VeryHard
+Before redistribution: 40 examples at level VeryEasy
+Before redistribution: 40 examples at level Easy
+Before redistribution: 40 examples at level Medium
+Before redistribution: 39 examples at level Hard
+Before redistribution: 39 examples at level VeryHard
+Before redistribution: 40 examples at level VeryEasy
+Before redistribution: 40 examples at level Easy
+Before redistribution: 40 examples at level Medium
+Before redistribution: 40 examples at level Hard
+Before redistribution: 39 examples at level VeryHard
+Before redistribution: 40 examples at level VeryEasy
+Before redistribution: 40 examples at level Easy
+Before redistribution: 40 examples at level Medium
+Before redistribution: 40 examples at level Hard
+Before redistribution: 40 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 40 examples to level VeryEasy
+Redistributed 40 examples to level Easy
+Redistributed 40 examples to level Medium
+Redistributed 40 examples to level Hard
+Redistributed 40 examples to level VeryHard
+After redistribution: 40 examples at level VeryEasy
+After redistribution: 40 examples at level Easy
+After redistribution: 40 examples at level Medium
+After redistribution: 40 examples at level Hard
+After redistribution: 40 examples at level VeryHard
+Before redistribution: 41 examples at level VeryEasy
+Before redistribution: 40 examples at level Easy
+Before redistribution: 40 examples at level Medium
+Before redistribution: 40 examples at level Hard
+Before redistribution: 40 examples at level VeryHard
+Before redistribution: 41 examples at level VeryEasy
+Before redistribution: 41 examples at level Easy
+Before redistribution: 40 examples at level Medium
+Before redistribution: 40 examples at level Hard
+Before redistribution: 40 examples at level VeryHard
+Before redistribution: 41 examples at level VeryEasy
+Before redistribution: 41 examples at level Easy
+Before redistribution: 41 examples at level Medium
+Before redistribution: 40 examples at level Hard
+Before redistribution: 40 examples at level VeryHard
+Before redistribution: 41 examples at level VeryEasy
+Before redistribution: 41 examples at level Easy
+Before redistribution: 41 examples at level Medium
+Before redistribution: 41 examples at level Hard
+Before redistribution: 40 examples at level VeryHard
+Before redistribution: 41 examples at level VeryEasy
+Before redistribution: 41 examples at level Easy
+Before redistribution: 41 examples at level Medium
+Before redistribution: 41 examples at level Hard
+Before redistribution: 41 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 41 examples to level VeryEasy
+Redistributed 41 examples to level Easy
+Redistributed 41 examples to level Medium
+Redistributed 41 examples to level Hard
+Redistributed 41 examples to level VeryHard
+After redistribution: 41 examples at level VeryEasy
+After redistribution: 41 examples at level Easy
+After redistribution: 41 examples at level Medium
+After redistribution: 41 examples at level Hard
+After redistribution: 41 examples at level VeryHard
+Before redistribution: 42 examples at level VeryEasy
+Before redistribution: 41 examples at level Easy
+Before redistribution: 41 examples at level Medium
+Before redistribution: 41 examples at level Hard
+Before redistribution: 41 examples at level VeryHard
+Before redistribution: 42 examples at level VeryEasy
+Before redistribution: 42 examples at level Easy
+Before redistribution: 41 examples at level Medium
+Before redistribution: 41 examples at level Hard
+Before redistribution: 41 examples at level VeryHard
+Before redistribution: 42 examples at level VeryEasy
+Before redistribution: 42 examples at level Easy
+Before redistribution: 42 examples at level Medium
+Before redistribution: 41 examples at level Hard
+Before redistribution: 41 examples at level VeryHard
+Before redistribution: 42 examples at level VeryEasy
+Before redistribution: 42 examples at level Easy
+Before redistribution: 42 examples at level Medium
+Before redistribution: 42 examples at level Hard
+Before redistribution: 41 examples at level VeryHard
+Before redistribution: 42 examples at level VeryEasy
+Before redistribution: 42 examples at level Easy
+Before redistribution: 42 examples at level Medium
+Before redistribution: 42 examples at level Hard
+Before redistribution: 42 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 42 examples to level VeryEasy
+Redistributed 42 examples to level Easy
+Redistributed 42 examples to level Medium
+Redistributed 42 examples to level Hard
+Redistributed 42 examples to level VeryHard
+After redistribution: 42 examples at level VeryEasy
+After redistribution: 42 examples at level Easy
+After redistribution: 42 examples at level Medium
+After redistribution: 42 examples at level Hard
+After redistribution: 42 examples at level VeryHard
+Before redistribution: 43 examples at level VeryEasy
+Before redistribution: 42 examples at level Easy
+Before redistribution: 42 examples at level Medium
+Before redistribution: 42 examples at level Hard
+Before redistribution: 42 examples at level VeryHard
+Before redistribution: 43 examples at level VeryEasy
+Before redistribution: 43 examples at level Easy
+Before redistribution: 42 examples at level Medium
+Before redistribution: 42 examples at level Hard
+Before redistribution: 42 examples at level VeryHard
+Before redistribution: 43 examples at level VeryEasy
+Before redistribution: 43 examples at level Easy
+Before redistribution: 43 examples at level Medium
+Before redistribution: 42 examples at level Hard
+Before redistribution: 42 examples at level VeryHard
+Before redistribution: 43 examples at level VeryEasy
+Before redistribution: 43 examples at level Easy
+Before redistribution: 43 examples at level Medium
+Before redistribution: 43 examples at level Hard
+Before redistribution: 42 examples at level VeryHard
+Before redistribution: 43 examples at level VeryEasy
+Before redistribution: 43 examples at level Easy
+Before redistribution: 43 examples at level Medium
+Before redistribution: 43 examples at level Hard
+Before redistribution: 43 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 43 examples to level VeryEasy
+Redistributed 43 examples to level Easy
+Redistributed 43 examples to level Medium
+Redistributed 43 examples to level Hard
+Redistributed 43 examples to level VeryHard
+After redistribution: 43 examples at level VeryEasy
+After redistribution: 43 examples at level Easy
+After redistribution: 43 examples at level Medium
+After redistribution: 43 examples at level Hard
+After redistribution: 43 examples at level VeryHard
+Before redistribution: 44 examples at level VeryEasy
+Before redistribution: 43 examples at level Easy
+Before redistribution: 43 examples at level Medium
+Before redistribution: 43 examples at level Hard
+Before redistribution: 43 examples at level VeryHard
+Before redistribution: 44 examples at level VeryEasy
+Before redistribution: 44 examples at level Easy
+Before redistribution: 43 examples at level Medium
+Before redistribution: 43 examples at level Hard
+Before redistribution: 43 examples at level VeryHard
+Before redistribution: 44 examples at level VeryEasy
+Before redistribution: 44 examples at level Easy
+Before redistribution: 44 examples at level Medium
+Before redistribution: 43 examples at level Hard
+Before redistribution: 43 examples at level VeryHard
+Before redistribution: 44 examples at level VeryEasy
+Before redistribution: 44 examples at level Easy
+Before redistribution: 44 examples at level Medium
+Before redistribution: 44 examples at level Hard
+Before redistribution: 43 examples at level VeryHard
+Before redistribution: 44 examples at level VeryEasy
+Before redistribution: 44 examples at level Easy
+Before redistribution: 44 examples at level Medium
+Before redistribution: 44 examples at level Hard
+Before redistribution: 44 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 44 examples to level VeryEasy
+Redistributed 44 examples to level Easy
+Redistributed 44 examples to level Medium
+Redistributed 44 examples to level Hard
+Redistributed 44 examples to level VeryHard
+After redistribution: 44 examples at level VeryEasy
+After redistribution: 44 examples at level Easy
+After redistribution: 44 examples at level Medium
+After redistribution: 44 examples at level Hard
+After redistribution: 44 examples at level VeryHard
+Before redistribution: 45 examples at level VeryEasy
+Before redistribution: 44 examples at level Easy
+Before redistribution: 44 examples at level Medium
+Before redistribution: 44 examples at level Hard
+Before redistribution: 44 examples at level VeryHard
+Before redistribution: 45 examples at level VeryEasy
+Before redistribution: 45 examples at level Easy
+Before redistribution: 44 examples at level Medium
+Before redistribution: 44 examples at level Hard
+Before redistribution: 44 examples at level VeryHard
+Before redistribution: 45 examples at level VeryEasy
+Before redistribution: 45 examples at level Easy
+Before redistribution: 45 examples at level Medium
+Before redistribution: 44 examples at level Hard
+Before redistribution: 44 examples at level VeryHard
+Before redistribution: 45 examples at level VeryEasy
+Before redistribution: 45 examples at level Easy
+Before redistribution: 45 examples at level Medium
+Before redistribution: 45 examples at level Hard
+Before redistribution: 44 examples at level VeryHard
+Before redistribution: 45 examples at level VeryEasy
+Before redistribution: 45 examples at level Easy
+Before redistribution: 45 examples at level Medium
+Before redistribution: 45 examples at level Hard
+Before redistribution: 45 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 45 examples to level VeryEasy
+Redistributed 45 examples to level Easy
+Redistributed 45 examples to level Medium
+Redistributed 45 examples to level Hard
+Redistributed 45 examples to level VeryHard
+After redistribution: 45 examples at level VeryEasy
+After redistribution: 45 examples at level Easy
+After redistribution: 45 examples at level Medium
+After redistribution: 45 examples at level Hard
+After redistribution: 45 examples at level VeryHard
+Before redistribution: 46 examples at level VeryEasy
+Before redistribution: 45 examples at level Easy
+Before redistribution: 45 examples at level Medium
+Before redistribution: 45 examples at level Hard
+Before redistribution: 45 examples at level VeryHard
+Before redistribution: 46 examples at level VeryEasy
+Before redistribution: 46 examples at level Easy
+Before redistribution: 45 examples at level Medium
+Before redistribution: 45 examples at level Hard
+Before redistribution: 45 examples at level VeryHard
+Before redistribution: 46 examples at level VeryEasy
+Before redistribution: 46 examples at level Easy
+Before redistribution: 46 examples at level Medium
+Before redistribution: 45 examples at level Hard
+Before redistribution: 45 examples at level VeryHard
+Before redistribution: 46 examples at level VeryEasy
+Before redistribution: 46 examples at level Easy
+Before redistribution: 46 examples at level Medium
+Before redistribution: 46 examples at level Hard
+Before redistribution: 45 examples at level VeryHard
+Before redistribution: 46 examples at level VeryEasy
+Before redistribution: 46 examples at level Easy
+Before redistribution: 46 examples at level Medium
+Before redistribution: 46 examples at level Hard
+Before redistribution: 46 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 46 examples to level VeryEasy
+Redistributed 46 examples to level Easy
+Redistributed 46 examples to level Medium
+Redistributed 46 examples to level Hard
+Redistributed 46 examples to level VeryHard
+After redistribution: 46 examples at level VeryEasy
+After redistribution: 46 examples at level Easy
+After redistribution: 46 examples at level Medium
+After redistribution: 46 examples at level Hard
+After redistribution: 46 examples at level VeryHard
+Before redistribution: 47 examples at level VeryEasy
+Before redistribution: 46 examples at level Easy
+Before redistribution: 46 examples at level Medium
+Before redistribution: 46 examples at level Hard
+Before redistribution: 46 examples at level VeryHard
+Before redistribution: 47 examples at level VeryEasy
+Before redistribution: 47 examples at level Easy
+Before redistribution: 46 examples at level Medium
+Before redistribution: 46 examples at level Hard
+Before redistribution: 46 examples at level VeryHard
+Before redistribution: 47 examples at level VeryEasy
+Before redistribution: 47 examples at level Easy
+Before redistribution: 47 examples at level Medium
+Before redistribution: 46 examples at level Hard
+Before redistribution: 46 examples at level VeryHard
+Before redistribution: 47 examples at level VeryEasy
+Before redistribution: 47 examples at level Easy
+Before redistribution: 47 examples at level Medium
+Before redistribution: 47 examples at level Hard
+Before redistribution: 46 examples at level VeryHard
+Before redistribution: 47 examples at level VeryEasy
+Before redistribution: 47 examples at level Easy
+Before redistribution: 47 examples at level Medium
+Before redistribution: 47 examples at level Hard
+Before redistribution: 47 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 47 examples to level VeryEasy
+Redistributed 47 examples to level Easy
+Redistributed 47 examples to level Medium
+Redistributed 47 examples to level Hard
+Redistributed 47 examples to level VeryHard
+After redistribution: 47 examples at level VeryEasy
+After redistribution: 47 examples at level Easy
+After redistribution: 47 examples at level Medium
+After redistribution: 47 examples at level Hard
+After redistribution: 47 examples at level VeryHard
+Before redistribution: 48 examples at level VeryEasy
+Before redistribution: 47 examples at level Easy
+Before redistribution: 47 examples at level Medium
+Before redistribution: 47 examples at level Hard
+Before redistribution: 47 examples at level VeryHard
+Before redistribution: 48 examples at level VeryEasy
+Before redistribution: 48 examples at level Easy
+Before redistribution: 47 examples at level Medium
+Before redistribution: 47 examples at level Hard
+Before redistribution: 47 examples at level VeryHard
+Before redistribution: 48 examples at level VeryEasy
+Before redistribution: 48 examples at level Easy
+Before redistribution: 48 examples at level Medium
+Before redistribution: 47 examples at level Hard
+Before redistribution: 47 examples at level VeryHard
+Before redistribution: 48 examples at level VeryEasy
+Before redistribution: 48 examples at level Easy
+Before redistribution: 48 examples at level Medium
+Before redistribution: 48 examples at level Hard
+Before redistribution: 47 examples at level VeryHard
+Before redistribution: 48 examples at level VeryEasy
+Before redistribution: 48 examples at level Easy
+Before redistribution: 48 examples at level Medium
+Before redistribution: 48 examples at level Hard
+Before redistribution: 48 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 48 examples to level VeryEasy
+Redistributed 48 examples to level Easy
+Redistributed 48 examples to level Medium
+Redistributed 48 examples to level Hard
+Redistributed 48 examples to level VeryHard
+After redistribution: 48 examples at level VeryEasy
+After redistribution: 48 examples at level Easy
+After redistribution: 48 examples at level Medium
+After redistribution: 48 examples at level Hard
+After redistribution: 48 examples at level VeryHard
+Before redistribution: 49 examples at level VeryEasy
+Before redistribution: 48 examples at level Easy
+Before redistribution: 48 examples at level Medium
+Before redistribution: 48 examples at level Hard
+Before redistribution: 48 examples at level VeryHard
+Before redistribution: 49 examples at level VeryEasy
+Before redistribution: 49 examples at level Easy
+Before redistribution: 48 examples at level Medium
+Before redistribution: 48 examples at level Hard
+Before redistribution: 48 examples at level VeryHard
+Before redistribution: 49 examples at level VeryEasy
+Before redistribution: 49 examples at level Easy
+Before redistribution: 49 examples at level Medium
+Before redistribution: 48 examples at level Hard
+Before redistribution: 48 examples at level VeryHard
+Before redistribution: 49 examples at level VeryEasy
+Before redistribution: 49 examples at level Easy
+Before redistribution: 49 examples at level Medium
+Before redistribution: 49 examples at level Hard
+Before redistribution: 48 examples at level VeryHard
+Before redistribution: 49 examples at level VeryEasy
+Before redistribution: 49 examples at level Easy
+Before redistribution: 49 examples at level Medium
+Before redistribution: 49 examples at level Hard
+Before redistribution: 49 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 49 examples to level VeryEasy
+Redistributed 49 examples to level Easy
+Redistributed 49 examples to level Medium
+Redistributed 49 examples to level Hard
+Redistributed 49 examples to level VeryHard
+After redistribution: 49 examples at level VeryEasy
+After redistribution: 49 examples at level Easy
+After redistribution: 49 examples at level Medium
+After redistribution: 49 examples at level Hard
+After redistribution: 49 examples at level VeryHard
+Before redistribution: 50 examples at level VeryEasy
+Before redistribution: 49 examples at level Easy
+Before redistribution: 49 examples at level Medium
+Before redistribution: 49 examples at level Hard
+Before redistribution: 49 examples at level VeryHard
+Before redistribution: 50 examples at level VeryEasy
+Before redistribution: 50 examples at level Easy
+Before redistribution: 49 examples at level Medium
+Before redistribution: 49 examples at level Hard
+Before redistribution: 49 examples at level VeryHard
+Before redistribution: 50 examples at level VeryEasy
+Before redistribution: 50 examples at level Easy
+Before redistribution: 50 examples at level Medium
+Before redistribution: 49 examples at level Hard
+Before redistribution: 49 examples at level VeryHard
+Before redistribution: 50 examples at level VeryEasy
+Before redistribution: 50 examples at level Easy
+Before redistribution: 50 examples at level Medium
+Before redistribution: 50 examples at level Hard
+Before redistribution: 49 examples at level VeryHard
+Before redistribution: 50 examples at level VeryEasy
+Before redistribution: 50 examples at level Easy
+Before redistribution: 50 examples at level Medium
+Before redistribution: 50 examples at level Hard
+Before redistribution: 50 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 50 examples to level VeryEasy
+Redistributed 50 examples to level Easy
+Redistributed 50 examples to level Medium
+Redistributed 50 examples to level Hard
+Redistributed 50 examples to level VeryHard
+After redistribution: 50 examples at level VeryEasy
+After redistribution: 50 examples at level Easy
+After redistribution: 50 examples at level Medium
+After redistribution: 50 examples at level Hard
+After redistribution: 50 examples at level VeryHard
+Before redistribution: 51 examples at level VeryEasy
+Before redistribution: 50 examples at level Easy
+Before redistribution: 50 examples at level Medium
+Before redistribution: 50 examples at level Hard
+Before redistribution: 50 examples at level VeryHard
+Before redistribution: 51 examples at level VeryEasy
+Before redistribution: 51 examples at level Easy
+Before redistribution: 50 examples at level Medium
+Before redistribution: 50 examples at level Hard
+Before redistribution: 50 examples at level VeryHard
+Before redistribution: 51 examples at level VeryEasy
+Before redistribution: 51 examples at level Easy
+Before redistribution: 51 examples at level Medium
+Before redistribution: 50 examples at level Hard
+Before redistribution: 50 examples at level VeryHard
+Before redistribution: 51 examples at level VeryEasy
+Before redistribution: 51 examples at level Easy
+Before redistribution: 51 examples at level Medium
+Before redistribution: 51 examples at level Hard
+Before redistribution: 50 examples at level VeryHard
+Before redistribution: 51 examples at level VeryEasy
+Before redistribution: 51 examples at level Easy
+Before redistribution: 51 examples at level Medium
+Before redistribution: 51 examples at level Hard
+Before redistribution: 51 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 51 examples to level VeryEasy
+Redistributed 51 examples to level Easy
+Redistributed 51 examples to level Medium
+Redistributed 51 examples to level Hard
+Redistributed 51 examples to level VeryHard
+After redistribution: 51 examples at level VeryEasy
+After redistribution: 51 examples at level Easy
+After redistribution: 51 examples at level Medium
+After redistribution: 51 examples at level Hard
+After redistribution: 51 examples at level VeryHard
+Before redistribution: 52 examples at level VeryEasy
+Before redistribution: 51 examples at level Easy
+Before redistribution: 51 examples at level Medium
+Before redistribution: 51 examples at level Hard
+Before redistribution: 51 examples at level VeryHard
+Before redistribution: 52 examples at level VeryEasy
+Before redistribution: 52 examples at level Easy
+Before redistribution: 51 examples at level Medium
+Before redistribution: 51 examples at level Hard
+Before redistribution: 51 examples at level VeryHard
+Before redistribution: 52 examples at level VeryEasy
+Before redistribution: 52 examples at level Easy
+Before redistribution: 52 examples at level Medium
+Before redistribution: 51 examples at level Hard
+Before redistribution: 51 examples at level VeryHard
+Before redistribution: 52 examples at level VeryEasy
+Before redistribution: 52 examples at level Easy
+Before redistribution: 52 examples at level Medium
+Before redistribution: 52 examples at level Hard
+Before redistribution: 51 examples at level VeryHard
+Before redistribution: 52 examples at level VeryEasy
+Before redistribution: 52 examples at level Easy
+Before redistribution: 52 examples at level Medium
+Before redistribution: 52 examples at level Hard
+Before redistribution: 52 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 52 examples to level VeryEasy
+Redistributed 52 examples to level Easy
+Redistributed 52 examples to level Medium
+Redistributed 52 examples to level Hard
+Redistributed 52 examples to level VeryHard
+After redistribution: 52 examples at level VeryEasy
+After redistribution: 52 examples at level Easy
+After redistribution: 52 examples at level Medium
+After redistribution: 52 examples at level Hard
+After redistribution: 52 examples at level VeryHard
+Before redistribution: 53 examples at level VeryEasy
+Before redistribution: 52 examples at level Easy
+Before redistribution: 52 examples at level Medium
+Before redistribution: 52 examples at level Hard
+Before redistribution: 52 examples at level VeryHard
+Before redistribution: 53 examples at level VeryEasy
+Before redistribution: 53 examples at level Easy
+Before redistribution: 52 examples at level Medium
+Before redistribution: 52 examples at level Hard
+Before redistribution: 52 examples at level VeryHard
+Before redistribution: 53 examples at level VeryEasy
+Before redistribution: 53 examples at level Easy
+Before redistribution: 53 examples at level Medium
+Before redistribution: 52 examples at level Hard
+Before redistribution: 52 examples at level VeryHard
+Before redistribution: 53 examples at level VeryEasy
+Before redistribution: 53 examples at level Easy
+Before redistribution: 53 examples at level Medium
+Before redistribution: 53 examples at level Hard
+Before redistribution: 52 examples at level VeryHard
+Before redistribution: 53 examples at level VeryEasy
+Before redistribution: 53 examples at level Easy
+Before redistribution: 53 examples at level Medium
+Before redistribution: 53 examples at level Hard
+Before redistribution: 53 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 53 examples to level VeryEasy
+Redistributed 53 examples to level Easy
+Redistributed 53 examples to level Medium
+Redistributed 53 examples to level Hard
+Redistributed 53 examples to level VeryHard
+After redistribution: 53 examples at level VeryEasy
+After redistribution: 53 examples at level Easy
+After redistribution: 53 examples at level Medium
+After redistribution: 53 examples at level Hard
+After redistribution: 53 examples at level VeryHard
+Before redistribution: 54 examples at level VeryEasy
+Before redistribution: 53 examples at level Easy
+Before redistribution: 53 examples at level Medium
+Before redistribution: 53 examples at level Hard
+Before redistribution: 53 examples at level VeryHard
+Before redistribution: 54 examples at level VeryEasy
+Before redistribution: 54 examples at level Easy
+Before redistribution: 53 examples at level Medium
+Before redistribution: 53 examples at level Hard
+Before redistribution: 53 examples at level VeryHard
+Before redistribution: 54 examples at level VeryEasy
+Before redistribution: 54 examples at level Easy
+Before redistribution: 54 examples at level Medium
+Before redistribution: 53 examples at level Hard
+Before redistribution: 53 examples at level VeryHard
+Before redistribution: 54 examples at level VeryEasy
+Before redistribution: 54 examples at level Easy
+Before redistribution: 54 examples at level Medium
+Before redistribution: 54 examples at level Hard
+Before redistribution: 53 examples at level VeryHard
+Before redistribution: 54 examples at level VeryEasy
+Before redistribution: 54 examples at level Easy
+Before redistribution: 54 examples at level Medium
+Before redistribution: 54 examples at level Hard
+Before redistribution: 54 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 54 examples to level VeryEasy
+Redistributed 54 examples to level Easy
+Redistributed 54 examples to level Medium
+Redistributed 54 examples to level Hard
+Redistributed 54 examples to level VeryHard
+After redistribution: 54 examples at level VeryEasy
+After redistribution: 54 examples at level Easy
+After redistribution: 54 examples at level Medium
+After redistribution: 54 examples at level Hard
+After redistribution: 54 examples at level VeryHard
+Before redistribution: 55 examples at level VeryEasy
+Before redistribution: 54 examples at level Easy
+Before redistribution: 54 examples at level Medium
+Before redistribution: 54 examples at level Hard
+Before redistribution: 54 examples at level VeryHard
+Before redistribution: 55 examples at level VeryEasy
+Before redistribution: 55 examples at level Easy
+Before redistribution: 54 examples at level Medium
+Before redistribution: 54 examples at level Hard
+Before redistribution: 54 examples at level VeryHard
+Before redistribution: 55 examples at level VeryEasy
+Before redistribution: 55 examples at level Easy
+Before redistribution: 55 examples at level Medium
+Before redistribution: 54 examples at level Hard
+Before redistribution: 54 examples at level VeryHard
+Before redistribution: 55 examples at level VeryEasy
+Before redistribution: 55 examples at level Easy
+Before redistribution: 55 examples at level Medium
+Before redistribution: 55 examples at level Hard
+Before redistribution: 54 examples at level VeryHard
+Before redistribution: 55 examples at level VeryEasy
+Before redistribution: 55 examples at level Easy
+Before redistribution: 55 examples at level Medium
+Before redistribution: 55 examples at level Hard
+Before redistribution: 55 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 55 examples to level VeryEasy
+Redistributed 55 examples to level Easy
+Redistributed 55 examples to level Medium
+Redistributed 55 examples to level Hard
+Redistributed 55 examples to level VeryHard
+After redistribution: 55 examples at level VeryEasy
+After redistribution: 55 examples at level Easy
+After redistribution: 55 examples at level Medium
+After redistribution: 55 examples at level Hard
+After redistribution: 55 examples at level VeryHard
+Before redistribution: 56 examples at level VeryEasy
+Before redistribution: 55 examples at level Easy
+Before redistribution: 55 examples at level Medium
+Before redistribution: 55 examples at level Hard
+Before redistribution: 55 examples at level VeryHard
+Before redistribution: 56 examples at level VeryEasy
+Before redistribution: 56 examples at level Easy
+Before redistribution: 55 examples at level Medium
+Before redistribution: 55 examples at level Hard
+Before redistribution: 55 examples at level VeryHard
+Before redistribution: 56 examples at level VeryEasy
+Before redistribution: 56 examples at level Easy
+Before redistribution: 56 examples at level Medium
+Before redistribution: 55 examples at level Hard
+Before redistribution: 55 examples at level VeryHard
+Before redistribution: 56 examples at level VeryEasy
+Before redistribution: 56 examples at level Easy
+Before redistribution: 56 examples at level Medium
+Before redistribution: 56 examples at level Hard
+Before redistribution: 55 examples at level VeryHard
+Before redistribution: 56 examples at level VeryEasy
+Before redistribution: 56 examples at level Easy
+Before redistribution: 56 examples at level Medium
+Before redistribution: 56 examples at level Hard
+Before redistribution: 56 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 56 examples to level VeryEasy
+Redistributed 56 examples to level Easy
+Redistributed 56 examples to level Medium
+Redistributed 56 examples to level Hard
+Redistributed 56 examples to level VeryHard
+After redistribution: 56 examples at level VeryEasy
+After redistribution: 56 examples at level Easy
+After redistribution: 56 examples at level Medium
+After redistribution: 56 examples at level Hard
+After redistribution: 56 examples at level VeryHard
+Before redistribution: 57 examples at level VeryEasy
+Before redistribution: 56 examples at level Easy
+Before redistribution: 56 examples at level Medium
+Before redistribution: 56 examples at level Hard
+Before redistribution: 56 examples at level VeryHard
+Before redistribution: 57 examples at level VeryEasy
+Before redistribution: 57 examples at level Easy
+Before redistribution: 56 examples at level Medium
+Before redistribution: 56 examples at level Hard
+Before redistribution: 56 examples at level VeryHard
+Before redistribution: 57 examples at level VeryEasy
+Before redistribution: 57 examples at level Easy
+Before redistribution: 57 examples at level Medium
+Before redistribution: 56 examples at level Hard
+Before redistribution: 56 examples at level VeryHard
+Before redistribution: 57 examples at level VeryEasy
+Before redistribution: 57 examples at level Easy
+Before redistribution: 57 examples at level Medium
+Before redistribution: 57 examples at level Hard
+Before redistribution: 56 examples at level VeryHard
+Before redistribution: 57 examples at level VeryEasy
+Before redistribution: 57 examples at level Easy
+Before redistribution: 57 examples at level Medium
+Before redistribution: 57 examples at level Hard
+Before redistribution: 57 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 57 examples to level VeryEasy
+Redistributed 57 examples to level Easy
+Redistributed 57 examples to level Medium
+Redistributed 57 examples to level Hard
+Redistributed 57 examples to level VeryHard
+After redistribution: 57 examples at level VeryEasy
+After redistribution: 57 examples at level Easy
+After redistribution: 57 examples at level Medium
+After redistribution: 57 examples at level Hard
+After redistribution: 57 examples at level VeryHard
+Before redistribution: 58 examples at level VeryEasy
+Before redistribution: 57 examples at level Easy
+Before redistribution: 57 examples at level Medium
+Before redistribution: 57 examples at level Hard
+Before redistribution: 57 examples at level VeryHard
+Before redistribution: 58 examples at level VeryEasy
+Before redistribution: 58 examples at level Easy
+Before redistribution: 57 examples at level Medium
+Before redistribution: 57 examples at level Hard
+Before redistribution: 57 examples at level VeryHard
+Before redistribution: 58 examples at level VeryEasy
+Before redistribution: 58 examples at level Easy
+Before redistribution: 58 examples at level Medium
+Before redistribution: 57 examples at level Hard
+Before redistribution: 57 examples at level VeryHard
+Before redistribution: 58 examples at level VeryEasy
+Before redistribution: 58 examples at level Easy
+Before redistribution: 58 examples at level Medium
+Before redistribution: 58 examples at level Hard
+Before redistribution: 57 examples at level VeryHard
+Before redistribution: 58 examples at level VeryEasy
+Before redistribution: 58 examples at level Easy
+Before redistribution: 58 examples at level Medium
+Before redistribution: 58 examples at level Hard
+Before redistribution: 58 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 58 examples to level VeryEasy
+Redistributed 58 examples to level Easy
+Redistributed 58 examples to level Medium
+Redistributed 58 examples to level Hard
+Redistributed 58 examples to level VeryHard
+After redistribution: 58 examples at level VeryEasy
+After redistribution: 58 examples at level Easy
+After redistribution: 58 examples at level Medium
+After redistribution: 58 examples at level Hard
+After redistribution: 58 examples at level VeryHard
+Before redistribution: 59 examples at level VeryEasy
+Before redistribution: 58 examples at level Easy
+Before redistribution: 58 examples at level Medium
+Before redistribution: 58 examples at level Hard
+Before redistribution: 58 examples at level VeryHard
+Before redistribution: 59 examples at level VeryEasy
+Before redistribution: 59 examples at level Easy
+Before redistribution: 58 examples at level Medium
+Before redistribution: 58 examples at level Hard
+Before redistribution: 58 examples at level VeryHard
+Before redistribution: 59 examples at level VeryEasy
+Before redistribution: 59 examples at level Easy
+Before redistribution: 59 examples at level Medium
+Before redistribution: 58 examples at level Hard
+Before redistribution: 58 examples at level VeryHard
+Before redistribution: 59 examples at level VeryEasy
+Before redistribution: 59 examples at level Easy
+Before redistribution: 59 examples at level Medium
+Before redistribution: 59 examples at level Hard
+Before redistribution: 58 examples at level VeryHard
+Before redistribution: 59 examples at level VeryEasy
+Before redistribution: 59 examples at level Easy
+Before redistribution: 59 examples at level Medium
+Before redistribution: 59 examples at level Hard
+Before redistribution: 59 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 59 examples to level VeryEasy
+Redistributed 59 examples to level Easy
+Redistributed 59 examples to level Medium
+Redistributed 59 examples to level Hard
+Redistributed 59 examples to level VeryHard
+After redistribution: 59 examples at level VeryEasy
+After redistribution: 59 examples at level Easy
+After redistribution: 59 examples at level Medium
+After redistribution: 59 examples at level Hard
+After redistribution: 59 examples at level VeryHard
+Before redistribution: 60 examples at level VeryEasy
+Before redistribution: 59 examples at level Easy
+Before redistribution: 59 examples at level Medium
+Before redistribution: 59 examples at level Hard
+Before redistribution: 59 examples at level VeryHard
+Before redistribution: 60 examples at level VeryEasy
+Before redistribution: 60 examples at level Easy
+Before redistribution: 59 examples at level Medium
+Before redistribution: 59 examples at level Hard
+Before redistribution: 59 examples at level VeryHard
+Before redistribution: 60 examples at level VeryEasy
+Before redistribution: 60 examples at level Easy
+Before redistribution: 60 examples at level Medium
+Before redistribution: 59 examples at level Hard
+Before redistribution: 59 examples at level VeryHard
+Before redistribution: 60 examples at level VeryEasy
+Before redistribution: 60 examples at level Easy
+Before redistribution: 60 examples at level Medium
+Before redistribution: 60 examples at level Hard
+Before redistribution: 59 examples at level VeryHard
+Before redistribution: 60 examples at level VeryEasy
+Before redistribution: 60 examples at level Easy
+Before redistribution: 60 examples at level Medium
+Before redistribution: 60 examples at level Hard
+Before redistribution: 60 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 60 examples to level VeryEasy
+Redistributed 60 examples to level Easy
+Redistributed 60 examples to level Medium
+Redistributed 60 examples to level Hard
+Redistributed 60 examples to level VeryHard
+After redistribution: 60 examples at level VeryEasy
+After redistribution: 60 examples at level Easy
+After redistribution: 60 examples at level Medium
+After redistribution: 60 examples at level Hard
+After redistribution: 60 examples at level VeryHard
+Before redistribution: 61 examples at level VeryEasy
+Before redistribution: 60 examples at level Easy
+Before redistribution: 60 examples at level Medium
+Before redistribution: 60 examples at level Hard
+Before redistribution: 60 examples at level VeryHard
+Before redistribution: 61 examples at level VeryEasy
+Before redistribution: 61 examples at level Easy
+Before redistribution: 60 examples at level Medium
+Before redistribution: 60 examples at level Hard
+Before redistribution: 60 examples at level VeryHard
+Before redistribution: 61 examples at level VeryEasy
+Before redistribution: 61 examples at level Easy
+Before redistribution: 61 examples at level Medium
+Before redistribution: 60 examples at level Hard
+Before redistribution: 60 examples at level VeryHard
+Before redistribution: 61 examples at level VeryEasy
+Before redistribution: 61 examples at level Easy
+Before redistribution: 61 examples at level Medium
+Before redistribution: 61 examples at level Hard
+Before redistribution: 60 examples at level VeryHard
+Before redistribution: 61 examples at level VeryEasy
+Before redistribution: 61 examples at level Easy
+Before redistribution: 61 examples at level Medium
+Before redistribution: 61 examples at level Hard
+Before redistribution: 61 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 61 examples to level VeryEasy
+Redistributed 61 examples to level Easy
+Redistributed 61 examples to level Medium
+Redistributed 61 examples to level Hard
+Redistributed 61 examples to level VeryHard
+After redistribution: 61 examples at level VeryEasy
+After redistribution: 61 examples at level Easy
+After redistribution: 61 examples at level Medium
+After redistribution: 61 examples at level Hard
+After redistribution: 61 examples at level VeryHard
+Before redistribution: 62 examples at level VeryEasy
+Before redistribution: 61 examples at level Easy
+Before redistribution: 61 examples at level Medium
+Before redistribution: 61 examples at level Hard
+Before redistribution: 61 examples at level VeryHard
+Before redistribution: 62 examples at level VeryEasy
+Before redistribution: 62 examples at level Easy
+Before redistribution: 61 examples at level Medium
+Before redistribution: 61 examples at level Hard
+Before redistribution: 61 examples at level VeryHard
+Before redistribution: 62 examples at level VeryEasy
+Before redistribution: 62 examples at level Easy
+Before redistribution: 62 examples at level Medium
+Before redistribution: 61 examples at level Hard
+Before redistribution: 61 examples at level VeryHard
+Before redistribution: 62 examples at level VeryEasy
+Before redistribution: 62 examples at level Easy
+Before redistribution: 62 examples at level Medium
+Before redistribution: 62 examples at level Hard
+Before redistribution: 61 examples at level VeryHard
+Before redistribution: 62 examples at level VeryEasy
+Before redistribution: 62 examples at level Easy
+Before redistribution: 62 examples at level Medium
+Before redistribution: 62 examples at level Hard
+Before redistribution: 62 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 62 examples to level VeryEasy
+Redistributed 62 examples to level Easy
+Redistributed 62 examples to level Medium
+Redistributed 62 examples to level Hard
+Redistributed 62 examples to level VeryHard
+After redistribution: 62 examples at level VeryEasy
+After redistribution: 62 examples at level Easy
+After redistribution: 62 examples at level Medium
+After redistribution: 62 examples at level Hard
+After redistribution: 62 examples at level VeryHard
+Before redistribution: 63 examples at level VeryEasy
+Before redistribution: 62 examples at level Easy
+Before redistribution: 62 examples at level Medium
+Before redistribution: 62 examples at level Hard
+Before redistribution: 62 examples at level VeryHard
+Before redistribution: 63 examples at level VeryEasy
+Before redistribution: 63 examples at level Easy
+Before redistribution: 62 examples at level Medium
+Before redistribution: 62 examples at level Hard
+Before redistribution: 62 examples at level VeryHard
+Before redistribution: 63 examples at level VeryEasy
+Before redistribution: 63 examples at level Easy
+Before redistribution: 63 examples at level Medium
+Before redistribution: 62 examples at level Hard
+Before redistribution: 62 examples at level VeryHard
+Before redistribution: 63 examples at level VeryEasy
+Before redistribution: 63 examples at level Easy
+Before redistribution: 63 examples at level Medium
+Before redistribution: 63 examples at level Hard
+Before redistribution: 62 examples at level VeryHard
+Before redistribution: 63 examples at level VeryEasy
+Before redistribution: 63 examples at level Easy
+Before redistribution: 63 examples at level Medium
+Before redistribution: 63 examples at level Hard
+Before redistribution: 63 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 63 examples to level VeryEasy
+Redistributed 63 examples to level Easy
+Redistributed 63 examples to level Medium
+Redistributed 63 examples to level Hard
+Redistributed 63 examples to level VeryHard
+After redistribution: 63 examples at level VeryEasy
+After redistribution: 63 examples at level Easy
+After redistribution: 63 examples at level Medium
+After redistribution: 63 examples at level Hard
+After redistribution: 63 examples at level VeryHard
+Before redistribution: 64 examples at level VeryEasy
+Before redistribution: 63 examples at level Easy
+Before redistribution: 63 examples at level Medium
+Before redistribution: 63 examples at level Hard
+Before redistribution: 63 examples at level VeryHard
+Before redistribution: 64 examples at level VeryEasy
+Before redistribution: 64 examples at level Easy
+Before redistribution: 63 examples at level Medium
+Before redistribution: 63 examples at level Hard
+Before redistribution: 63 examples at level VeryHard
+Before redistribution: 64 examples at level VeryEasy
+Before redistribution: 64 examples at level Easy
+Before redistribution: 64 examples at level Medium
+Before redistribution: 63 examples at level Hard
+Before redistribution: 63 examples at level VeryHard
+Before redistribution: 64 examples at level VeryEasy
+Before redistribution: 64 examples at level Easy
+Before redistribution: 64 examples at level Medium
+Before redistribution: 64 examples at level Hard
+Before redistribution: 63 examples at level VeryHard
+Before redistribution: 64 examples at level VeryEasy
+Before redistribution: 64 examples at level Easy
+Before redistribution: 64 examples at level Medium
+Before redistribution: 64 examples at level Hard
+Before redistribution: 64 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 64 examples to level VeryEasy
+Redistributed 64 examples to level Easy
+Redistributed 64 examples to level Medium
+Redistributed 64 examples to level Hard
+Redistributed 64 examples to level VeryHard
+After redistribution: 64 examples at level VeryEasy
+After redistribution: 64 examples at level Easy
+After redistribution: 64 examples at level Medium
+After redistribution: 64 examples at level Hard
+After redistribution: 64 examples at level VeryHard
+Before redistribution: 65 examples at level VeryEasy
+Before redistribution: 64 examples at level Easy
+Before redistribution: 64 examples at level Medium
+Before redistribution: 64 examples at level Hard
+Before redistribution: 64 examples at level VeryHard
+Before redistribution: 65 examples at level VeryEasy
+Before redistribution: 65 examples at level Easy
+Before redistribution: 64 examples at level Medium
+Before redistribution: 64 examples at level Hard
+Before redistribution: 64 examples at level VeryHard
+Before redistribution: 65 examples at level VeryEasy
+Before redistribution: 65 examples at level Easy
+Before redistribution: 65 examples at level Medium
+Before redistribution: 64 examples at level Hard
+Before redistribution: 64 examples at level VeryHard
+Before redistribution: 65 examples at level VeryEasy
+Before redistribution: 65 examples at level Easy
+Before redistribution: 65 examples at level Medium
+Before redistribution: 65 examples at level Hard
+Before redistribution: 64 examples at level VeryHard
+Before redistribution: 65 examples at level VeryEasy
+Before redistribution: 65 examples at level Easy
+Before redistribution: 65 examples at level Medium
+Before redistribution: 65 examples at level Hard
+Before redistribution: 65 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 65 examples to level VeryEasy
+Redistributed 65 examples to level Easy
+Redistributed 65 examples to level Medium
+Redistributed 65 examples to level Hard
+Redistributed 65 examples to level VeryHard
+After redistribution: 65 examples at level VeryEasy
+After redistribution: 65 examples at level Easy
+After redistribution: 65 examples at level Medium
+After redistribution: 65 examples at level Hard
+After redistribution: 65 examples at level VeryHard
+Before redistribution: 66 examples at level VeryEasy
+Before redistribution: 65 examples at level Easy
+Before redistribution: 65 examples at level Medium
+Before redistribution: 65 examples at level Hard
+Before redistribution: 65 examples at level VeryHard
+Before redistribution: 66 examples at level VeryEasy
+Before redistribution: 66 examples at level Easy
+Before redistribution: 65 examples at level Medium
+Before redistribution: 65 examples at level Hard
+Before redistribution: 65 examples at level VeryHard
+Before redistribution: 66 examples at level VeryEasy
+Before redistribution: 66 examples at level Easy
+Before redistribution: 66 examples at level Medium
+Before redistribution: 65 examples at level Hard
+Before redistribution: 65 examples at level VeryHard
+Before redistribution: 66 examples at level VeryEasy
+Before redistribution: 66 examples at level Easy
+Before redistribution: 66 examples at level Medium
+Before redistribution: 66 examples at level Hard
+Before redistribution: 65 examples at level VeryHard
+Before redistribution: 66 examples at level VeryEasy
+Before redistribution: 66 examples at level Easy
+Before redistribution: 66 examples at level Medium
+Before redistribution: 66 examples at level Hard
+Before redistribution: 66 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 66 examples to level VeryEasy
+Redistributed 66 examples to level Easy
+Redistributed 66 examples to level Medium
+Redistributed 66 examples to level Hard
+Redistributed 66 examples to level VeryHard
+After redistribution: 66 examples at level VeryEasy
+After redistribution: 66 examples at level Easy
+After redistribution: 66 examples at level Medium
+After redistribution: 66 examples at level Hard
+After redistribution: 66 examples at level VeryHard
+Before redistribution: 67 examples at level VeryEasy
+Before redistribution: 66 examples at level Easy
+Before redistribution: 66 examples at level Medium
+Before redistribution: 66 examples at level Hard
+Before redistribution: 66 examples at level VeryHard
+Before redistribution: 67 examples at level VeryEasy
+Before redistribution: 67 examples at level Easy
+Before redistribution: 66 examples at level Medium
+Before redistribution: 66 examples at level Hard
+Before redistribution: 66 examples at level VeryHard
+Before redistribution: 67 examples at level VeryEasy
+Before redistribution: 67 examples at level Easy
+Before redistribution: 67 examples at level Medium
+Before redistribution: 66 examples at level Hard
+Before redistribution: 66 examples at level VeryHard
+Before redistribution: 67 examples at level VeryEasy
+Before redistribution: 67 examples at level Easy
+Before redistribution: 67 examples at level Medium
+Before redistribution: 67 examples at level Hard
+Before redistribution: 66 examples at level VeryHard
+Before redistribution: 67 examples at level VeryEasy
+Before redistribution: 67 examples at level Easy
+Before redistribution: 67 examples at level Medium
+Before redistribution: 67 examples at level Hard
+Before redistribution: 67 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 67 examples to level VeryEasy
+Redistributed 67 examples to level Easy
+Redistributed 67 examples to level Medium
+Redistributed 67 examples to level Hard
+Redistributed 67 examples to level VeryHard
+After redistribution: 67 examples at level VeryEasy
+After redistribution: 67 examples at level Easy
+After redistribution: 67 examples at level Medium
+After redistribution: 67 examples at level Hard
+After redistribution: 67 examples at level VeryHard
+Before redistribution: 68 examples at level VeryEasy
+Before redistribution: 67 examples at level Easy
+Before redistribution: 67 examples at level Medium
+Before redistribution: 67 examples at level Hard
+Before redistribution: 67 examples at level VeryHard
+Before redistribution: 68 examples at level VeryEasy
+Before redistribution: 68 examples at level Easy
+Before redistribution: 67 examples at level Medium
+Before redistribution: 67 examples at level Hard
+Before redistribution: 67 examples at level VeryHard
+Before redistribution: 68 examples at level VeryEasy
+Before redistribution: 68 examples at level Easy
+Before redistribution: 68 examples at level Medium
+Before redistribution: 67 examples at level Hard
+Before redistribution: 67 examples at level VeryHard
+Before redistribution: 68 examples at level VeryEasy
+Before redistribution: 68 examples at level Easy
+Before redistribution: 68 examples at level Medium
+Before redistribution: 68 examples at level Hard
+Before redistribution: 67 examples at level VeryHard
+Before redistribution: 68 examples at level VeryEasy
+Before redistribution: 68 examples at level Easy
+Before redistribution: 68 examples at level Medium
+Before redistribution: 68 examples at level Hard
+Before redistribution: 68 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 68 examples to level VeryEasy
+Redistributed 68 examples to level Easy
+Redistributed 68 examples to level Medium
+Redistributed 68 examples to level Hard
+Redistributed 68 examples to level VeryHard
+After redistribution: 68 examples at level VeryEasy
+After redistribution: 68 examples at level Easy
+After redistribution: 68 examples at level Medium
+After redistribution: 68 examples at level Hard
+After redistribution: 68 examples at level VeryHard
+Before redistribution: 69 examples at level VeryEasy
+Before redistribution: 68 examples at level Easy
+Before redistribution: 68 examples at level Medium
+Before redistribution: 68 examples at level Hard
+Before redistribution: 68 examples at level VeryHard
+Before redistribution: 69 examples at level VeryEasy
+Before redistribution: 69 examples at level Easy
+Before redistribution: 68 examples at level Medium
+Before redistribution: 68 examples at level Hard
+Before redistribution: 68 examples at level VeryHard
+Before redistribution: 69 examples at level VeryEasy
+Before redistribution: 69 examples at level Easy
+Before redistribution: 69 examples at level Medium
+Before redistribution: 68 examples at level Hard
+Before redistribution: 68 examples at level VeryHard
+Before redistribution: 69 examples at level VeryEasy
+Before redistribution: 69 examples at level Easy
+Before redistribution: 69 examples at level Medium
+Before redistribution: 69 examples at level Hard
+Before redistribution: 68 examples at level VeryHard
+Before redistribution: 69 examples at level VeryEasy
+Before redistribution: 69 examples at level Easy
+Before redistribution: 69 examples at level Medium
+Before redistribution: 69 examples at level Hard
+Before redistribution: 69 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 69 examples to level VeryEasy
+Redistributed 69 examples to level Easy
+Redistributed 69 examples to level Medium
+Redistributed 69 examples to level Hard
+Redistributed 69 examples to level VeryHard
+After redistribution: 69 examples at level VeryEasy
+After redistribution: 69 examples at level Easy
+After redistribution: 69 examples at level Medium
+After redistribution: 69 examples at level Hard
+After redistribution: 69 examples at level VeryHard
+Before redistribution: 70 examples at level VeryEasy
+Before redistribution: 69 examples at level Easy
+Before redistribution: 69 examples at level Medium
+Before redistribution: 69 examples at level Hard
+Before redistribution: 69 examples at level VeryHard
+Before redistribution: 70 examples at level VeryEasy
+Before redistribution: 70 examples at level Easy
+Before redistribution: 69 examples at level Medium
+Before redistribution: 69 examples at level Hard
+Before redistribution: 69 examples at level VeryHard
+Before redistribution: 70 examples at level VeryEasy
+Before redistribution: 70 examples at level Easy
+Before redistribution: 70 examples at level Medium
+Before redistribution: 69 examples at level Hard
+Before redistribution: 69 examples at level VeryHard
+Before redistribution: 70 examples at level VeryEasy
+Before redistribution: 70 examples at level Easy
+Before redistribution: 70 examples at level Medium
+Before redistribution: 70 examples at level Hard
+Before redistribution: 69 examples at level VeryHard
+Before redistribution: 70 examples at level VeryEasy
+Before redistribution: 70 examples at level Easy
+Before redistribution: 70 examples at level Medium
+Before redistribution: 70 examples at level Hard
+Before redistribution: 70 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 70 examples to level VeryEasy
+Redistributed 70 examples to level Easy
+Redistributed 70 examples to level Medium
+Redistributed 70 examples to level Hard
+Redistributed 70 examples to level VeryHard
+After redistribution: 70 examples at level VeryEasy
+After redistribution: 70 examples at level Easy
+After redistribution: 70 examples at level Medium
+After redistribution: 70 examples at level Hard
+After redistribution: 70 examples at level VeryHard
+Before redistribution: 71 examples at level VeryEasy
+Before redistribution: 70 examples at level Easy
+Before redistribution: 70 examples at level Medium
+Before redistribution: 70 examples at level Hard
+Before redistribution: 70 examples at level VeryHard
+Before redistribution: 71 examples at level VeryEasy
+Before redistribution: 71 examples at level Easy
+Before redistribution: 70 examples at level Medium
+Before redistribution: 70 examples at level Hard
+Before redistribution: 70 examples at level VeryHard
+Before redistribution: 71 examples at level VeryEasy
+Before redistribution: 71 examples at level Easy
+Before redistribution: 71 examples at level Medium
+Before redistribution: 70 examples at level Hard
+Before redistribution: 70 examples at level VeryHard
+Before redistribution: 71 examples at level VeryEasy
+Before redistribution: 71 examples at level Easy
+Before redistribution: 71 examples at level Medium
+Before redistribution: 71 examples at level Hard
+Before redistribution: 70 examples at level VeryHard
+Before redistribution: 71 examples at level VeryEasy
+Before redistribution: 71 examples at level Easy
+Before redistribution: 71 examples at level Medium
+Before redistribution: 71 examples at level Hard
+Before redistribution: 71 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 71 examples to level VeryEasy
+Redistributed 71 examples to level Easy
+Redistributed 71 examples to level Medium
+Redistributed 71 examples to level Hard
+Redistributed 71 examples to level VeryHard
+After redistribution: 71 examples at level VeryEasy
+After redistribution: 71 examples at level Easy
+After redistribution: 71 examples at level Medium
+After redistribution: 71 examples at level Hard
+After redistribution: 71 examples at level VeryHard
+Before redistribution: 72 examples at level VeryEasy
+Before redistribution: 71 examples at level Easy
+Before redistribution: 71 examples at level Medium
+Before redistribution: 71 examples at level Hard
+Before redistribution: 71 examples at level VeryHard
+Before redistribution: 72 examples at level VeryEasy
+Before redistribution: 72 examples at level Easy
+Before redistribution: 71 examples at level Medium
+Before redistribution: 71 examples at level Hard
+Before redistribution: 71 examples at level VeryHard
+Before redistribution: 72 examples at level VeryEasy
+Before redistribution: 72 examples at level Easy
+Before redistribution: 72 examples at level Medium
+Before redistribution: 71 examples at level Hard
+Before redistribution: 71 examples at level VeryHard
+Before redistribution: 72 examples at level VeryEasy
+Before redistribution: 72 examples at level Easy
+Before redistribution: 72 examples at level Medium
+Before redistribution: 72 examples at level Hard
+Before redistribution: 71 examples at level VeryHard
+Before redistribution: 72 examples at level VeryEasy
+Before redistribution: 72 examples at level Easy
+Before redistribution: 72 examples at level Medium
+Before redistribution: 72 examples at level Hard
+Before redistribution: 72 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 72 examples to level VeryEasy
+Redistributed 72 examples to level Easy
+Redistributed 72 examples to level Medium
+Redistributed 72 examples to level Hard
+Redistributed 72 examples to level VeryHard
+After redistribution: 72 examples at level VeryEasy
+After redistribution: 72 examples at level Easy
+After redistribution: 72 examples at level Medium
+After redistribution: 72 examples at level Hard
+After redistribution: 72 examples at level VeryHard
+Before redistribution: 73 examples at level VeryEasy
+Before redistribution: 72 examples at level Easy
+Before redistribution: 72 examples at level Medium
+Before redistribution: 72 examples at level Hard
+Before redistribution: 72 examples at level VeryHard
+Before redistribution: 73 examples at level VeryEasy
+Before redistribution: 73 examples at level Easy
+Before redistribution: 72 examples at level Medium
+Before redistribution: 72 examples at level Hard
+Before redistribution: 72 examples at level VeryHard
+Before redistribution: 73 examples at level VeryEasy
+Before redistribution: 73 examples at level Easy
+Before redistribution: 73 examples at level Medium
+Before redistribution: 72 examples at level Hard
+Before redistribution: 72 examples at level VeryHard
+Before redistribution: 73 examples at level VeryEasy
+Before redistribution: 73 examples at level Easy
+Before redistribution: 73 examples at level Medium
+Before redistribution: 73 examples at level Hard
+Before redistribution: 72 examples at level VeryHard
+Before redistribution: 73 examples at level VeryEasy
+Before redistribution: 73 examples at level Easy
+Before redistribution: 73 examples at level Medium
+Before redistribution: 73 examples at level Hard
+Before redistribution: 73 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 73 examples to level VeryEasy
+Redistributed 73 examples to level Easy
+Redistributed 73 examples to level Medium
+Redistributed 73 examples to level Hard
+Redistributed 73 examples to level VeryHard
+After redistribution: 73 examples at level VeryEasy
+After redistribution: 73 examples at level Easy
+After redistribution: 73 examples at level Medium
+After redistribution: 73 examples at level Hard
+After redistribution: 73 examples at level VeryHard
+Before redistribution: 74 examples at level VeryEasy
+Before redistribution: 73 examples at level Easy
+Before redistribution: 73 examples at level Medium
+Before redistribution: 73 examples at level Hard
+Before redistribution: 73 examples at level VeryHard
+Before redistribution: 74 examples at level VeryEasy
+Before redistribution: 74 examples at level Easy
+Before redistribution: 73 examples at level Medium
+Before redistribution: 73 examples at level Hard
+Before redistribution: 73 examples at level VeryHard
+Before redistribution: 74 examples at level VeryEasy
+Before redistribution: 74 examples at level Easy
+Before redistribution: 74 examples at level Medium
+Before redistribution: 73 examples at level Hard
+Before redistribution: 73 examples at level VeryHard
+Before redistribution: 74 examples at level VeryEasy
+Before redistribution: 74 examples at level Easy
+Before redistribution: 74 examples at level Medium
+Before redistribution: 74 examples at level Hard
+Before redistribution: 73 examples at level VeryHard
+Before redistribution: 74 examples at level VeryEasy
+Before redistribution: 74 examples at level Easy
+Before redistribution: 74 examples at level Medium
+Before redistribution: 74 examples at level Hard
+Before redistribution: 74 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 74 examples to level VeryEasy
+Redistributed 74 examples to level Easy
+Redistributed 74 examples to level Medium
+Redistributed 74 examples to level Hard
+Redistributed 74 examples to level VeryHard
+After redistribution: 74 examples at level VeryEasy
+After redistribution: 74 examples at level Easy
+After redistribution: 74 examples at level Medium
+After redistribution: 74 examples at level Hard
+After redistribution: 74 examples at level VeryHard
+Before redistribution: 75 examples at level VeryEasy
+Before redistribution: 74 examples at level Easy
+Before redistribution: 74 examples at level Medium
+Before redistribution: 74 examples at level Hard
+Before redistribution: 74 examples at level VeryHard
+Before redistribution: 75 examples at level VeryEasy
+Before redistribution: 75 examples at level Easy
+Before redistribution: 74 examples at level Medium
+Before redistribution: 74 examples at level Hard
+Before redistribution: 74 examples at level VeryHard
+Before redistribution: 75 examples at level VeryEasy
+Before redistribution: 75 examples at level Easy
+Before redistribution: 75 examples at level Medium
+Before redistribution: 74 examples at level Hard
+Before redistribution: 74 examples at level VeryHard
+Before redistribution: 75 examples at level VeryEasy
+Before redistribution: 75 examples at level Easy
+Before redistribution: 75 examples at level Medium
+Before redistribution: 75 examples at level Hard
+Before redistribution: 74 examples at level VeryHard
+Before redistribution: 75 examples at level VeryEasy
+Before redistribution: 75 examples at level Easy
+Before redistribution: 75 examples at level Medium
+Before redistribution: 75 examples at level Hard
+Before redistribution: 75 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 75 examples to level VeryEasy
+Redistributed 75 examples to level Easy
+Redistributed 75 examples to level Medium
+Redistributed 75 examples to level Hard
+Redistributed 75 examples to level VeryHard
+After redistribution: 75 examples at level VeryEasy
+After redistribution: 75 examples at level Easy
+After redistribution: 75 examples at level Medium
+After redistribution: 75 examples at level Hard
+After redistribution: 75 examples at level VeryHard
+Before redistribution: 76 examples at level VeryEasy
+Before redistribution: 75 examples at level Easy
+Before redistribution: 75 examples at level Medium
+Before redistribution: 75 examples at level Hard
+Before redistribution: 75 examples at level VeryHard
+Before redistribution: 76 examples at level VeryEasy
+Before redistribution: 76 examples at level Easy
+Before redistribution: 75 examples at level Medium
+Before redistribution: 75 examples at level Hard
+Before redistribution: 75 examples at level VeryHard
+Before redistribution: 76 examples at level VeryEasy
+Before redistribution: 76 examples at level Easy
+Before redistribution: 76 examples at level Medium
+Before redistribution: 75 examples at level Hard
+Before redistribution: 75 examples at level VeryHard
+Before redistribution: 76 examples at level VeryEasy
+Before redistribution: 76 examples at level Easy
+Before redistribution: 76 examples at level Medium
+Before redistribution: 76 examples at level Hard
+Before redistribution: 75 examples at level VeryHard
+Before redistribution: 76 examples at level VeryEasy
+Before redistribution: 76 examples at level Easy
+Before redistribution: 76 examples at level Medium
+Before redistribution: 76 examples at level Hard
+Before redistribution: 76 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 76 examples to level VeryEasy
+Redistributed 76 examples to level Easy
+Redistributed 76 examples to level Medium
+Redistributed 76 examples to level Hard
+Redistributed 76 examples to level VeryHard
+After redistribution: 76 examples at level VeryEasy
+After redistribution: 76 examples at level Easy
+After redistribution: 76 examples at level Medium
+After redistribution: 76 examples at level Hard
+After redistribution: 76 examples at level VeryHard
+Before redistribution: 77 examples at level VeryEasy
+Before redistribution: 76 examples at level Easy
+Before redistribution: 76 examples at level Medium
+Before redistribution: 76 examples at level Hard
+Before redistribution: 76 examples at level VeryHard
+Before redistribution: 77 examples at level VeryEasy
+Before redistribution: 77 examples at level Easy
+Before redistribution: 76 examples at level Medium
+Before redistribution: 76 examples at level Hard
+Before redistribution: 76 examples at level VeryHard
+Before redistribution: 77 examples at level VeryEasy
+Before redistribution: 77 examples at level Easy
+Before redistribution: 77 examples at level Medium
+Before redistribution: 76 examples at level Hard
+Before redistribution: 76 examples at level VeryHard
+Before redistribution: 77 examples at level VeryEasy
+Before redistribution: 77 examples at level Easy
+Before redistribution: 77 examples at level Medium
+Before redistribution: 77 examples at level Hard
+Before redistribution: 76 examples at level VeryHard
+Before redistribution: 77 examples at level VeryEasy
+Before redistribution: 77 examples at level Easy
+Before redistribution: 77 examples at level Medium
+Before redistribution: 77 examples at level Hard
+Before redistribution: 77 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 77 examples to level VeryEasy
+Redistributed 77 examples to level Easy
+Redistributed 77 examples to level Medium
+Redistributed 77 examples to level Hard
+Redistributed 77 examples to level VeryHard
+After redistribution: 77 examples at level VeryEasy
+After redistribution: 77 examples at level Easy
+After redistribution: 77 examples at level Medium
+After redistribution: 77 examples at level Hard
+After redistribution: 77 examples at level VeryHard
+Before redistribution: 78 examples at level VeryEasy
+Before redistribution: 77 examples at level Easy
+Before redistribution: 77 examples at level Medium
+Before redistribution: 77 examples at level Hard
+Before redistribution: 77 examples at level VeryHard
+Before redistribution: 78 examples at level VeryEasy
+Before redistribution: 78 examples at level Easy
+Before redistribution: 77 examples at level Medium
+Before redistribution: 77 examples at level Hard
+Before redistribution: 77 examples at level VeryHard
+Before redistribution: 78 examples at level VeryEasy
+Before redistribution: 78 examples at level Easy
+Before redistribution: 78 examples at level Medium
+Before redistribution: 77 examples at level Hard
+Before redistribution: 77 examples at level VeryHard
+Before redistribution: 78 examples at level VeryEasy
+Before redistribution: 78 examples at level Easy
+Before redistribution: 78 examples at level Medium
+Before redistribution: 78 examples at level Hard
+Before redistribution: 77 examples at level VeryHard
+Before redistribution: 78 examples at level VeryEasy
+Before redistribution: 78 examples at level Easy
+Before redistribution: 78 examples at level Medium
+Before redistribution: 78 examples at level Hard
+Before redistribution: 78 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 78 examples to level VeryEasy
+Redistributed 78 examples to level Easy
+Redistributed 78 examples to level Medium
+Redistributed 78 examples to level Hard
+Redistributed 78 examples to level VeryHard
+After redistribution: 78 examples at level VeryEasy
+After redistribution: 78 examples at level Easy
+After redistribution: 78 examples at level Medium
+After redistribution: 78 examples at level Hard
+After redistribution: 78 examples at level VeryHard
+Before redistribution: 79 examples at level VeryEasy
+Before redistribution: 78 examples at level Easy
+Before redistribution: 78 examples at level Medium
+Before redistribution: 78 examples at level Hard
+Before redistribution: 78 examples at level VeryHard
+Before redistribution: 79 examples at level VeryEasy
+Before redistribution: 79 examples at level Easy
+Before redistribution: 78 examples at level Medium
+Before redistribution: 78 examples at level Hard
+Before redistribution: 78 examples at level VeryHard
+Before redistribution: 79 examples at level VeryEasy
+Before redistribution: 79 examples at level Easy
+Before redistribution: 79 examples at level Medium
+Before redistribution: 78 examples at level Hard
+Before redistribution: 78 examples at level VeryHard
+Before redistribution: 79 examples at level VeryEasy
+Before redistribution: 79 examples at level Easy
+Before redistribution: 79 examples at level Medium
+Before redistribution: 79 examples at level Hard
+Before redistribution: 78 examples at level VeryHard
+Before redistribution: 79 examples at level VeryEasy
+Before redistribution: 79 examples at level Easy
+Before redistribution: 79 examples at level Medium
+Before redistribution: 79 examples at level Hard
+Before redistribution: 79 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 79 examples to level VeryEasy
+Redistributed 79 examples to level Easy
+Redistributed 79 examples to level Medium
+Redistributed 79 examples to level Hard
+Redistributed 79 examples to level VeryHard
+After redistribution: 79 examples at level VeryEasy
+After redistribution: 79 examples at level Easy
+After redistribution: 79 examples at level Medium
+After redistribution: 79 examples at level Hard
+After redistribution: 79 examples at level VeryHard
+Before redistribution: 80 examples at level VeryEasy
+Before redistribution: 79 examples at level Easy
+Before redistribution: 79 examples at level Medium
+Before redistribution: 79 examples at level Hard
+Before redistribution: 79 examples at level VeryHard
+Before redistribution: 80 examples at level VeryEasy
+Before redistribution: 80 examples at level Easy
+Before redistribution: 79 examples at level Medium
+Before redistribution: 79 examples at level Hard
+Before redistribution: 79 examples at level VeryHard
+Before redistribution: 80 examples at level VeryEasy
+Before redistribution: 80 examples at level Easy
+Before redistribution: 80 examples at level Medium
+Before redistribution: 79 examples at level Hard
+Before redistribution: 79 examples at level VeryHard
+Before redistribution: 80 examples at level VeryEasy
+Before redistribution: 80 examples at level Easy
+Before redistribution: 80 examples at level Medium
+Before redistribution: 80 examples at level Hard
+Before redistribution: 79 examples at level VeryHard
+Before redistribution: 80 examples at level VeryEasy
+Before redistribution: 80 examples at level Easy
+Before redistribution: 80 examples at level Medium
+Before redistribution: 80 examples at level Hard
+Before redistribution: 80 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 80 examples to level VeryEasy
+Redistributed 80 examples to level Easy
+Redistributed 80 examples to level Medium
+Redistributed 80 examples to level Hard
+Redistributed 80 examples to level VeryHard
+After redistribution: 80 examples at level VeryEasy
+After redistribution: 80 examples at level Easy
+After redistribution: 80 examples at level Medium
+After redistribution: 80 examples at level Hard
+After redistribution: 80 examples at level VeryHard
+Before redistribution: 81 examples at level VeryEasy
+Before redistribution: 80 examples at level Easy
+Before redistribution: 80 examples at level Medium
+Before redistribution: 80 examples at level Hard
+Before redistribution: 80 examples at level VeryHard
+Before redistribution: 81 examples at level VeryEasy
+Before redistribution: 81 examples at level Easy
+Before redistribution: 80 examples at level Medium
+Before redistribution: 80 examples at level Hard
+Before redistribution: 80 examples at level VeryHard
+Before redistribution: 81 examples at level VeryEasy
+Before redistribution: 81 examples at level Easy
+Before redistribution: 81 examples at level Medium
+Before redistribution: 80 examples at level Hard
+Before redistribution: 80 examples at level VeryHard
+Before redistribution: 81 examples at level VeryEasy
+Before redistribution: 81 examples at level Easy
+Before redistribution: 81 examples at level Medium
+Before redistribution: 81 examples at level Hard
+Before redistribution: 80 examples at level VeryHard
+Before redistribution: 81 examples at level VeryEasy
+Before redistribution: 81 examples at level Easy
+Before redistribution: 81 examples at level Medium
+Before redistribution: 81 examples at level Hard
+Before redistribution: 81 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 81 examples to level VeryEasy
+Redistributed 81 examples to level Easy
+Redistributed 81 examples to level Medium
+Redistributed 81 examples to level Hard
+Redistributed 81 examples to level VeryHard
+After redistribution: 81 examples at level VeryEasy
+After redistribution: 81 examples at level Easy
+After redistribution: 81 examples at level Medium
+After redistribution: 81 examples at level Hard
+After redistribution: 81 examples at level VeryHard
+Before redistribution: 82 examples at level VeryEasy
+Before redistribution: 81 examples at level Easy
+Before redistribution: 81 examples at level Medium
+Before redistribution: 81 examples at level Hard
+Before redistribution: 81 examples at level VeryHard
+Before redistribution: 82 examples at level VeryEasy
+Before redistribution: 82 examples at level Easy
+Before redistribution: 81 examples at level Medium
+Before redistribution: 81 examples at level Hard
+Before redistribution: 81 examples at level VeryHard
+Before redistribution: 82 examples at level VeryEasy
+Before redistribution: 82 examples at level Easy
+Before redistribution: 82 examples at level Medium
+Before redistribution: 81 examples at level Hard
+Before redistribution: 81 examples at level VeryHard
+Before redistribution: 82 examples at level VeryEasy
+Before redistribution: 82 examples at level Easy
+Before redistribution: 82 examples at level Medium
+Before redistribution: 82 examples at level Hard
+Before redistribution: 81 examples at level VeryHard
+Before redistribution: 82 examples at level VeryEasy
+Before redistribution: 82 examples at level Easy
+Before redistribution: 82 examples at level Medium
+Before redistribution: 82 examples at level Hard
+Before redistribution: 82 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 82 examples to level VeryEasy
+Redistributed 82 examples to level Easy
+Redistributed 82 examples to level Medium
+Redistributed 82 examples to level Hard
+Redistributed 82 examples to level VeryHard
+After redistribution: 82 examples at level VeryEasy
+After redistribution: 82 examples at level Easy
+After redistribution: 82 examples at level Medium
+After redistribution: 82 examples at level Hard
+After redistribution: 82 examples at level VeryHard
+Before redistribution: 83 examples at level VeryEasy
+Before redistribution: 82 examples at level Easy
+Before redistribution: 82 examples at level Medium
+Before redistribution: 82 examples at level Hard
+Before redistribution: 82 examples at level VeryHard
+Before redistribution: 83 examples at level VeryEasy
+Before redistribution: 83 examples at level Easy
+Before redistribution: 82 examples at level Medium
+Before redistribution: 82 examples at level Hard
+Before redistribution: 82 examples at level VeryHard
+Before redistribution: 83 examples at level VeryEasy
+Before redistribution: 83 examples at level Easy
+Before redistribution: 83 examples at level Medium
+Before redistribution: 82 examples at level Hard
+Before redistribution: 82 examples at level VeryHard
+Before redistribution: 83 examples at level VeryEasy
+Before redistribution: 83 examples at level Easy
+Before redistribution: 83 examples at level Medium
+Before redistribution: 83 examples at level Hard
+Before redistribution: 82 examples at level VeryHard
+Before redistribution: 83 examples at level VeryEasy
+Before redistribution: 83 examples at level Easy
+Before redistribution: 83 examples at level Medium
+Before redistribution: 83 examples at level Hard
+Before redistribution: 83 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 83 examples to level VeryEasy
+Redistributed 83 examples to level Easy
+Redistributed 83 examples to level Medium
+Redistributed 83 examples to level Hard
+Redistributed 83 examples to level VeryHard
+After redistribution: 83 examples at level VeryEasy
+After redistribution: 83 examples at level Easy
+After redistribution: 83 examples at level Medium
+After redistribution: 83 examples at level Hard
+After redistribution: 83 examples at level VeryHard
+Before redistribution: 84 examples at level VeryEasy
+Before redistribution: 83 examples at level Easy
+Before redistribution: 83 examples at level Medium
+Before redistribution: 83 examples at level Hard
+Before redistribution: 83 examples at level VeryHard
+Before redistribution: 84 examples at level VeryEasy
+Before redistribution: 84 examples at level Easy
+Before redistribution: 83 examples at level Medium
+Before redistribution: 83 examples at level Hard
+Before redistribution: 83 examples at level VeryHard
+Before redistribution: 84 examples at level VeryEasy
+Before redistribution: 84 examples at level Easy
+Before redistribution: 84 examples at level Medium
+Before redistribution: 83 examples at level Hard
+Before redistribution: 83 examples at level VeryHard
+Before redistribution: 84 examples at level VeryEasy
+Before redistribution: 84 examples at level Easy
+Before redistribution: 84 examples at level Medium
+Before redistribution: 84 examples at level Hard
+Before redistribution: 83 examples at level VeryHard
+Before redistribution: 84 examples at level VeryEasy
+Before redistribution: 84 examples at level Easy
+Before redistribution: 84 examples at level Medium
+Before redistribution: 84 examples at level Hard
+Before redistribution: 84 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 84 examples to level VeryEasy
+Redistributed 84 examples to level Easy
+Redistributed 84 examples to level Medium
+Redistributed 84 examples to level Hard
+Redistributed 84 examples to level VeryHard
+After redistribution: 84 examples at level VeryEasy
+After redistribution: 84 examples at level Easy
+After redistribution: 84 examples at level Medium
+After redistribution: 84 examples at level Hard
+After redistribution: 84 examples at level VeryHard
+Before redistribution: 85 examples at level VeryEasy
+Before redistribution: 84 examples at level Easy
+Before redistribution: 84 examples at level Medium
+Before redistribution: 84 examples at level Hard
+Before redistribution: 84 examples at level VeryHard
+Before redistribution: 85 examples at level VeryEasy
+Before redistribution: 85 examples at level Easy
+Before redistribution: 84 examples at level Medium
+Before redistribution: 84 examples at level Hard
+Before redistribution: 84 examples at level VeryHard
+Before redistribution: 85 examples at level VeryEasy
+Before redistribution: 85 examples at level Easy
+Before redistribution: 85 examples at level Medium
+Before redistribution: 84 examples at level Hard
+Before redistribution: 84 examples at level VeryHard
+Before redistribution: 85 examples at level VeryEasy
+Before redistribution: 85 examples at level Easy
+Before redistribution: 85 examples at level Medium
+Before redistribution: 85 examples at level Hard
+Before redistribution: 84 examples at level VeryHard
+Before redistribution: 85 examples at level VeryEasy
+Before redistribution: 85 examples at level Easy
+Before redistribution: 85 examples at level Medium
+Before redistribution: 85 examples at level Hard
+Before redistribution: 85 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 85 examples to level VeryEasy
+Redistributed 85 examples to level Easy
+Redistributed 85 examples to level Medium
+Redistributed 85 examples to level Hard
+Redistributed 85 examples to level VeryHard
+After redistribution: 85 examples at level VeryEasy
+After redistribution: 85 examples at level Easy
+After redistribution: 85 examples at level Medium
+After redistribution: 85 examples at level Hard
+After redistribution: 85 examples at level VeryHard
+Before redistribution: 86 examples at level VeryEasy
+Before redistribution: 85 examples at level Easy
+Before redistribution: 85 examples at level Medium
+Before redistribution: 85 examples at level Hard
+Before redistribution: 85 examples at level VeryHard
+Before redistribution: 86 examples at level VeryEasy
+Before redistribution: 86 examples at level Easy
+Before redistribution: 85 examples at level Medium
+Before redistribution: 85 examples at level Hard
+Before redistribution: 85 examples at level VeryHard
+Before redistribution: 86 examples at level VeryEasy
+Before redistribution: 86 examples at level Easy
+Before redistribution: 86 examples at level Medium
+Before redistribution: 85 examples at level Hard
+Before redistribution: 85 examples at level VeryHard
+Before redistribution: 86 examples at level VeryEasy
+Before redistribution: 86 examples at level Easy
+Before redistribution: 86 examples at level Medium
+Before redistribution: 86 examples at level Hard
+Before redistribution: 85 examples at level VeryHard
+Before redistribution: 86 examples at level VeryEasy
+Before redistribution: 86 examples at level Easy
+Before redistribution: 86 examples at level Medium
+Before redistribution: 86 examples at level Hard
+Before redistribution: 86 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 86 examples to level VeryEasy
+Redistributed 86 examples to level Easy
+Redistributed 86 examples to level Medium
+Redistributed 86 examples to level Hard
+Redistributed 86 examples to level VeryHard
+After redistribution: 86 examples at level VeryEasy
+After redistribution: 86 examples at level Easy
+After redistribution: 86 examples at level Medium
+After redistribution: 86 examples at level Hard
+After redistribution: 86 examples at level VeryHard
+Before redistribution: 87 examples at level VeryEasy
+Before redistribution: 86 examples at level Easy
+Before redistribution: 86 examples at level Medium
+Before redistribution: 86 examples at level Hard
+Before redistribution: 86 examples at level VeryHard
+Before redistribution: 87 examples at level VeryEasy
+Before redistribution: 87 examples at level Easy
+Before redistribution: 86 examples at level Medium
+Before redistribution: 86 examples at level Hard
+Before redistribution: 86 examples at level VeryHard
+Before redistribution: 87 examples at level VeryEasy
+Before redistribution: 87 examples at level Easy
+Before redistribution: 87 examples at level Medium
+Before redistribution: 86 examples at level Hard
+Before redistribution: 86 examples at level VeryHard
+Before redistribution: 87 examples at level VeryEasy
+Before redistribution: 87 examples at level Easy
+Before redistribution: 87 examples at level Medium
+Before redistribution: 87 examples at level Hard
+Before redistribution: 86 examples at level VeryHard
+Before redistribution: 87 examples at level VeryEasy
+Before redistribution: 87 examples at level Easy
+Before redistribution: 87 examples at level Medium
+Before redistribution: 87 examples at level Hard
+Before redistribution: 87 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 87 examples to level VeryEasy
+Redistributed 87 examples to level Easy
+Redistributed 87 examples to level Medium
+Redistributed 87 examples to level Hard
+Redistributed 87 examples to level VeryHard
+After redistribution: 87 examples at level VeryEasy
+After redistribution: 87 examples at level Easy
+After redistribution: 87 examples at level Medium
+After redistribution: 87 examples at level Hard
+After redistribution: 87 examples at level VeryHard
+Before redistribution: 88 examples at level VeryEasy
+Before redistribution: 87 examples at level Easy
+Before redistribution: 87 examples at level Medium
+Before redistribution: 87 examples at level Hard
+Before redistribution: 87 examples at level VeryHard
+Before redistribution: 88 examples at level VeryEasy
+Before redistribution: 88 examples at level Easy
+Before redistribution: 87 examples at level Medium
+Before redistribution: 87 examples at level Hard
+Before redistribution: 87 examples at level VeryHard
+Before redistribution: 88 examples at level VeryEasy
+Before redistribution: 88 examples at level Easy
+Before redistribution: 88 examples at level Medium
+Before redistribution: 87 examples at level Hard
+Before redistribution: 87 examples at level VeryHard
+Before redistribution: 88 examples at level VeryEasy
+Before redistribution: 88 examples at level Easy
+Before redistribution: 88 examples at level Medium
+Before redistribution: 88 examples at level Hard
+Before redistribution: 87 examples at level VeryHard
+Before redistribution: 88 examples at level VeryEasy
+Before redistribution: 88 examples at level Easy
+Before redistribution: 88 examples at level Medium
+Before redistribution: 88 examples at level Hard
+Before redistribution: 88 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 88 examples to level VeryEasy
+Redistributed 88 examples to level Easy
+Redistributed 88 examples to level Medium
+Redistributed 88 examples to level Hard
+Redistributed 88 examples to level VeryHard
+After redistribution: 88 examples at level VeryEasy
+After redistribution: 88 examples at level Easy
+After redistribution: 88 examples at level Medium
+After redistribution: 88 examples at level Hard
+After redistribution: 88 examples at level VeryHard
+Before redistribution: 89 examples at level VeryEasy
+Before redistribution: 88 examples at level Easy
+Before redistribution: 88 examples at level Medium
+Before redistribution: 88 examples at level Hard
+Before redistribution: 88 examples at level VeryHard
+Before redistribution: 89 examples at level VeryEasy
+Before redistribution: 89 examples at level Easy
+Before redistribution: 88 examples at level Medium
+Before redistribution: 88 examples at level Hard
+Before redistribution: 88 examples at level VeryHard
+Before redistribution: 89 examples at level VeryEasy
+Before redistribution: 89 examples at level Easy
+Before redistribution: 89 examples at level Medium
+Before redistribution: 88 examples at level Hard
+Before redistribution: 88 examples at level VeryHard
+Before redistribution: 89 examples at level VeryEasy
+Before redistribution: 89 examples at level Easy
+Before redistribution: 89 examples at level Medium
+Before redistribution: 89 examples at level Hard
+Before redistribution: 88 examples at level VeryHard
+Before redistribution: 89 examples at level VeryEasy
+Before redistribution: 89 examples at level Easy
+Before redistribution: 89 examples at level Medium
+Before redistribution: 89 examples at level Hard
+Before redistribution: 89 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 89 examples to level VeryEasy
+Redistributed 89 examples to level Easy
+Redistributed 89 examples to level Medium
+Redistributed 89 examples to level Hard
+Redistributed 89 examples to level VeryHard
+After redistribution: 89 examples at level VeryEasy
+After redistribution: 89 examples at level Easy
+After redistribution: 89 examples at level Medium
+After redistribution: 89 examples at level Hard
+After redistribution: 89 examples at level VeryHard
+Before redistribution: 90 examples at level VeryEasy
+Before redistribution: 89 examples at level Easy
+Before redistribution: 89 examples at level Medium
+Before redistribution: 89 examples at level Hard
+Before redistribution: 89 examples at level VeryHard
+Before redistribution: 90 examples at level VeryEasy
+Before redistribution: 90 examples at level Easy
+Before redistribution: 89 examples at level Medium
+Before redistribution: 89 examples at level Hard
+Before redistribution: 89 examples at level VeryHard
+Before redistribution: 90 examples at level VeryEasy
+Before redistribution: 90 examples at level Easy
+Before redistribution: 90 examples at level Medium
+Before redistribution: 89 examples at level Hard
+Before redistribution: 89 examples at level VeryHard
+Before redistribution: 90 examples at level VeryEasy
+Before redistribution: 90 examples at level Easy
+Before redistribution: 90 examples at level Medium
+Before redistribution: 90 examples at level Hard
+Before redistribution: 89 examples at level VeryHard
+Before redistribution: 90 examples at level VeryEasy
+Before redistribution: 90 examples at level Easy
+Before redistribution: 90 examples at level Medium
+Before redistribution: 90 examples at level Hard
+Before redistribution: 90 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 90 examples to level VeryEasy
+Redistributed 90 examples to level Easy
+Redistributed 90 examples to level Medium
+Redistributed 90 examples to level Hard
+Redistributed 90 examples to level VeryHard
+After redistribution: 90 examples at level VeryEasy
+After redistribution: 90 examples at level Easy
+After redistribution: 90 examples at level Medium
+After redistribution: 90 examples at level Hard
+After redistribution: 90 examples at level VeryHard
+Before redistribution: 91 examples at level VeryEasy
+Before redistribution: 90 examples at level Easy
+Before redistribution: 90 examples at level Medium
+Before redistribution: 90 examples at level Hard
+Before redistribution: 90 examples at level VeryHard
+Before redistribution: 91 examples at level VeryEasy
+Before redistribution: 91 examples at level Easy
+Before redistribution: 90 examples at level Medium
+Before redistribution: 90 examples at level Hard
+Before redistribution: 90 examples at level VeryHard
+Before redistribution: 91 examples at level VeryEasy
+Before redistribution: 91 examples at level Easy
+Before redistribution: 91 examples at level Medium
+Before redistribution: 90 examples at level Hard
+Before redistribution: 90 examples at level VeryHard
+Before redistribution: 91 examples at level VeryEasy
+Before redistribution: 91 examples at level Easy
+Before redistribution: 91 examples at level Medium
+Before redistribution: 91 examples at level Hard
+Before redistribution: 90 examples at level VeryHard
+Before redistribution: 91 examples at level VeryEasy
+Before redistribution: 91 examples at level Easy
+Before redistribution: 91 examples at level Medium
+Before redistribution: 91 examples at level Hard
+Before redistribution: 91 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 91 examples to level VeryEasy
+Redistributed 91 examples to level Easy
+Redistributed 91 examples to level Medium
+Redistributed 91 examples to level Hard
+Redistributed 91 examples to level VeryHard
+After redistribution: 91 examples at level VeryEasy
+After redistribution: 91 examples at level Easy
+After redistribution: 91 examples at level Medium
+After redistribution: 91 examples at level Hard
+After redistribution: 91 examples at level VeryHard
+Before redistribution: 92 examples at level VeryEasy
+Before redistribution: 91 examples at level Easy
+Before redistribution: 91 examples at level Medium
+Before redistribution: 91 examples at level Hard
+Before redistribution: 91 examples at level VeryHard
+Before redistribution: 92 examples at level VeryEasy
+Before redistribution: 92 examples at level Easy
+Before redistribution: 91 examples at level Medium
+Before redistribution: 91 examples at level Hard
+Before redistribution: 91 examples at level VeryHard
+Before redistribution: 92 examples at level VeryEasy
+Before redistribution: 92 examples at level Easy
+Before redistribution: 92 examples at level Medium
+Before redistribution: 91 examples at level Hard
+Before redistribution: 91 examples at level VeryHard
+Before redistribution: 92 examples at level VeryEasy
+Before redistribution: 92 examples at level Easy
+Before redistribution: 92 examples at level Medium
+Before redistribution: 92 examples at level Hard
+Before redistribution: 91 examples at level VeryHard
+Before redistribution: 92 examples at level VeryEasy
+Before redistribution: 92 examples at level Easy
+Before redistribution: 92 examples at level Medium
+Before redistribution: 92 examples at level Hard
+Before redistribution: 92 examples at level VeryHard
+Performing example redistribution across difficulty levels...
+Redistributed 92 examples to level VeryEasy
+Redistributed 92 examples to level Easy
+Redistributed 92 examples to level Medium
+Redistributed 92 examples to level Hard
+Redistributed 92 examples to level VeryHard
+After redistribution: 92 examples at level VeryEasy
+After redistribution: 92 examples at level Easy
+After redistribution: 92 examples at level Medium
+After redistribution: 92 examples at level Hard
+After redistribution: 92 examples at level VeryHard
+Before redistribution: 93 examples at level VeryEasy
+Before redistribution: 92 examples at level Easy
+Before redistribution: 92 examples at level Medium
+Before redistribution: 92 examples at level Hard
+Before redistribution: 92 examples at level VeryHard
+Before redistribution: 93 examples at level VeryEasy
+Before redistribution: 93 examples at level Easy
+Before redistribution: 92 examples at level Medium
+Before redistribution: 92 examples at level Hard
+Before redistribution: 92 examples at level VeryHard
+Before redistribution: 93 examples at level VeryEasy
+Before redistribution: 93 examples at level Easy
+Before redistribution: 93 examples at level Medium
+Before redistribution: 92 examples at level Hard
+Before redistribution: 92 examples at level VeryHard
+Forcing redistribution of curriculum examples...
+Redistributed 92 examples to level VeryEasy
+Redistributed 92 examples to level Easy
+Redistributed 92 examples to level Medium
+Redistributed 92 examples to level Hard
+Redistributed 95 examples to level VeryHard
+After redistribution: 92 examples at level VeryEasy
+After redistribution: 92 examples at level Easy
+After redistribution: 92 examples at level Medium
+After redistribution: 92 examples at level Hard
+After redistribution: 95 examples at level VeryHard
+Curriculum initialization complete with 423 examples
+  Batch 1/4 - Loss: 6.077637 - Level: VeryEasy
+  Batch 4/4 - Loss: 6.009410 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 349, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxon}#place e...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 353, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time als garden l ...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 355, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where verut 2reache...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 355, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing pcoul...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 367, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to healonce gn is...
+Epoch 1/10 completed in 9.985945037s
+  Loss: 6.042960
+  Perplexity: 404.90
+  Accuracy: 13.52%
+  Repetition score: 0.90
+  Fluency score: 0.88
+  Quality score: 0.39
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 181, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the dirt again found 6dad was ...
+
+Sample generation:
+Prompt: "The"
+Generated: "the dirt again found 6dad was houuxury nosgusting vould for erfuare lucbe theirlook u;imsting alwaalbayed girlooked chedUNKbamorducks udogBOSlucy Juxpet owbig places gardseway march"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch1
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch1
+Checkpoint saved successfully
+Epoch 2/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.973888 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.908529 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 335, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxhearloyal d...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 352, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time wn were se pe...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 351, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where man^march se ...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 388, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing skim*...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 366, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to bafound seever...
+Epoch 2/10 completed in 1.18354423s
+  Loss: 5.943154
+  Perplexity: 378.47
+  Accuracy: 16.33%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.43
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 175, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the like l ce look 3o ch caref...
+
+Sample generation:
+Prompt: "The"
+Generated: "the like l ce look 3o ch careful Wound around theidn an ywhat mom 6cathN.thing ducks found saw om the Red kehome sury o almom t always cathppy inside 7take ke<down keeperPADal"
+
+Epoch 3/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.882413 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.816187 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 318, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxdidn tim mo...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 356, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time sgusting owne...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 347, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where ces reful loy...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 351, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing yreac...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 311, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to lo8her backLfo...
+Epoch 3/10 completed in 1.259345489s
+  Loss: 5.853828
+  Perplexity: 355.39
+  Accuracy: 19.77%
+  Repetition score: 1.00
+  Fluency score: 0.96
+  Quality score: 0.44
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 152, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the ning that ppy Qname mdown-...
+
+Sample generation:
+Prompt: "The"
+Generated: "the ning that ppy Qname mdown-lotmom|tim liwith ywhere ll place dxdad 3xand kces good dirbig all big fiwho jon lithomanimals pend Cake,DBupond Xere with"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch3
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch3
+Checkpoint saved successfully
+Epoch 4/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.792528 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.706060 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 365, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxwas er xof ...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 342, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time b can here fi...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 369, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where me places muc...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 333, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing le pp...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 327, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to to id her reac...
+Epoch 4/10 completed in 1.239021664s
+  Loss: 5.765125
+  Perplexity: 335.08
+  Accuracy: 26.40%
+  Repetition score: 0.90
+  Fluency score: 0.88
+  Quality score: 0.44
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 183, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the see house dirnot xa in saw...
+
+Sample generation:
+Prompt: "The"
+Generated: "the see house dirnot xa in saw about cafound ake one l loyal upsomething he se#sgusting ut her untiagain hill dad it e ce s mtle verwas p ouljen lotwant upon nt she o idide duevery or"
+
+Epoch 5/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.715292 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.692900 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 321, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxfrogs cathy...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 333, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time theirBshe you...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 353, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where nicer very s ...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 380, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing&other...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 346, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like toPADnicer liked ...
+Epoch 5/10 completed in 1.304492064s
+  Loss: 5.702896
+  Perplexity: 317.07
+  Accuracy: 32.14%
+  Repetition score: 0.80
+  Fluency score: 0.76
+  Quality score: 0.43
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 162, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the ut liked he as house,ury w...
+
+Sample generation:
+Prompt: "The"
+Generated: "the ut liked he as house,ury way 2would en onch time sguanimlaall he found ther]nont od outse cathskip ll it ing{$y we who whdirt Pliked gawould in look waiet ou="
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch5
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch5
+Checkpoint saved successfully
+Epoch 6/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.654274 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.514290 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 316, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxdudirp,make...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 341, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time doond a one f...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 324, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where unman a Ze bu...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 359, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing'oulik...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 347, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to end btime now/...
+Epoch 6/10 completed in 1.213175856s
+  Loss: 5.607298
+  Perplexity: 301.27
+  Accuracy: 34.18%
+  Repetition score: 1.00
+  Fluency score: 0.95
+  Quality score: 0.50
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 181, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the sget back d cathy lucy sid...
+
+Sample generation:
+Prompt: "The"
+Generated: "the sget back d cathy lucy side bsimuch oulcidmuch frogs we=eper jgirl the reful cathy[go l alwho 3wnt looked skthen we thwere en like ful ocks ted skip found happy waipet when Enot"
+
+Epoch 7/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.586995 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.556759 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 303, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxoged saw do...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 339, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time orhouse ces"m...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 358, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where luxury comb h...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 324, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing knysh...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 343, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to fuwe gn take d...
+Epoch 7/10 completed in 1.218036154s
+  Loss: 5.563848
+  Perplexity: 287.18
+  Accuracy: 34.69%
+  Repetition score: 1.00
+  Fluency score: 0.96
+  Quality score: 0.50
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 175, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the dad disgusting now were mu...
+
+Sample generation:
+Prompt: "The"
+Generated: "the dad disgusting now were much cathy saw keeper py pback oulnoly went caurwere PADached some:Vof saw were,much didn said pupluclaid let Cosomerexy%every rocks ed ys fintheir"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch7
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch7
+Checkpoint saved successfully
+Epoch 8/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.484170 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.481688 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 345, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxcathy his 6...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 347, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time o'again w sid...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 345, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where thing le uxur...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 305, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing f Qal...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 338, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to outthe t#s ski...
+Epoch 8/10 completed in 1.609160643s
+  Loss: 5.494351
+  Perplexity: 274.56
+  Accuracy: 35.71%
+  Repetition score: 0.90
+  Fluency score: 0.88
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 150, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the fial>for knewa"outside fou...
+
+Sample generation:
+Prompt: "The"
+Generated: "the fial>for knewa"outside found k.every i away fuch ond duces g qched deoful n cerPADan saw cided name a rexgcan knhed see xsting bmarnca^didn dad ha"
+
+Epoch 9/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.457043 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.416921 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 360, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxuw girl knl...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 326, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time and fun went ...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 312, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where$Qskbalook day...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 366, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing ted u...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 325, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to y es she][by s...
+Epoch 9/10 completed in 1.228766082s
+  Loss: 5.434349
+  Perplexity: 263.21
+  Accuracy: 36.22%
+  Repetition score: 1.00
+  Fluency score: 0.97
+  Quality score: 0.52
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 166, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the.pmuch;animevery ful xno fi...
+
+Sample generation:
+Prompt: "The"
+Generated: "the.pmuch;animevery ful xno fipla@not nd disgusting girbackoutthe looked morhe Cthey and"outside ued sareached cathy dad bued up a upeper loything name everrgo n make"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch9
+Saving model in binary format...
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch9
+Checkpoint saved successfully
+Epoch 10/10
+Created 295 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 128
+======================================
+
+  Batch 1/4 - Loss: 5.403121 - Level: VeryEasy
+  Batch 4/4 - Loss: 5.322022 - Level: VeryEasy
+Not enough batches (4 < 50) to evaluate level advancement
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 307, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox.want didn ...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 343, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time caardey final...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
