@@ -1,4 +1,37 @@
-    Finished `release` profile [optimized] target(s) in 0.04s
+warning: function `read_f32_bytes` is never used
+  --> src/training/enhanced_trainer.rs:61:4
+   |
+61 | fn read_f32_bytes(bytes: &[u8]) -> f32 {
+   |    ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: methods `deserialize_binary_vocab` and `deserialize_binary_weights` are never used
+   --> src/training/enhanced_trainer.rs:886:8
+    |
+128 | impl EnhancedTrainer {
+    | -------------------- methods in this implementation
+...
+886 |     fn deserialize_binary_vocab(&mut self, data: &[u8], vocab_size: usize) -> Result<(), Box<d...
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+985 |     fn deserialize_binary_weights(&mut self, data: &[u8], model_dim: usize, ff_dim: usize, 
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `V0_VOCAB_OFFSET_OFFSET` is never used
+  --> src/training/enhanced_trainer.rs:99:15
+   |
+99 |     pub const V0_VOCAB_OFFSET_OFFSET: usize = 24;
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `V0_WEIGHTS_OFFSET_OFFSET` is never used
+   --> src/training/enhanced_trainer.rs:100:15
+    |
+100 |     pub const V0_WEIGHTS_OFFSET_OFFSET: usize = 28;
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (lib) generated 4 warnings
+    Finished `release` profile [optimized] target(s) in 0.12s
      Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle --prompt 'Once upon a time' --max-tokens 20 --perf-log true`
 Configuring thread pool with 20 CPU cores
 Loading model from models/high_accuracy_model.walle for text generation...
@@ -6,41 +39,27 @@ Initializing output_projection: model_dim=256, vocab_size=101
 Loading model from file: models/high_accuracy_model.walle
 Detecting file format for: models/high_accuracy_model.walle
 Detected binary format model file by magic bytes
-Warning: Unexpected binary format version: 0. Expected: 1.
-Attempting to continue with best effort parsing...
-Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=8929237008384, vocab=1099511627776
-Binary model sections: vocab_offset=105884073561423872, weights_offset=2285884674146304
-Warning: Invalid model_dim (2199023255552), using default of 128
-Warning: Invalid ff_dim (17179869184), using default of 512
-Warning: Invalid num_heads (12884901888), using default of 4
-Warning: Invalid num_layers (8929237008384), using default of 3
-Warning: Invalid vocab_size (1099511627776), using default of 5000
-Warning: Invalid vocab_offset (105884073561423872), using header size
-Warning: Invalid weights_offset (2285884674146304), estimating position
-Warning: Vocabulary size mismatch: header=5000, section=9895604649984
-Warning: Failed to deserialize vocabulary: Vocabulary string table exceeds data bounds
-Continuing without vocabulary deserialization
-Deserializing weights: 3340263548625354752 matrices, 1373 bytes total
-Warning: Expected 14 weight matrices, found 3340263548625354752 in file
-Warning: Unreasonable number of weight matrices (3340263548625354752), capping at expected count
-Warning: Invalid matrix dimensions: 1792x4501118289278496512, skipping this matrix
-Warning: Invalid matrix dimensions: 4354548731597553664x6966638383, skipping this matrix
-Warning: Cannot safely skip invalid matrix, stopping deserialization
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1069446856704, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 1069446856704 (valid: false)
+  vocab_size: 0 (valid: false)
 Initializing output_projection: model_dim=128, vocab_size=101
-Creating new model with parsed dimensions: 128x4x3
-Loading 0 weight matrices into model components
-Warning: Failed to apply weights to model structure: Other error: Expected 14 matrices, but got 0
-Binary model deserialization completed with 3 layers
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
 Successfully loaded binary model from: models/high_accuracy_model.walle
 Generating text with prompt: "Once upon a time"
 Generating text with prompt: "Once upon a time" (max_tokens=20)
 Attempting to use model for text generation...
-DEBUG: Result length = 39, prompt length = 16
+DEBUG: Result length = 44, prompt length = 16
 DEBUG: Using model-generated text.
-Generated preview: oncew uponw aw timewr+xj2ebcw(...
+Generated preview: oncew uponw aw timew_b>.2KO/BG...
 
 ======= GENERATED TEXT =======
-oncew uponw aw timewr+xj2ebcw(Z]<@r9kiE
+oncew uponw aw timew_b>.2KO/BGBOSf)\ak(PADV+
 ==============================
 
 SAMPLE TEXT (in case output isn't visible):
@@ -51,12 +70,12 @@ Current directory: /home/nabla/github/wall-e1
 ═════════════════════════ PERFORMANCE METRICS ═════════════════════════
 Operation: model_loading
   Count:     1
-  Total:     0.0294 sec
-  Average:   0.0294 sec
-  Min/Max:   0.0294/0.0294 sec
+  Total:     0.0598 sec
+  Average:   0.0598 sec
+  Min/Max:   0.0598/0.0598 sec
 Operation: text_generation
   Count:     1
-  Total:     0.5791 sec
-  Average:   0.5791 sec
-  Min/Max:   0.5791/0.5791 sec
+  Total:     1.4083 sec
+  Average:   1.4083 sec
+  Min/Max:   1.4083/1.4083 sec
 ═════════════════════════════════════════════════════════════════════
