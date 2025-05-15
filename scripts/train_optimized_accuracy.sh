@@ -12,6 +12,8 @@ NUM_CPUS=0
 MEMORY_OPT=""
 # Batch size (0 means auto-calculate)
 BATCH_SIZE=0
+# Default number of epochs
+NUM_EPOCHS=10
 # Output log file with timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="logs/training_${TIMESTAMP}.log"
@@ -41,9 +43,13 @@ while [[ $# -gt 0 ]]; do
       BATCH_SIZE="$2"
       shift 2
       ;;
+    --epochs)
+      NUM_EPOCHS="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>]"
+      echo "Usage: $0 [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>]"
       exit 1
       ;;
   esac
@@ -96,7 +102,7 @@ echo "Feed-forward dimension: $FF_DIM" | tee -a "$LOG_FILE"
 echo "Vocabulary size: 5000" | tee -a "$LOG_FILE"
 echo "Min token frequency: 2" | tee -a "$LOG_FILE"
 echo "Learning rate: 0.0001" | tee -a "$LOG_FILE"
-echo "Epochs: 10" | tee -a "$LOG_FILE"
+echo "Epochs: $NUM_EPOCHS" | tee -a "$LOG_FILE"
 echo "Data sampling: quality ($NUM_STORIES stories)" | tee -a "$LOG_FILE"
 echo "Data preprocessing: false" | tee -a "$LOG_FILE"
 echo "Training data: data/tiny_stories_sample.json" | tee -a "$LOG_FILE"
@@ -136,7 +142,7 @@ echo "║           STARTING OPTIMIZED TRAINING               ║" | tee -a "$LO
 echo "╚═════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
 
 # Build basic training command
-TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories $NUM_STORIES --perf-log true"
+TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim $MODEL_DIM --ff-dim $FF_DIM --heads $HEADS --layers $LAYERS --epochs $NUM_EPOCHS --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories $NUM_STORIES --perf-log true"
 
 # Add memory optimization flags if enabled
 if [ -n "$MEMORY_OPT" ]; then

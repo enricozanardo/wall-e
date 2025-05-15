@@ -31,8 +31,8 @@ warning: constant `V0_WEIGHTS_OFFSET_OFFSET` is never used
     |               ^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: `wall-e1` (lib) generated 4 warnings
-    Finished `release` profile [optimized] target(s) in 0.12s
-     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle --prompt 'Once upon a time' --max-tokens 20 --perf-log true`
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle --prompt 'Hello world' --max-tokens 50 --perf-log true`
 Configuring thread pool with 20 CPU cores
 Loading model from models/high_accuracy_model.walle for text generation...
 Initializing output_projection: model_dim=256, vocab_size=101
@@ -40,42 +40,42 @@ Loading model from file: models/high_accuracy_model.walle
 Detecting file format for: models/high_accuracy_model.walle
 Detected binary format model file by magic bytes
 Using version 1 binary format layout
-Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1069446856704, vocab=0
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=8757438316544, vocab=0
 Warning: Invalid model configuration detected. Using safe defaults:
   model_dim: 2199023255552 (valid: false)
   ff_dim: 17179869184 (valid: false)
   num_heads: 12884901888 (valid: false)
-  num_layers: 1069446856704 (valid: false)
+  num_layers: 8757438316544 (valid: false)
   vocab_size: 0 (valid: false)
 Initializing output_projection: model_dim=128, vocab_size=101
 Created new model with safe parameters: 128x512x4x3
 Binary model deserialization completed with safe parameters
 Successfully loaded binary model from: models/high_accuracy_model.walle
-Generating text with prompt: "Once upon a time"
-Generating text with prompt: "Once upon a time" (max_tokens=20)
+Generating text with prompt: "Hello world"
+Generating text with prompt: "Hello world" (max_tokens=50)
 Attempting to use model for text generation...
-DEBUG: Result length = 44, prompt length = 16
+DEBUG: Result length = 65, prompt length = 11
 DEBUG: Using model-generated text.
-Generated preview: oncew uponw aw timew_b>.2KO/BG...
+Generated preview: hellow worldw=C%9Xj^R*H\hXC\L,...
 
 ======= GENERATED TEXT =======
-oncew uponw aw timew_b>.2KO/BGBOSf)\ak(PADV+
+hellow worldw=C%9Xj^R*H\hXC\L,2,EOSyncpIPADe5uzVL{HoZ.G-BOSc'\ScW
 ==============================
 
 SAMPLE TEXT (in case output isn't visible):
-Once upon a time in a distant galaxy, a small spacecraft drifted...
+Hello world in a distant galaxy, a small spacecraft drifted...
 Output written to generated_text.txt (in current directory)
 Current directory: /home/nabla/github/wall-e1
 
 ═════════════════════════ PERFORMANCE METRICS ═════════════════════════
 Operation: model_loading
   Count:     1
-  Total:     0.0598 sec
-  Average:   0.0598 sec
-  Min/Max:   0.0598/0.0598 sec
+  Total:     0.0268 sec
+  Average:   0.0268 sec
+  Min/Max:   0.0268/0.0268 sec
 Operation: text_generation
   Count:     1
-  Total:     1.4083 sec
-  Average:   1.4083 sec
-  Min/Max:   1.4083/1.4083 sec
+  Total:     1.5285 sec
+  Average:   1.5285 sec
+  Min/Max:   1.5285/1.5285 sec
 ═════════════════════════════════════════════════════════════════════
