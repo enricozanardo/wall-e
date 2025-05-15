@@ -31,35 +31,36 @@ warning: constant `V0_WEIGHTS_OFFSET_OFFSET` is never used
     |               ^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: `wall-e1` (lib) generated 4 warnings
-    Finished `release` profile [optimized] target(s) in 0.04s
-     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle --prompt 'Hello world' --max-tokens 50 --perf-log true`
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running `target/release/train_enhanced_model --generate-only --model models/high_accuracy_model.walle.epoch2 --prompt 'Hello world' --max-tokens 50 --perf-log true`
 Configuring thread pool with 20 CPU cores
-Loading model from models/high_accuracy_model.walle for text generation...
+Loading model from models/high_accuracy_model.walle.epoch2 for text generation...
 Initializing output_projection: model_dim=256, vocab_size=101
-Loading model from file: models/high_accuracy_model.walle
-Detecting file format for: models/high_accuracy_model.walle
+Loading model from file: models/high_accuracy_model.walle.epoch2
+Detecting file format for: models/high_accuracy_model.walle.epoch2
 Detected binary format model file by magic bytes
-Using version 1 binary format layout
-Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=8757438316544, vocab=0
+Note: File has a non-standard extension but appears to be in binary format
+Using version 0 binary format layout
+Binary model config: dim=128, ff_dim=0, heads=512, layers=0, vocab=4
 Warning: Invalid model configuration detected. Using safe defaults:
-  model_dim: 2199023255552 (valid: false)
-  ff_dim: 17179869184 (valid: false)
-  num_heads: 12884901888 (valid: false)
-  num_layers: 8757438316544 (valid: false)
-  vocab_size: 0 (valid: false)
+  model_dim: 128 (valid: true)
+  ff_dim: 0 (valid: false)
+  num_heads: 512 (valid: false)
+  num_layers: 0 (valid: false)
+  vocab_size: 4 (valid: true)
 Initializing output_projection: model_dim=128, vocab_size=101
 Created new model with safe parameters: 128x512x4x3
 Binary model deserialization completed with safe parameters
-Successfully loaded binary model from: models/high_accuracy_model.walle
+Successfully loaded binary model from: models/high_accuracy_model.walle.epoch2
 Generating text with prompt: "Hello world"
 Generating text with prompt: "Hello world" (max_tokens=50)
 Attempting to use model for text generation...
-DEBUG: Result length = 65, prompt length = 11
+DEBUG: Result length = 66, prompt length = 11
 DEBUG: Using model-generated text.
-Generated preview: hellow worldw=C%9Xj^R*H\hXC\L,...
+Generated preview: hellow worldw?BOSEEOSSZIpZ1I*9...
 
 ======= GENERATED TEXT =======
-hellow worldw=C%9Xj^R*H\hXC\L,2,EOSyncpIPADe5uzVL{HoZ.G-BOSc'\ScW
+hellow worldw?BOSEEOSSZIpZ1I*9:UNK3_e[&DfNmsM0=DJv)D^#V! yseEBn)?+
 ==============================
 
 SAMPLE TEXT (in case output isn't visible):
@@ -68,14 +69,14 @@ Output written to generated_text.txt (in current directory)
 Current directory: /home/nabla/github/wall-e1
 
 ═════════════════════════ PERFORMANCE METRICS ═════════════════════════
-Operation: model_loading
-  Count:     1
-  Total:     0.0268 sec
-  Average:   0.0268 sec
-  Min/Max:   0.0268/0.0268 sec
 Operation: text_generation
   Count:     1
-  Total:     1.5285 sec
-  Average:   1.5285 sec
-  Min/Max:   1.5285/1.5285 sec
+  Total:     1.5431 sec
+  Average:   1.5431 sec
+  Min/Max:   1.5431/1.5431 sec
+Operation: model_loading
+  Count:     1
+  Total:     0.0267 sec
+  Average:   0.0267 sec
+  Min/Max:   0.0267/0.0267 sec
 ═════════════════════════════════════════════════════════════════════

@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--batch-size <number>]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50
@@ -47,12 +47,16 @@ All trained models use the `.walle` extension for consistency. The internal form
 # Train with memory optimization
 ./wall-e1-model.sh train --size medium --memory-opt
 
+# Train with custom number of epochs
+./wall-e1-model.sh train --size small --epochs 5
+
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --batch-size 128
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --batch-size 128 --epochs 15
 
 # Or use the training script directly
 ./train_optimized_accuracy.sh --size medium
 ./train_optimized_accuracy.sh --size large --stories 5000 --memory-opt
+./train_optimized_accuracy.sh --size small --epochs 20
 ```
 
 ### Generating text:
@@ -82,6 +86,15 @@ You can use the profiling and benchmarking scripts to measure performance improv
 # Benchmark different optimization configurations
 ./scripts/benchmark_memory.sh
 ```
+
+## Training Parameters
+
+- **--size small|medium|large**: Sets the model size, affecting the model dimensions and architecture
+- **--stories <number>**: Number of stories to use from the dataset (default: 4000)
+- **--cpus <number>**: Number of CPU cores to use for training (default: all available)
+- **--memory-opt**: Enable memory optimization for better performance
+- **--batch-size <number>**: Manually set batch size for training
+- **--epochs <number>**: Number of training epochs to run (default: 10)
 
 ## Notes
 
