@@ -154,6 +154,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut num_cpus_override = None;
     let mut enable_memory_optimization = false;
     let mut manual_batch_size = None;
+    let mut curriculum_examples: usize = 500;  // Default value
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -261,6 +262,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(val) = args.next() {
                     if let Ok(cpus) = val.parse::<usize>() {
                         num_cpus_override = Some(cpus);
+                    }
+                }
+            }
+            "--curriculum-examples" => {
+                if let Some(val) = args.next() {
+                    if let Ok(num) = val.parse::<usize>() {
+                        curriculum_examples = num;
                     }
                 }
             }

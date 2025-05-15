@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50
@@ -50,8 +50,11 @@ All trained models use the `.walle` extension for consistency. The internal form
 # Train with custom number of epochs
 ./wall-e1-model.sh train --size small --epochs 5
 
+# Train with more curriculum examples to prevent stalling in level advancement
+./wall-e1-model.sh train --size large --curriculum-examples 5000
+
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --batch-size 128 --epochs 15
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --batch-size 128 --epochs 15 --curriculum-examples 5000
 
 # Or use the training script directly
 ./train_optimized_accuracy.sh --size medium
@@ -95,6 +98,7 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - **--memory-opt**: Enable memory optimization for better performance
 - **--batch-size <number>**: Manually set batch size for training
 - **--epochs <number>**: Number of training epochs to run (default: 10)
+- **--curriculum-examples <number>**: Number of examples to use for curriculum initialization (default: 500). Increasing this value can prevent stalling in curriculum level advancement, especially with larger batch sizes.
 
 ## Notes
 
@@ -102,4 +106,5 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - The default model path is `models/high_accuracy_model.walle`.
 - Training uses the `tiny_stories_sample.json` dataset by default.
 - By default, training uses 4000 stories from the dataset, but this can be customized with the `--stories` parameter.
-- Memory optimization provides better performance on machines with limited memory bandwidth. 
+- Memory optimization provides better performance on machines with limited memory bandwidth.
+- When using larger batch sizes, consider increasing the number of curriculum examples to ensure proper level advancement. 

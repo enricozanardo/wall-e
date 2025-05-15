@@ -377,7 +377,7 @@ impl EnhancedTrainer {
         
         // For the first epoch, initialize the curriculum with examples
         if self.current_epoch == 0 {
-            self.initialize_curriculum(inputs, targets);
+            self.initialize_curriculum(inputs, targets, 500);
         }
         
         // Calculate the current learning rate based on curriculum level
@@ -1621,14 +1621,21 @@ impl EnhancedTrainer {
 
     /// Initialize the curriculum with examples from the provided inputs
     /// This ensures we have examples at all difficulty levels before training begins
-    pub fn initialize_curriculum(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>]) {
-        println!("Initializing curriculum learning with examples...");
+    pub fn initialize_curriculum(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>], max_examples: usize) {
+        println!("Initializing curriculum learning with examples (max: {})...", max_examples);
         
         // We'll gather examples from different parts of the dataset
         let mut examples_count = 0;
         
         // Process batches from different parts of the dataset
-        let sample_indices = [0, inputs.len()/4, inputs.len()/2, 3*inputs.len()/4];
+        // Increase the number of sample points based on max_examples
+        let num_sample_points = (max_examples / 25).clamp(4, 50);  // Adjust based on max_examples
+        let mut sample_indices = Vec::with_capacity(num_sample_points);
+        
+        for i in 0..num_sample_points {
+            let idx = i * inputs.len() / num_sample_points;
+            sample_indices.push(idx);
+        }
         
         for &idx in &sample_indices {
             if idx < inputs.len() && idx < targets.len() {
@@ -1694,7 +1701,7 @@ impl EnhancedTrainer {
                         examples_count += 1;
                         
                         // Process enough examples to ensure good distribution
-                        if examples_count >= 500 {
+                        if examples_count >= max_examples {
                             break;
                         }
                     }
@@ -1702,7 +1709,7 @@ impl EnhancedTrainer {
             }
             
             // Break if we've collected enough examples
-            if examples_count >= 500 {
+            if examples_count >= max_examples {
                 break;
             }
         }

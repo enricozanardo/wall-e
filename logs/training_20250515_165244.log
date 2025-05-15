@@ -1,0 +1,476 @@
+Detected JSON format data file
+Using quality-focused sampling: 2 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 2
+Data sampling: quality (2 stories)
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Batch size: 32 (manual)
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 2 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 2 --perf-log true --use-memory-opt --batch-size 32
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 2
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 2
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 2 stories for training
+Processed 2 stories, total text length: 1372 characters
+Creating trainer...
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Initializing output_projection: model_dim=128, vocab_size=228
+Setting up curriculum learning...
+Starting training for 2 epochs...
+Epoch 1/2
+Created 93 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 32
+======================================
+
+Initializing curriculum learning with examples...
+Not enough examples (0 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/3 - Loss: 5.429358 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 276, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxC:party ldn...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 272, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time#Bso and th my...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 284, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where 78little have...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 275, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingyou pa...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 257, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to ends.and re?HO...
+Epoch 1/2 completed in 926.741455ms
+  Loss: 5.409657
+  Perplexity: 216.60
+  Accuracy: 14.06%
+  Repetition score: 0.90
+  Fluency score: 0.88
+  Quality score: 0.44
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 109, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the party V_rtends little oatt...
+
+Sample generation:
+Prompt: "The"
+Generated: "the party V_rtends little oattery dresses AZktheew@"saw or ke ay Nhe$6=one 6day;d6bFou e endzto cad sa/?K9m@-"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch1
+Checkpoint saved successfully
+Epoch 2/2
+Created 93 input/target pairs for training
+
+======== BATCH SIZE CALCULATION ========
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24 MB, Line size=64 bytes
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Using manually specified batch size: 32
+======================================
+
+Not enough examples (0 found) at level VeryEasy, using adaptive fallback
+Using adaptive fallback training for difficulty level: VeryEasy
+  Fallback Batch 1/3 - Loss: 5.352976 - Level: VeryEasy
+Remaining at current curriculum level after fallback training
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 243, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxNttle 7jwin...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 252, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time party liDfmak...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 243, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where T]went th|dre...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 268, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingresdre...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 254, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to or:battery sad...
+Epoch 2/2 completed in 922.630534ms
+  Loss: 5.339532
+  Perplexity: 206.51
+  Accuracy: 17.58%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 144, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the ttery rfriends couldn endo...
+
+Sample generation:
+Prompt: "The"
+Generated: "the ttery rfriends couldn endor/dlwattehe mawUNKmamy tt.BOSCswent endor 1a with ttle lay lay one 9T7a saXfriends play+PAD=fouttle=lay th n to tt"
+
+Detected repetition patterns:
+  - "lay"
+Saving checkpoint to models/high_accuracy_model.walle.epoch2
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch2
+Checkpoint saved successfully
+Training completed in 41.377600169s
+Saving final model to models/high_accuracy_model.walle
+Saving model in binary format with version 1...
+Writing placeholder vocabulary section at offset 60
+Writing placeholder weights section at offset 76
+Model successfully saved to: models/high_accuracy_model.walle
+Note: This is a placeholder binary model with the correct format version (1)
+      but without actual weights or vocabulary data.
+Final model metrics:
+  Perplexity: 206.51
+  Accuracy: 17.58%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.48
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: evaluation_1
+  Count:     1
+  Total:     18.5621 sec
+  Average:   18.5621 sec
+  Min/Max:   18.5621/18.5621 sec
+Operation: sample_generation_1
+  Count:     1
+  Total:     1.1200 sec
+  Average:   1.1200 sec
+  Min/Max:   1.1200/1.1200 sec
+Operation: save_checkpoint_1
+  Count:     1
+  Total:     0.0085 sec
+  Average:   0.0085 sec
+  Min/Max:   0.0085/0.0085 sec
+Operation: evaluation_2
+  Count:     1
+  Total:     18.8169 sec
+  Average:   18.8169 sec
+  Min/Max:   18.8169/18.8169 sec
+Operation: trainer_initialization
+  Count:     1
+  Total:     0.0045 sec
+  Average:   0.0045 sec
+  Min/Max:   0.0045/0.0045 sec
+Operation: epoch_2
+  Count:     1
+  Total:     0.9226 sec
+  Average:   0.9226 sec
+  Min/Max:   0.9226/0.9226 sec
+Operation: sample_generation_2
+  Count:     1
+  Total:     1.0201 sec
+  Average:   1.0201 sec
+  Min/Max:   1.0201/1.0201 sec
+Operation: tokenization
+  Count:     1
+  Total:     0.0004 sec
+  Average:   0.0004 sec
+  Min/Max:   0.0004/0.0004 sec
+Operation: data_loading
+  Count:     1
+  Total:     0.0577 sec
+  Average:   0.0577 sec
+  Min/Max:   0.0577/0.0577 sec
+Operation: save_final_model
+  Count:     1
+  Total:     0.0086 sec
+  Average:   0.0086 sec
+  Min/Max:   0.0086/0.0086 sec
+Operation: epoch_1
+  Count:     1
+  Total:     0.9267 sec
+  Average:   0.9267 sec
+  Min/Max:   0.9267/0.9267 sec
+Operation: save_checkpoint_2
+  Count:     1
+  Total:     0.0006 sec
+  Average:   0.0006 sec
+  Min/Max:   0.0006/0.0006 sec
+Operation: vocabulary_learning
+  Count:     1
+  Total:     0.0051 sec
+  Average:   0.0051 sec
+  Min/Max:   0.0051/0.0051 sec
+═════════════════════════════════════════════════════════════════════
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=979252543488, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 979252543488 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 96, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timew:hb#$RJwH>...
+
+======= GENERATED TEXT =======
+oncew uponw aw timew:hb#$RJwH>(YI'e*m.@%^eCk?BOSE*R)EOSe]/d@;]08x3PAD]|ZmX/PU_$eWe,0BPl1as!p"c9u
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: text_generation
+  Count:     1
+  Total:     2.4792 sec
+  Average:   2.4792 sec
+  Min/Max:   2.4792/2.4792 sec
+Operation: model_loading
+  Count:     1
+  Total:     0.0208 sec
+  Average:   0.0208 sec
+  Min/Max:   0.0208/0.0208 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "The quick brown fox"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=979252543488, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 979252543488 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The quick brown fox"
+Generating text with prompt: "The quick brown fox" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 97, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: thew quickw brownw foxwpo}M7fq...
+
+======= GENERATED TEXT =======
+thew quickw brownw foxwpo}M7fq70Xyiw'KBOSe"b*Q1GwbYMb|'Ou*"v$Ny4c?T(5BOS]Z-UqBvEQdhFqX8"ILn(ubfC.
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The quick brown fox in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0242 sec
+  Average:   0.0242 sec
+  Min/Max:   0.0242/0.0242 sec
+Operation: text_generation
+  Count:     1
+  Total:     2.6233 sec
+  Average:   2.6233 sec
+  Min/Max:   2.6233/2.6233 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "In a world where magic"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=979252543488, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 979252543488 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "In a world where magic"
+Generating text with prompt: "In a world where magic" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 101, prompt length = 22
+DEBUG: Using model-generated text.
+Generated preview: inw aw worldw wherew magicwvx-...
+
+======= GENERATED TEXT =======
+inw aw worldw wherew magicwvx-Y$/8BIPAD0\<WR6#0{+87?8|S)3yWrp3\]uM|b?3?}PAD&PCi)!eYv)X <A[0<gJvkg+=-b
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+In a world where magic in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: model_loading
+  Count:     1
+  Total:     0.0224 sec
+  Average:   0.0224 sec
+  Min/Max:   0.0224/0.0224 sec
+Operation: text_generation
+  Count:     1
+  Total:     2.7216 sec
+  Average:   2.7216 sec
+  Min/Max:   2.7216/2.7216 sec
+═════════════════════════════════════════════════════════════════════
+Prompt: "The most important thing"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=979252543488, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 979252543488 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The most important thing"
+Generating text with prompt: "The most important thing" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 108, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: thew mostw importantw thingw{W...
+
+======= GENERATED TEXT =======
+thew mostw importantw thingw{W:MPAD?mzwT,y_=^'? eyeYH\kn_iBOShmW,9hpN3kX'RH!?F>w?.LLn@BOS!mZk/s5]y.rIP*UNK7s
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The most important thing in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+Operation: text_generation
+  Count:     1
+  Total:     2.7388 sec
+  Average:   2.7388 sec
+  Min/Max:   2.7388/2.7388 sec
+Operation: model_loading
+  Count:     1
+  Total:     0.0244 sec
+  Average:   0.0244 sec
+  Min/Max:   0.0244/0.0244 sec
+═════════════════════════════════════════════════════════════════════
+Training complete. You can test the model with:
+cargo run --release --bin train_enhanced_model -- --generate-only --model models/high_accuracy_model.walle --prompt "Your prompt here" --max-tokens 100

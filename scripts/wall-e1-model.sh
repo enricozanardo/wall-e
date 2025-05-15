@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>]  Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -21,6 +21,7 @@ show_usage() {
   echo "  --memory-opt                       Enable memory optimization (optimal batch size, thread allocation)"
   echo "  --batch-size [number]              Manually set batch size (overrides automatic calculation)"
   echo "  --epochs [number]                  Number of training epochs (default: 10)"
+  echo "  --curriculum-examples [number]     Number of examples to use for curriculum initialization (default: 500)"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
@@ -31,6 +32,7 @@ show_usage() {
   echo "  $0 train --size small              Train a small model with default stories"
   echo "  $0 train --size medium --stories 2000 --cpus 4 --memory-opt  Train a medium model with memory optimization"
   echo "  $0 train --size large --epochs 20  Train a large model with 20 epochs"
+  echo "  $0 train --size large --curriculum-examples 5000  Train with 5000 examples for curriculum"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2"
 }
@@ -51,6 +53,8 @@ train_model() {
   local batch_size_param=""
   local epochs=""
   local epochs_param=""
+  local curriculum_examples=""
+  local curriculum_examples_param=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
@@ -84,6 +88,11 @@ train_model() {
         epochs_param="--epochs $epochs"
         shift 2
         ;;
+      --curriculum-examples)
+        curriculum_examples="$2"
+        curriculum_examples_param="--curriculum-examples $curriculum_examples"
+        shift 2
+        ;;
       *)
         echo "Unknown option: $1"
         show_usage
@@ -109,8 +118,11 @@ train_model() {
   if [[ -n "$epochs" ]]; then
     echo "Using $epochs training epochs"
   fi
+  if [[ -n "$curriculum_examples" ]]; then
+    echo "Using $curriculum_examples examples for curriculum initialization"
+  fi
   
-  ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param $cpus_param $memory_opt_param $batch_size_param $epochs_param
+  ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param $cpus_param $memory_opt_param $batch_size_param $epochs_param $curriculum_examples_param
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"
 }
