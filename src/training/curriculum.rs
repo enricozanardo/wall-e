@@ -103,14 +103,14 @@ impl CurriculumScheduler {
             current_level: DifficultyLevel::VeryEasy,
             examples_by_level: HashMap::new(),
             current_epoch: 0,
-            epochs_per_level: 3,  // Increased from default of 2 to allow more time per level
+            epochs_per_level: 5,  // Increased from 3 to 5 to provide more time per level
             epochs_in_current_level: 0,
             batch_size: 32,
             max_length_per_level,
-            harder_examples_ratio: 0.2,
-            easier_examples_ratio: 0.1,
+            harder_examples_ratio: 0.3,  // Increased from 0.2 to expose more to harder examples
+            easier_examples_ratio: 0.2,  // Increased from 0.1 to reinforce learning
             seed: 42,
-            auto_advance: false,
+            auto_advance: true,  // Enable auto-advancement by default
             beyond_standard_levels: false,
             max_seq_len: 0,
             update_count: 0,
@@ -365,17 +365,22 @@ impl CurriculumScheduler {
         self.current_epoch += 1;
         self.epochs_in_current_level += 1;
         
-        // Check if it's time to advance to the next level
-        if self.epochs_in_current_level >= self.epochs_per_level {
+        // If auto-advance is disabled, don't change levels
+        if !self.auto_advance {
+            return false;
+        }
+        
+        // Force advancement after spending too much time at a level
+        let max_epochs_at_level = self.epochs_per_level * 2;
+        let should_force_advance = self.epochs_in_current_level >= max_epochs_at_level;
+        
+        // Check if it's time to advance to the next level (based on regular epochs or forced)
+        if self.epochs_in_current_level >= self.epochs_per_level || should_force_advance {
             // Only advance if we're not already at the maximum level
             if self.current_level != DifficultyLevel::VeryHard {
-                let next_level = match self.current_level {
-                    DifficultyLevel::VeryEasy => DifficultyLevel::Easy,
-                    DifficultyLevel::Easy => DifficultyLevel::Medium,
-                    DifficultyLevel::Medium => DifficultyLevel::Hard,
-                    DifficultyLevel::Hard => DifficultyLevel::VeryHard,
-                    DifficultyLevel::VeryHard => DifficultyLevel::VeryHard, // Can't go higher
-                };
+                let next_level = self.current_level.next();
+                println!("Advancing curriculum from {:?} to {:?} level (forced: {})", 
+                         self.current_level, next_level, should_force_advance);
                 self.current_level = next_level;
                 self.epochs_in_current_level = 0;
                 return true;
@@ -405,13 +410,7 @@ impl CurriculumScheduler {
         if self.current_level != DifficultyLevel::VeryEasy {
             // For each level below the current, add some examples
             for level in 0..self.current_level as usize {
-                let level_enum = match level {
-                    0 => DifficultyLevel::VeryEasy,
-                    1 => DifficultyLevel::Easy,
-                    2 => DifficultyLevel::Medium,
-                    3 => DifficultyLevel::Hard,
-                    _ => DifficultyLevel::VeryEasy,
-                };
+                let level_enum = DifficultyLevel::from_int(level);
                 
                 // Get examples from this easier level
                 if let Some(examples) = self.examples_by_level.get(&level_enum) {
@@ -419,7 +418,8 @@ impl CurriculumScheduler {
                         // Determine how many examples to take based on the gap between levels
                         // The closer the level is to current, the more examples we take
                         let level_distance = (self.current_level as usize) - level;
-                        let ratio = self.easier_examples_ratio / level_distance as f32;
+                        // Provide more examples from easier levels to reinforce learning
+                        let ratio = (self.easier_examples_ratio * 1.5) / level_distance as f32;  
                         let count = (examples.len() as f32 * ratio) as usize;
                         
                         // Select random examples from this level
@@ -427,7 +427,11 @@ impl CurriculumScheduler {
                         let mut indices = (0..examples.len()).collect::<Vec<_>>();
                         indices.shuffle(&mut rng);
                         
-                        for &idx in indices.iter().take(count) {
+                        // Ensure we take at least some minimum number of examples
+                        let min_examples = 20;
+                        let examples_to_take = count.max(min_examples).min(examples.len());
+                        
+                        for &idx in indices.iter().take(examples_to_take) {
                             selected_examples.push(examples[idx].clone());
                         }
                     }
@@ -435,34 +439,69 @@ impl CurriculumScheduler {
             }
         }
         
-        // If not at the hardest level, add a smaller proportion of harder examples
+        // If not at the hardest level, add a proportion of harder examples
         if self.current_level != DifficultyLevel::VeryHard {
             // Add examples from one level above current
-            let next_level = match self.current_level {
-                DifficultyLevel::VeryEasy => DifficultyLevel::Easy,
-                DifficultyLevel::Easy => DifficultyLevel::Medium,
-                DifficultyLevel::Medium => DifficultyLevel::Hard,
-                DifficultyLevel::Hard => DifficultyLevel::VeryHard,
-                DifficultyLevel::VeryHard => DifficultyLevel::VeryHard, // Shouldn't happen
-            };
+            let next_level = self.current_level.next();
             
             if let Some(examples) = self.examples_by_level.get(&next_level) {
                 if !examples.is_empty() {
-                    // Take a smaller ratio of harder examples
-                    let reduced_ratio = self.harder_examples_ratio * 0.5; // Half the normal ratio
-                    let count = (examples.len() as f32 * reduced_ratio) as usize;
+                    // Take a moderate ratio of harder examples to prepare for advancement
+                    let count = (examples.len() as f32 * self.harder_examples_ratio) as usize;
                     
                     // Select random examples from the harder level
                     let mut rng = thread_rng();
                     let mut indices = (0..examples.len()).collect::<Vec<_>>();
                     indices.shuffle(&mut rng);
                     
-                    for &idx in indices.iter().take(count) {
+                    // Ensure we take at least some minimum number of examples
+                    let min_examples = 15;
+                    let examples_to_take = count.max(min_examples).min(examples.len());
+                    
+                    for &idx in indices.iter().take(examples_to_take) {
                         selected_examples.push(examples[idx].clone());
                     }
                 }
             }
+            
+            // Also add a small number of examples from two levels ahead if available
+            // This helps with gradual exposure to much harder content
+            if self.current_level != DifficultyLevel::Hard && self.current_level != DifficultyLevel::VeryHard {
+                let two_levels_up = match self.current_level {
+                    DifficultyLevel::VeryEasy => DifficultyLevel::Medium,
+                    DifficultyLevel::Easy => DifficultyLevel::Hard,
+                    DifficultyLevel::Medium => DifficultyLevel::VeryHard,
+                    _ => self.current_level, // Won't happen due to our if condition
+                };
+                
+                if let Some(examples) = self.examples_by_level.get(&two_levels_up) {
+                    if !examples.is_empty() {
+                        // Take a very small ratio - just enough for exposure
+                        let count = (examples.len() as f32 * 0.05) as usize;  // 5% exposure rate
+                        
+                        // Select random examples
+                        let mut rng = thread_rng();
+                        let mut indices = (0..examples.len()).collect::<Vec<_>>();
+                        indices.shuffle(&mut rng);
+                        
+                        // Ensure we take at least 5 examples if available
+                        let min_examples = 5;
+                        let examples_to_take = count.max(min_examples).min(examples.len());
+                        
+                        for &idx in indices.iter().take(examples_to_take) {
+                            selected_examples.push(examples[idx].clone());
+                        }
+                    }
+                }
+            }
         }
+        
+        // Shuffle all examples before returning
+        let mut rng = thread_rng();
+        selected_examples.shuffle(&mut rng);
+        
+        println!("Returned {} training examples for difficulty level {:?}", 
+                selected_examples.len(), self.current_level);
         
         selected_examples
     }

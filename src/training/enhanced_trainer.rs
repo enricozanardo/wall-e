@@ -135,24 +135,58 @@ impl EnhancedTrainer {
         dropout_rate: f32,
         learning_rate: f32,
     ) -> Self {
+        // Validate model configuration
+        let validated_model_dim = if model_dim % num_heads != 0 {
+            // Find the nearest multiple of num_heads
+            let rounded_up = ((model_dim + num_heads - 1) / num_heads) * num_heads;
+            let rounded_down = (model_dim / num_heads) * num_heads;
+            
+            // Choose the closest one
+            if rounded_up - model_dim < model_dim - rounded_down {
+                println!("Warning: model_dim ({}) not divisible by num_heads ({}). Adjusting to: {}", 
+                        model_dim, num_heads, rounded_up);
+                rounded_up
+            } else {
+                println!("Warning: model_dim ({}) not divisible by num_heads ({}). Adjusting to: {}", 
+                        model_dim, num_heads, rounded_down);
+                rounded_down
+            }
+        } else {
+            model_dim
+        };
+        
+        // Ensure dimensions are at least reasonable minimums
+        let validated_model_dim = validated_model_dim.max(16);
+        let validated_ff_dim = ff_dim.max(64);
+        let validated_num_heads = num_heads.max(1);
+        let validated_num_layers = num_layers.max(1);
+        
+        println!("Initializing enhanced model with configuration:");
+        println!("  model_dim: {} (validated: {})", model_dim, validated_model_dim);
+        println!("  ff_dim: {} (validated: {})", ff_dim, validated_ff_dim);
+        println!("  num_heads: {} (validated: {})", num_heads, validated_num_heads);
+        println!("  num_layers: {} (validated: {})", num_layers, validated_num_layers);
+        println!("  dropout_rate: {}", dropout_rate);
+        println!("  learning_rate: {}", learning_rate);
+        
         // Initialize the tokenizer
         let tokenizer = WordPieceBPETokenizer::new();
         
-        // Create a base trainer
+        // Create trainer with validated dimensions
         let trainer = Trainer::new(
             Box::new(tokenizer.clone()),
-            model_dim,
-            ff_dim,
-            num_heads,
-            num_layers,
+            validated_model_dim,
+            validated_ff_dim,
+            validated_num_heads,
+            validated_num_layers,
             dropout_rate,
-            learning_rate
+            learning_rate,
         );
         
         // Create a curriculum scheduler
         let curriculum = CurriculumScheduler::new();
         
-        // Create a text generator
+        // Create a text generator with good defaults
         let generator = TextGenerator::new()
             .with_repetition_penalty(1.2)
             .with_temperature(0.8)
@@ -163,8 +197,8 @@ impl EnhancedTrainer {
             tokenizer,
             curriculum,
             generator,
-            use_curriculum: true,
-            dynamic_lr: true,
+            use_curriculum: true,  // Enable curriculum learning by default
+            dynamic_lr: true,      // Enable dynamic learning rate by default
             learning_rate,
             current_epoch: 0,
             stats: HashMap::new(),
@@ -377,7 +411,7 @@ impl EnhancedTrainer {
         
         // For the first epoch, initialize the curriculum with examples
         if self.current_epoch == 0 {
-            self.initialize_curriculum(inputs, targets, 500);
+            self.initialize_curriculum(inputs, targets, 2000);
         }
         
         // Calculate the current learning rate based on curriculum level
@@ -493,7 +527,17 @@ impl EnhancedTrainer {
         };
         
         // Additional stability check: require minimum number of batches before advancing
-        let min_batches_for_advance = 50;
+        // Calculate a dynamic threshold based on the number of examples
+        // If we have very few examples, we might need to use all of them
+        let total_examples = examples.len();
+        let min_batches_for_advance = if total_examples < 200 {
+            // If we have few examples, use at least 80% of possible batches
+            (total_examples as f32 * 0.8 / batch_size as f32).ceil() as usize
+        } else {
+            // Otherwise, ensure we have at least 20 batches (down from 50)
+            20.min(total_examples / batch_size / 2)
+        };
+        
         let can_advance = num_batches >= min_batches_for_advance && avg_loss < level_threshold;
         
         // Only advance if loss is below the threshold for the current level
@@ -583,15 +627,22 @@ impl EnhancedTrainer {
         let num_heads = self.trainer.get_num_heads();
         let num_layers = self.trainer.get_num_layers();
         
-        // Only allow reasonable model dimensions to prevent corruption
+        // Validate model dimensions
         if model_dim > 10000 || ff_dim > 10000 || num_heads > 1000 || num_layers > 1000 {
             return Err(format!("Invalid model dimensions: {}x{}x{}x{}, cannot save safely", 
                 model_dim, ff_dim, num_heads, num_layers).into());
         }
         
+        // Check for alignment issues in model dimensions
+        if model_dim % num_heads != 0 {
+            return Err(format!("Model dimension ({}) must be divisible by number of heads ({})", 
+                model_dim, num_heads).into());
+        }
+        
         // Handle format based on file extension
         if path.ends_with(".walle") {
             println!("Saving model in binary format with version 1...");
+            println!("Validated model configuration: {}x{}x{}x{}", model_dim, ff_dim, num_heads, num_layers);
             self.save_binary_model_v1(path, model_dim, ff_dim, num_heads, num_layers)?;
             return Ok(());
         } else {
@@ -605,6 +656,25 @@ impl EnhancedTrainer {
     fn save_binary_model_v1(&self, path: &str, model_dim: usize, ff_dim: usize, 
                             num_heads: usize, num_layers: usize) -> Result<(), Box<dyn std::error::Error>> {
         use self::binary_format::*;
+        
+        // Perform additional validation before saving
+        if model_dim % num_heads != 0 {
+            println!("Warning: model_dim {} is not divisible by num_heads {}", model_dim, num_heads);
+            println!("This may cause compatibility issues when loading the model");
+        }
+        
+        // Check that dimensions are powers of 2 for optimal performance
+        fn is_power_of_two(n: usize) -> bool {
+            n != 0 && (n & (n - 1)) == 0
+        }
+        
+        if !is_power_of_two(model_dim) {
+            println!("Warning: model_dim {} is not a power of 2, which may impact performance", model_dim);
+        }
+        
+        if !is_power_of_two(ff_dim) {
+            println!("Warning: ff_dim {} is not a power of 2, which may impact performance", ff_dim);
+        }
         
         // Create file
         let mut file = std::fs::File::create(path)?;
@@ -1629,14 +1699,43 @@ impl EnhancedTrainer {
         
         // Process batches from different parts of the dataset
         // Increase the number of sample points based on max_examples
-        let num_sample_points = (max_examples / 25).clamp(4, 50);  // Adjust based on max_examples
+        let num_sample_points = (max_examples / 5).clamp(20, 200);  // Significantly more sampling points
         let mut sample_indices = Vec::with_capacity(num_sample_points);
         
+        // Create a more comprehensive sampling across the dataset
         for i in 0..num_sample_points {
             let idx = i * inputs.len() / num_sample_points;
             sample_indices.push(idx);
         }
         
+        // Add more random samples to increase diversity
+        let mut rng = thread_rng();
+        for _ in 0..num_sample_points / 2 {  // Increased from 1/5 to 1/2
+            let idx = rng.gen_range(0..inputs.len());
+            if !sample_indices.contains(&idx) {
+                sample_indices.push(idx);
+            }
+        }
+        
+        // Track examples per level to ensure balanced distribution
+        let mut examples_per_level = HashMap::new();
+        for level in [
+            DifficultyLevel::VeryEasy,
+            DifficultyLevel::Easy,
+            DifficultyLevel::Medium,
+            DifficultyLevel::Hard,
+            DifficultyLevel::VeryHard
+        ].iter() {
+            examples_per_level.insert(*level, 0);
+        }
+        
+        // Calculate target examples per level (distribute examples evenly)
+        let target_per_level = max_examples / 5;
+        
+        // Shuffle the sample indices to ensure varied example selection
+        sample_indices.shuffle(&mut rng);
+        
+        // First pass: collect as many examples as possible 
         for &idx in &sample_indices {
             if idx < inputs.len() && idx < targets.len() {
                 let batch = &inputs[idx];
@@ -1671,46 +1770,117 @@ impl EnhancedTrainer {
                     
                     // Create curriculum example with loss
                     if let Some(loss) = output.loss {
-                        let example = CurriculumExample {
-                            index: ex_idx,
-                            input: input.clone(),
-                            target: target_row,
-                            difficulty: DifficultyLevel::Medium, // Default, will be reassessed based on loss
-                            length: input.len(),
-                            loss,
+                        // Determine actual difficulty based on loss
+                        let actual_difficulty = if loss < 2.0 {
+                            DifficultyLevel::VeryEasy
+                        } else if loss < 3.5 {
+                            DifficultyLevel::Easy
+                        } else if loss < 5.0 {
+                            DifficultyLevel::Medium
+                        } else if loss < 6.5 {
+                            DifficultyLevel::Hard
+                        } else {
+                            DifficultyLevel::VeryHard
                         };
                         
-                        // Artificially adjust some examples to ensure they get placed in different levels
-                        let mut adjusted_example = example.clone();
-                        
-                        // Distribute examples across difficulty levels by adjusting the loss
-                        // This ensures we have examples at all levels
-                        match examples_count % 5 {
-                            0 => adjusted_example.loss = 1.5, // VeryEasy
-                            1 => adjusted_example.loss = 3.0, // Easy
-                            2 => adjusted_example.loss = 4.5, // Medium
-                            3 => adjusted_example.loss = 6.0, // Hard
-                            _ => adjusted_example.loss = 7.5, // VeryHard
-                        }
-                        
-                        // Add to curriculum
-                        let mut examples = Vec::new();
-                        examples.push(adjusted_example);
-                        self.curriculum.update_examples(&examples);
-                        
-                        examples_count += 1;
-                        
-                        // Process enough examples to ensure good distribution
-                        if examples_count >= max_examples {
-                            break;
+                        // Check if we need more examples for this level
+                        if examples_per_level[&actual_difficulty] < target_per_level {
+                            let mut example = CurriculumExample {
+                                index: ex_idx,
+                                input: input.clone(),
+                                target: target_row,
+                                difficulty: actual_difficulty,
+                                length: input.len(),
+                                loss: loss,
+                            };
+                            
+                            // Adjust loss to ensure proper categorization
+                            example.loss = match actual_difficulty {
+                                DifficultyLevel::VeryEasy => 1.5,
+                                DifficultyLevel::Easy => 3.0,
+                                DifficultyLevel::Medium => 4.5,
+                                DifficultyLevel::Hard => 6.0,
+                                DifficultyLevel::VeryHard => 7.5,
+                            };
+                            
+                            // Add to curriculum
+                            let mut examples = Vec::new();
+                            examples.push(example);
+                            self.curriculum.update_examples(&examples);
+                            
+                            // Update count for this level
+                            *examples_per_level.get_mut(&actual_difficulty).unwrap() += 1;
+                            examples_count += 1;
+                            
+                            // Log progress for large initialization
+                            if examples_count % 200 == 0 {
+                                println!("Initialized {} curriculum examples so far", examples_count);
+                                
+                                // Print distribution
+                                for (level, count) in &examples_per_level {
+                                    println!("  Level {:?}: {} examples", level, count);
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+        
+        // Second pass: If any levels are underrepresented, add artificial examples
+        let mut levels_needing_examples = false;
+        for (level, count) in &examples_per_level {
+            if *count < target_per_level / 2 {  // Less than half the target
+                println!("Level {:?} needs more examples (has {})", level, count);
+                levels_needing_examples = true;
+            }
+        }
+        
+        if levels_needing_examples {
+            println!("Some levels have insufficient examples. Adding synthetic examples...");
             
-            // Break if we've collected enough examples
-            if examples_count >= max_examples {
-                break;
+            // Collect examples from all levels using get_training_examples()
+            let all_examples = self.curriculum.get_training_examples();
+            
+            // First identify which levels need examples and how many
+            let mut levels_to_fix = Vec::new();
+            for (level, count) in &examples_per_level {
+                if *count < target_per_level / 2 {
+                    let needed = target_per_level / 2 - *count;
+                    levels_to_fix.push((*level, needed));
+                    println!("Planning to create {} synthetic examples for level {:?}", needed, level);
+                }
+            }
+            
+            // Now create examples for each level that needs them
+            for (level, needed) in levels_to_fix {
+                println!("Creating {} synthetic examples for level {:?}", needed, level);
+                
+                for _ in 0..needed {
+                    if let Some(template_ex) = all_examples.choose(&mut rng) {
+                        // Create a copy with modified difficulty
+                        let mut new_example = template_ex.clone();
+                        new_example.difficulty = level;
+                        
+                        // Adjust loss to ensure proper categorization
+                        new_example.loss = match level {
+                            DifficultyLevel::VeryEasy => 1.5,
+                            DifficultyLevel::Easy => 3.0,
+                            DifficultyLevel::Medium => 4.5,
+                            DifficultyLevel::Hard => 6.0,
+                            DifficultyLevel::VeryHard => 7.5,
+                        };
+                        
+                        // Add to curriculum
+                        let mut examples = Vec::new();
+                        examples.push(new_example);
+                        self.curriculum.update_examples(&examples);
+                        
+                        // Update count
+                        *examples_per_level.get_mut(&level).unwrap() += 1;
+                        examples_count += 1;
+                    }
+                }
             }
         }
         
@@ -1719,6 +1889,11 @@ impl EnhancedTrainer {
         self.curriculum.redistribute_examples();
         
         println!("Curriculum initialization complete with {} examples", examples_count);
+        
+        // Print final distribution
+        for (level, count) in &examples_per_level {
+            println!("  Level {:?}: {} examples", level, count);
+        }
     }
 
     /// Deserialize a model from JSON format

@@ -11,6 +11,9 @@ use rand::prelude::*;
 use serde_json;
 use num_cpus;
 use wall_e1::nabla::memory_opt;
+use rayon::prelude::*;
+use ndarray::Array2;
+use indicatif::{ProgressBar, ProgressStyle};
 
 // Performance logging structure
 struct PerfLogger {
@@ -154,7 +157,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut num_cpus_override = None;
     let mut enable_memory_optimization = false;
     let mut manual_batch_size = None;
-    let mut curriculum_examples: usize = 500;  // Default value
+    let mut curriculum_examples: usize = 2000;
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -679,61 +682,165 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     
     println!("Created {} input/target pairs for training", inputs.len());
     
-    // Process in batches
-    // Calculate memory-optimal batch size based on model dimensions
-    let default_batch_size = trainer.get_batch_size();
-    
-    // Get cache parameters for debugging
+    // Get cache parameters
     let cache_params = memory_opt::detect_cache_parameters();
-    println!("\n======== BATCH SIZE CALCULATION ========");
-    println!("Cache parameters: L1={} KB, L2={} KB, L3={} MB, Line size={} bytes",
+    
+    println!("Cache parameters: L1={} KB, L2={} KB, L3={} KB, Line size={} bytes",
         cache_params.l1_size / 1024, 
         cache_params.l2_size / 1024, 
-        cache_params.l3_size / (1024 * 1024), 
+        cache_params.l3_size / 1024, 
         cache_params.line_size);
     
-    let memory_optimal_batch = calculate_memory_optimal_batch_size(
-        trainer.trainer.get_model_dim(),
-        max_sequence_length
-    );
+    // Get CPU information
+    let num_cpus = num_cpus::get();
+    let num_physical_cpus = num_cpus::get_physical();
+    println!("CPU cores: {} logical, {} physical", num_cpus, num_physical_cpus);
     
-    // Determine the batch size to use
-    let batch_size = if let Some(manual_size) = manual_batch_size {
-        println!("Using manually specified batch size: {}", manual_size);
-        manual_size
-    } else if enable_memory_optimization {
-        println!("Using memory-optimal batch size {} (default was: {})", 
-                memory_optimal_batch, default_batch_size);
-        memory_optimal_batch
-    } else {
-        println!("Using default batch size {} (memory-optimal would be: {})", 
-                default_batch_size, memory_optimal_batch);
-        default_batch_size
-    };
+    // Set Rayon thread pool size to optimize CPU usage
+    let rayon_threads = std::cmp::max(num_physical_cpus, 2);
+    println!("Using {} threads for parallel processing", rayon_threads);
+    
+    // Setting the global Rayon thread pool size
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(rayon_threads)
+        .build_global()
+        .unwrap_or_else(|e| println!("Warning: Failed to set global thread pool: {}", e));
+    
+    // Get model dimensions for batch size calculation
+    let model_dim = trainer.trainer.get_model_dim();
+    
+    // Calculate memory-optimal batch size
+    let optimal_batch_size = calculate_memory_optimal_batch_size(model_dim, max_sequence_length);
+    
+    // Apply constraints based on dataset size to ensure we have enough batches
+    let max_batch_size = inputs.len() / 10.min(50);  // Ensure at least 10 batches, aim for 50+
+    let constrained_batch_size = optimal_batch_size.min(max_batch_size).max(4);  // At least 4, no more than max
+    
+    // Share the information with the user
+    println!("Hardware-optimal batch size: {}", optimal_batch_size);
+    println!("Dataset-constrained batch size: {}", constrained_batch_size);
+    println!("Using batch size: {}", manual_batch_size.unwrap_or(constrained_batch_size));
+    
+    // Use the calculated batch size
+    let batch_size = manual_batch_size.unwrap_or(constrained_batch_size);
+    
+    // Calculate how many batches we'll process with this batch size
+    let expected_batches = (inputs.len() + batch_size - 1) / batch_size; // Ceiling division
+    
+    println!("Calculated memory-optimal batch size: {}", optimal_batch_size);
+    println!("Expected number of batches: {}", expected_batches);
     println!("======================================\n");
     
-    let mut batched_inputs = Vec::new();
-    let mut batched_targets = Vec::new();
+    // Shuffle indices for randomized training
+    let mut indices: Vec<usize> = (0..inputs.len()).collect();
+    indices.shuffle(&mut thread_rng());
     
-    for batch_start in (0..inputs.len()).step_by(batch_size) {
-        let batch_end = (batch_start + batch_size).min(inputs.len());
-        let batch_inputs = inputs[batch_start..batch_end].to_vec();
-        let batch_targets = targets[batch_start..batch_end].to_vec();
+    let mut total_loss = 0.0;
+    let mut batch_counter = 0;
+    
+    // Create batch chunks for parallel processing
+    let batches: Vec<_> = indices.chunks(batch_size).collect();
+    println!("Processing {} batches in parallel when possible", batches.len());
+    
+    // Create progress bar
+    let pb = ProgressBar::new(batches.len() as u64);
+    pb.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} batches ({percent}%) - ETA: {eta_precise} - Loss: {msg}")
+        .unwrap()
+        .progress_chars("#>-"));
+    
+    // Process each batch
+    for (batch_idx, batch_indices) in batches.iter().enumerate() {
+        // Prepare this batch data in parallel
+        let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(&inputs, &targets, batch_indices, max_sequence_length);
         
-        // Convert batch targets to ndarray
-        let mut targets_array = ndarray::Array2::zeros((batch_targets.len(), max_sequence_length));
-        for (i, target) in batch_targets.iter().enumerate() {
-            for (j, &token) in target.iter().enumerate() {
-                targets_array[[i, j]] = token;
-            }
+        // Skip empty batches
+        if batch_inputs.is_empty() {
+            pb.inc(1);
+            continue;
         }
         
-        batched_inputs.push(batch_inputs);
-        batched_targets.push(targets_array);
+        // Train on this batch
+        let loss = trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
+        
+        // Update tracking variables
+        total_loss += loss;
+        batch_counter += 1;
+        
+        // Update progress bar
+        pb.set_message(format!("{:.6} (avg: {:.6})", loss, total_loss / batch_counter as f32));
+        pb.inc(1);
+        
+        // Still keep occasional console updates for log files
+        if batch_idx % 50 == 0 || batch_idx == batches.len() - 1 {
+            println!("Batch {}/{} - Loss: {:.6} - Avg: {:.6}", 
+                batch_idx + 1, batches.len(), loss, total_loss / batch_counter as f32);
+        }
     }
     
-    // Train on batches
-    trainer.train_epoch(&batched_inputs, &batched_targets)
+    // Finish progress bar
+    pb.finish_with_message(format!("Completed - Avg loss: {:.6}", total_loss / batch_counter as f32));
+    
+    total_loss / batch_counter as f32
+}
+
+// Prepares a batch in parallel using Rayon
+fn prepare_batch_parallel(
+    inputs: &[Vec<usize>], 
+    targets: &[Vec<usize>], 
+    batch_indices: &[usize],
+    max_sequence_length: usize
+) -> (Vec<Vec<usize>>, Array2<usize>) {
+    // Early return if batch is empty
+    if batch_indices.is_empty() {
+        return (Vec::new(), Array2::zeros((0, 0)));
+    }
+    
+    // Collect input sequences in parallel
+    let batch_inputs: Vec<Vec<usize>> = batch_indices.par_iter()
+        .map(|&idx| inputs[idx].clone())
+        .collect();
+    
+    // Skip if all sequences are empty
+    if batch_inputs.is_empty() {
+        return (Vec::new(), Array2::zeros((0, 0)));
+    }
+    
+    // Find minimum sequence length in parallel
+    let min_seq_len = batch_inputs.par_iter()
+        .map(|seq| seq.len())
+        .min()
+        .unwrap_or(0)
+        .min(max_sequence_length);
+    
+    // Skip if sequences are too short
+    if min_seq_len < 4 {
+        return (Vec::new(), Array2::zeros((0, 0)));
+    }
+    
+    // Truncate all sequences to the same length
+    let truncated_inputs: Vec<Vec<usize>> = batch_inputs.par_iter()
+        .map(|seq| {
+            if seq.len() > min_seq_len {
+                seq[0..min_seq_len].to_vec()
+            } else {
+                seq.clone()
+            }
+        })
+        .collect();
+    
+    // Create batch targets array
+    let mut batch_targets_arr = Array2::zeros((batch_indices.len(), min_seq_len));
+    
+    // Fill targets sequentially to avoid mutable borrow issues
+    for (i, &idx) in batch_indices.iter().enumerate() {
+        let target = &targets[idx];
+        for j in 0..min_seq_len.min(target.len()) {
+            batch_targets_arr[[i, j]] = target[j];
+        }
+    }
+    
+    (truncated_inputs, batch_targets_arr)
 }
 
 // Prepare validation data for model evaluation
