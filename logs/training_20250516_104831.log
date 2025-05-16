@@ -1,0 +1,169 @@
+Detected JSON format data file
+Using quality-focused sampling: 500 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 10
+Data sampling: quality (500 stories)
+Curriculum examples: 100
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin train_enhanced_model -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 10 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 500 --perf-log true --curriculum-examples 100 --use-memory-opt
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 500
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 10
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 500 stories for training
+Processed 500 stories, total text length: 444538 characters
+Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 3 (validated: 3)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Initializing output_projection: model_dim=128, vocab_size=4145
+Setting up curriculum learning...
+Starting training for 10 epochs...
+Epoch 1/10
+Created 21918 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Using 10 threads for parallel processing
+Warning: Failed to set global thread pool: The global thread pool has already been initialized.
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Hardware-optimal batch size: 1024
+Dataset-constrained batch size: 1024
+Using batch size: 1024
+Calculated memory-optimal batch size: 1024
+Expected number of batches: 22
+======================================
+
+Processing 22 batches in parallel when possible
+Batch 1/22 - Loss: 8.328567 - Avg: 8.328567
+Batch 11/22 - Loss: 8.009267 - Avg: 8.168555
+Batch 21/22 - Loss: 7.702091 - Avg: 8.012059
+Batch 22/22 - Loss: 7.668158 - Avg: 7.996428
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 607, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox stone ster...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 598, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time inside counts...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 570, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where helpers yparb...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 598, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing gher ...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 579, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to ok sunrihose n...
+Epoch 1/10 completed in 342.127024095s
+  Loss: 7.996428
+  Perplexity: 2049.54
+  Accuracy: 21.31%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.38
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 282, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the so croifloyacht house lone...
+
+Sample generation:
+Prompt: "The"
+Generated: "the so croifloyacht house lonely building peneverywhere umbmoves tiously make group good many explored lowns value bounce shouting together max rote marksmelflew ere ball lonions pie proteis wide jim doll quit tent picsomething sorts ey really stuck shaped marbles tomorrow chorstep"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch1
+Checkpoint saved successfully
+Epoch 2/10
+Created 21918 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Using 10 threads for parallel processing
+Warning: Failed to set global thread pool: The global thread pool has already been initialized.
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Hardware-optimal batch size: 1024
+Dataset-constrained batch size: 1024
+Using batch size: 1024
+Calculated memory-optimal batch size: 1024
+Expected number of batches: 22
+======================================
+
+Processing 22 batches in parallel when possible
+Batch 1/22 - Loss: 7.639131 - Avg: 7.639131
