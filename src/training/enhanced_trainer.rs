@@ -780,6 +780,7 @@ impl EnhancedTrainer {
     }
     
     /// Generate text with improved anti-repetition mechanisms
+    /// TODO: Parallelize this!!
     pub fn generate_text(&self, prompt: &str, max_tokens: Option<usize>) -> String {
         // Check if watchdog is disabled for text generation
         let watchdog_disabled = match std::env::var("WALL_E_DISABLE_WATCHDOG") {

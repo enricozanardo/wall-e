@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format]  Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -29,6 +29,11 @@ show_usage() {
   echo "  --watchdog-timeout [seconds]       Set timeout for watchdog thread detection (default: 60)"
   echo "  --data-threads [number]            Number of threads for data loading (min: 8, default: 70% of available cores)"
   echo "  --target-id-max [number]           Maximum target ID value (default: auto-detected, min: 5000)"
+  echo "  --vocab-size [number]              Size of the vocabulary (default: 10000)"
+  echo "  --min-freq [number]                Minimum token frequency for vocabulary inclusion (default: 2)"
+  echo "  --enable-skip                      Enable skip connections in the model architecture"
+  echo "  --strong-anti-rep                  Enable stronger anti-repetition mechanisms"
+  echo "  --json-format                      Use JSON format for input data instead of plain text"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
@@ -46,6 +51,7 @@ show_usage() {
   echo "  $0 train --size small --profile    Train a small model with performance profiling"
   echo "  $0 train --size medium --auto-resize-vocab --target-id-max 10000  Train with automatic vocabulary resizing"
   echo "  $0 train --size small --watchdog-timeout 120 --data-threads 16  Train with custom watchdog and data thread settings"
+  echo "  $0 train --size small --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format  Train with custom vocabulary and architecture settings"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2 --disable-watchdog"
 }
@@ -81,6 +87,17 @@ train_model() {
   local data_threads_param=""
   local target_id_max=""
   local target_id_max_param=""
+  # New parameters
+  local vocab_size=""
+  local vocab_size_param=""
+  local min_freq=""
+  local min_freq_param=""
+  local enable_skip=""
+  local enable_skip_param=""
+  local strong_anti_rep=""
+  local strong_anti_rep_param=""
+  local json_format=""
+  local json_format_param=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
@@ -101,7 +118,7 @@ train_model() {
         ;;
       --memory-opt)
         memory_opt="true"
-        memory_opt_param="--memory-opt"
+        memory_opt_param="--use-memory-opt"
         shift 1
         ;;
       --checkpoint-strategy)
@@ -149,13 +166,50 @@ train_model() {
         target_id_max_param="--target-id-max $target_id_max"
         shift 2
         ;;
+      --vocab-size)
+        vocab_size="$2"
+        vocab_size_param="--vocab-size $vocab_size"
+        shift 2
+        ;;
+      --min-freq)
+        min_freq="$2"
+        min_freq_param="--min-freq $min_freq"
+        shift 2
+        ;;
+      --enable-skip)
+        enable_skip="true"
+        enable_skip_param="--enable-skip"
+        shift 1
+        ;;
+      --strong-anti-rep)
+        strong_anti_rep="true"
+        strong_anti_rep_param="--strong-anti-rep"
+        shift 1
+        ;;
+      --json-format)
+        json_format="true"
+        json_format_param="--json-format"
+        shift 1
+        ;;
       --profile)
         profile="true"
         shift 1
         ;;
       --perf-log)
         profile="true"
-        shift 1
+        # Check if the next argument is a value for perf-log
+        if [[ $# -gt 1 && ! "$2" =~ ^-- ]]; then
+          # Accept any value, but only treat "true" as true
+          if [[ "$2" == "true" ]]; then
+            profile="true"
+          elif [[ "$2" == "false" ]]; then
+            profile="false"
+          fi
+          shift 2
+        else
+          # No value provided, treat as flag
+          shift 1
+        fi
         ;;
       *)
         echo "Unknown option: $1"
@@ -230,6 +284,21 @@ train_model() {
   if [[ -n "$target_id_max" ]]; then
     echo "Maximum target ID set to $target_id_max"
   fi
+  if [[ -n "$vocab_size" ]]; then
+    echo "Vocabulary size set to $vocab_size"
+  fi
+  if [[ -n "$min_freq" ]]; then
+    echo "Minimum token frequency set to $min_freq"
+  fi
+  if [[ -n "$enable_skip" ]]; then
+    echo "Skip connections enabled"
+  fi
+  if [[ -n "$strong_anti_rep" ]]; then
+    echo "Strong anti-repetition mechanisms enabled"
+  fi
+  if [[ -n "$json_format" ]]; then
+    echo "Using JSON format for input data"
+  fi
   if [[ -n "$profile" ]]; then
     echo "Performance profiling enabled"
   fi
@@ -274,6 +343,11 @@ train_model() {
       $watchdog_timeout_param \
       $data_threads_param \
       $target_id_max_param \
+      $vocab_size_param \
+      $min_freq_param \
+      $enable_skip_param \
+      $strong_anti_rep_param \
+      $json_format_param \
       $data_file
   else
     # Use the regular training script
@@ -290,7 +364,12 @@ train_model() {
       $auto_resize_vocab_param \
       $watchdog_timeout_param \
       $data_threads_param \
-      $target_id_max_param
+      $target_id_max_param \
+      $vocab_size_param \
+      $min_freq_param \
+      $enable_skip_param \
+      $strong_anti_rep_param \
+      $json_format_param
   fi
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"

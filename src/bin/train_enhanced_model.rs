@@ -461,6 +461,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut curriculum_examples: usize = 2000;
     let mut checkpoint_strategy = None;
     let mut thread_opt = None;
+    // New parameters added for enhanced functionality
+    let mut auto_resize_vocab = false;
+    let mut watchdog_timeout: Option<u64> = None;
+    let mut data_threads: Option<usize> = None;
+    let mut target_id_max: Option<usize> = None;
+    let mut disable_watchdog = false;
 
     // Command line arguments parsing loop with progress counter
     let arg_count = args.len();
@@ -594,6 +600,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
+            // New parameters added
+            "--auto-resize-vocab" => {
+                auto_resize_vocab = true;
+                println!("Automatic vocabulary resizing enabled");
+            }
+            "--watchdog-timeout" => {
+                if let Some(val) = arg_iter.next() {
+                    if let Ok(timeout) = val.parse::<u64>() {
+                        watchdog_timeout = Some(timeout);
+                        println!("Watchdog timeout set to {} seconds", timeout);
+                    }
+                }
+            }
+            "--data-threads" => {
+                if let Some(val) = arg_iter.next() {
+                    if let Ok(threads) = val.parse::<usize>() {
+                        data_threads = Some(threads);
+                        println!("Data loading threads set to {}", threads);
+                    }
+                }
+            }
+            "--target-id-max" => {
+                if let Some(val) = arg_iter.next() {
+                    if let Ok(max_id) = val.parse::<usize>() {
+                        target_id_max = Some(max_id);
+                        println!("Maximum target ID pre-allocated to {}", max_id);
+                    }
+                }
+            }
+            "--disable-watchdog" => {
+                disable_watchdog = true;
+                println!("Watchdog disabled for training");
+            }
             _ => {
                 // If this is the first non-flag argument and we don't have a training data path yet,
                 // assume it's the training data path
@@ -605,6 +644,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
+    }
+    
+    // Set up environment variables based on parsed arguments
+    if let Some(threads) = data_threads {
+        unsafe {
+            std::env::set_var("WALL_E_DATA_THREADS", threads.to_string());
+        }
+        println!("🔄 Setting WALL_E_DATA_THREADS={} for data loading operations", threads);
+    }
+
+    if disable_watchdog {
+        unsafe {
+            std::env::set_var("WALL_E_DISABLE_WATCHDOG", "true");
+        }
+        println!("🛑 Watchdog disabled for training session");
     }
     
     // Log argument parsing time
@@ -906,12 +960,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Set up evaluation prompts
     let eval_prompts = [
-        "The quick brown fox",
         "Once upon a time",
-        "In a world where",
-        "The most important thing",
-        "I would like to",
     ];
+
+    
     
     // Prepare validation data
     println!("\n⏳ Preparing validation dataset...");
@@ -1262,6 +1314,15 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
             let mut last_progress = 0;
             let mut stall_count = 0;
             loop {
+                // Check if watchdog has been disabled - exit the thread if so
+                match std::env::var("WALL_E_DISABLE_WATCHDOG") {
+                    Ok(val) if val == "true" || val == "1" => {
+                        println!("✅ WATCHDOG: Disabled by environment variable, exiting...");
+                        break;
+                    }
+                    _ => { /* Continue with watchdog */ }
+                }
+                
                 std::thread::sleep(std::time::Duration::from_secs(1));
                 let current = progress_watchdog.load(std::sync::atomic::Ordering::Relaxed);
                 
@@ -1612,10 +1673,19 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     let watchdog_handle = std::thread::Builder::new()
         .name("batch-watchdog".to_string())
         .spawn(move || {
-            let mut stall_count = 0;
             let mut last_active = 0;
+            let mut stall_count = 0;
             let mut consecutive_stalls = 0;
             loop {
+                // Check if watchdog has been disabled - exit the thread if so
+                match std::env::var("WALL_E_DISABLE_WATCHDOG") {
+                    Ok(val) if val == "true" || val == "1" => {
+                        println!("✅ WATCHDOG: Disabled by environment variable, exiting...");
+                        break;
+                    }
+                    _ => { /* Continue with watchdog */ }
+                }
+                
                 std::thread::sleep(std::time::Duration::from_secs(2));
                 
                 // Check if termination was requested
@@ -1641,15 +1711,13 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
                         println!("        - Active workers: {}", current_active);
                         println!("        - Queue empty: {}", is_empty);
                         
-                        // Report thread states if we have them
+                        // Only log detailed thread status occasionally to avoid log spam
                         if let Ok(states) = watchdog_thread_states.try_lock() {
-                            println!("    🔍 THREAD STATUS REPORT:");
-                            for (thread_id, state) in states.iter() {
-                                println!("        - Thread {}: {}", thread_id, state);
+                            for (tid, state) in states.iter() {
+                                println!("        - Thread {}: {}", tid, state);
                             }
                         }
                         
-                        // NEW: Implement recovery action for deadlocks
                         consecutive_stalls += 1;
                         if consecutive_stalls >= 3 {
                             println!("    🔄 WATCHDOG: Deadlock detected, requesting termination");
@@ -1659,7 +1727,10 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
                     }
                 } else {
                     stall_count = 0;
-                    consecutive_stalls = 0;
+                    // Reset consecutive stalls counter if there's progress
+                    if current_active != last_active {
+                        consecutive_stalls = 0;
+                    }
                 }
                 
                 last_active = current_active;

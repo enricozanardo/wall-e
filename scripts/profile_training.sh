@@ -24,6 +24,16 @@ THREAD_OPT=""
 BATCH_SIZE=""
 CURRICULUM_EXAMPLES=""
 DATA_FILE=""
+# New parameter defaults
+WATCHDOG_TIMEOUT=""
+DATA_THREADS=""
+TARGET_ID_MAX=""
+AUTO_RESIZE_VOCAB=""
+VOCAB_SIZE=""
+MIN_FREQ=""
+ENABLE_SKIP=""
+STRONG_ANTI_REP=""
+JSON_FORMAT="--json-format" # Default to JSON format since most training data is JSON
 
 # Process arguments
 while [[ $# -gt 0 ]]; do
@@ -75,6 +85,43 @@ while [[ $# -gt 0 ]]; do
     --curriculum-examples)
       CURRICULUM_EXAMPLES="--curriculum-examples $2"
       shift 2
+      ;;
+    # New parameter handling
+    --watchdog-timeout)
+      WATCHDOG_TIMEOUT="--watchdog-timeout $2"
+      shift 2
+      ;;
+    --data-threads)
+      DATA_THREADS="--data-threads $2"
+      shift 2
+      ;;
+    --target-id-max)
+      TARGET_ID_MAX="--target-id-max $2"
+      shift 2
+      ;;
+    --auto-resize-vocab)
+      AUTO_RESIZE_VOCAB="--auto-resize-vocab"
+      shift 1
+      ;;
+    --vocab-size)
+      VOCAB_SIZE="--vocab-size $2"
+      shift 2
+      ;;
+    --min-freq)
+      MIN_FREQ="--min-freq $2"
+      shift 2
+      ;;
+    --enable-skip)
+      ENABLE_SKIP="--enable-skip"
+      shift 1
+      ;;
+    --strong-anti-rep)
+      STRONG_ANTI_REP="--strong-anti-rep"
+      shift 1
+      ;;
+    --json-format)
+      JSON_FORMAT="--json-format"
+      shift 1
       ;;
     *)
       # Assume last argument is the data file
@@ -137,10 +184,14 @@ CMD_ARGS=(
   "--ff-dim" "$FF_DIM"
   "--layers" "$LAYERS"
   "--epochs" "$EPOCHS"
-  "--json-format"
   "--perf-log" "true"
   "--save-path" "$PROFILE_DIR/model_$TIMESTAMP.json"
 )
+
+# Add JSON format parameter (if set)
+if [[ -n "$JSON_FORMAT" ]]; then
+  CMD_ARGS+=($JSON_FORMAT)
+fi
 
 # Add optional arguments
 if [[ -n "$CPUS" ]]; then
@@ -165,6 +216,39 @@ fi
 
 if [[ -n "$THREAD_OPT" ]]; then
   CMD_ARGS+=($THREAD_OPT)
+fi
+
+# Add new parameters
+if [[ -n "$WATCHDOG_TIMEOUT" ]]; then
+  CMD_ARGS+=($WATCHDOG_TIMEOUT)
+fi
+
+if [[ -n "$DATA_THREADS" ]]; then
+  CMD_ARGS+=($DATA_THREADS)
+fi
+
+if [[ -n "$TARGET_ID_MAX" ]]; then
+  CMD_ARGS+=($TARGET_ID_MAX)
+fi
+
+if [[ -n "$AUTO_RESIZE_VOCAB" ]]; then
+  CMD_ARGS+=($AUTO_RESIZE_VOCAB)
+fi
+
+if [[ -n "$VOCAB_SIZE" ]]; then
+  CMD_ARGS+=($VOCAB_SIZE)
+fi
+
+if [[ -n "$MIN_FREQ" ]]; then
+  CMD_ARGS+=($MIN_FREQ)
+fi
+
+if [[ -n "$ENABLE_SKIP" ]]; then
+  CMD_ARGS+=($ENABLE_SKIP)
+fi
+
+if [[ -n "$STRONG_ANTI_REP" ]]; then
+  CMD_ARGS+=($STRONG_ANTI_REP)
 fi
 
 # Add data file as the last argument

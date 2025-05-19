@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--profile|--perf-log]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--profile|--perf-log]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50 [--disable-watchdog]
@@ -65,8 +65,17 @@ All trained models use the `.walle` extension for consistency. The internal form
 # Train with custom watchdog and data thread settings for better deadlock prevention
 ./wall-e1-model.sh train --size small --watchdog-timeout 120 --data-threads 16
 
+# Train with custom vocabulary settings
+./wall-e1-model.sh train --size medium --vocab-size 5000 --min-freq 2
+
+# Train with skip connections and anti-repetition for better model architecture
+./wall-e1-model.sh train --size medium --enable-skip --strong-anti-rep
+
+# Train with JSON format data source
+./wall-e1-model.sh train --size small --json-format --stories 2000
+
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12 --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format
 
 # Train with performance profiling
 ./wall-e1-model.sh train --size small --perf-log
@@ -133,7 +142,12 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - **--watchdog-timeout <seconds>**: Set timeout for watchdog thread detection (default: 60). Increase for larger models or slower systems.
 - **--data-threads <number>**: Number of threads for data loading (min: 8, default: 70% of available cores). Increasing can help with CPU utilization.
 - **--target-id-max <number>**: Maximum target ID value (default: auto-detected, min: 5000). Set higher for larger vocabularies.
-- **--profile, --perf-log**: Enable detailed performance profiling and metrics collection
+- **--vocab-size <number>**: Size of the vocabulary (default: 10000). Smaller values create a more compact model, larger values improve accuracy but increase memory usage.
+- **--min-freq <number>**: Minimum token frequency for vocabulary inclusion (default: 2). Higher values create a more focused vocabulary but may increase out-of-vocabulary tokens.
+- **--enable-skip**: Enable skip connections in the model architecture, which can improve gradient flow and model performance.
+- **--strong-anti-rep**: Enable stronger anti-repetition mechanisms to prevent the model from generating repetitive text.
+- **--json-format**: Use JSON format for input data instead of plain text. Required when training on TinyStories or similar JSON-formatted datasets.
+- **--profile, --perf-log [true|false]**: Enable detailed performance profiling and metrics collection. You can use it as a flag (--perf-log) or with an explicit value (--perf-log true)
 
 ## Thread Pool Optimization
 
@@ -179,6 +193,24 @@ When training with large vocabularies, you may encounter "target_id XXX out of r
 
 For optimal performance, set `--auto-resize-vocab` with a reasonable `--target-id-max` value based on your dataset size.
 
+## Model Architecture Options
+
+Wall-E1 supports several architecture enhancements that can improve model performance:
+
+1. **Skip Connections**: Enable with `--enable-skip` to add residual connections between layers, which helps gradient flow and can improve training stability and model quality.
+2. **Anti-repetition**: Use `--strong-anti-rep` to enable more aggressive penalties for repetitive text generation, which helps prevent common issues like repeated phrases or patterns.
+3. **Vocabulary Size**: Adjust with `--vocab-size` to balance between model size and vocabulary coverage. Smaller values create more compact models, while larger values can improve accuracy at the cost of increased memory usage.
+4. **Token Frequency**: Use `--min-freq` to control which tokens get included in the vocabulary based on their frequency in the training data. Higher values create a more focused vocabulary.
+
+## Input Data Format
+
+Wall-E1 supports multiple input formats for training data:
+
+1. **Plain Text**: The default format, where the input file contains raw text.
+2. **JSON Format**: Enable with `--json-format` for structured datasets like TinyStories, where stories are contained within a JSON structure.
+
+When using JSON format, you can control the number of stories to use with the `--stories` parameter, which is particularly useful for experiments with varying dataset sizes.
+
 ## Notes
 
 - All models are saved in the `models/` directory.
@@ -189,3 +221,4 @@ For optimal performance, set `--auto-resize-vocab` with a reasonable `--target-i
 - When using larger batch sizes, consider increasing the number of curriculum examples to ensure proper level advancement.
 - If you encounter thread deadlocks during training, increase the `--watchdog-timeout` and `--data-threads` values.
 - For large datasets, always use `--auto-resize-vocab` to handle unexpected vocabulary growth. 
+- When training on JSON-formatted datasets like TinyStories, be sure to include the `--json-format` parameter. 
