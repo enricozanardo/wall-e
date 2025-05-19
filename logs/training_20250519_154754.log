@@ -1,0 +1,249 @@
+Detected JSON format data file
+Using quality-focused sampling: 500 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 1
+Data sampling: quality (500 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Checkpoint strategy: adaptive
+Thread optimization: gradient_update
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 1 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 500 --perf-log true --curriculum-examples 500 --use-memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update
+Using RAYON_NUM_THREADS=20
+Detected 20 CPU cores
+Memory [startup]: VmSize:	    5460 kB
+Memory [startup]: VmRSS:	    1504 kB
+
+📊 DETAILED STARTUP TIMING 📊
+⏳ Initializing thread pools...
+Creating thread pool with 20 threads for general operations
+  ✅ Global thread pool initialized with 20 threads (1.18ms)
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+  ✅ Thread pool for 'matrix_multiply' initialized with 19 threads (1.84ms)
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool for 'gradient_update' initialized with 15 threads (950.16µs)
+🔹 Creating dedicated thread pool for 'data_loading' operation with 2 threads
+Creating thread pool with 2 threads for data_loading operations
+  ✅ Thread pool for 'data_loading' initialized with 2 threads (247.36µs)
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+  ✅ Thread pool for 'attention' initialized with 19 threads (1.70ms)
+✅ Thread pools initialized in 5.97ms
+⏳ Configuring memory allocator...
+  ✅ Cache detection completed in 42.09µs
+     L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+  ✅ Memory allocator configured in 84.38µs
+  ✅ Memory bandwidth measured in 524.43ms: 8.20 GB/s
+✅ Memory optimizations completed in 524.60ms
+✅ Total initialization completed in 530.57ms
+
+Memory and thread optimizations configured
+
+🔄 STARTING APPLICATION SETUP 🔄
+⏳ Parsing command line arguments...
+  Processing 34 command line arguments
+✅ Arguments parsed in 3.91µs
+⏳ Configuring thread pool with 19 CPU cores
+
+🔄 TRAINING SETUP PHASE 🔄
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 500
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 1
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 19
+  Performance logging: enabled
+
+⏳ Reading training data (single-threaded operation)...
+  🔄 Reading JSON file from data/tiny_stories_sample.json...
+Found 58300 stories in JSON file
+Will use 500 stories for training
+Processed 500 stories, total text length: 443539 characters
+  ✅ JSON data loaded in 42.52ms, 443539 characters
+✅ Training data loaded in 42.56ms
+Memory [after_data_loading]: VmSize:	 6412132 kB
+Memory [after_data_loading]: VmRSS:	   62512 kB
+
+⏳ Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 3 (validated: 3)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+  🔄 Configuring trainer options...
+  ✅ Trainer options configured in 110.00ns
+  🔄 Enabling memory optimization with gradient checkpointing...
+Memory optimization enabled with gradient checkpointing
+  🔄 Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+  ✅ Memory optimization configured in 1.77µs
+Memory [after_memory_opt_enable]: VmSize:	 6412132 kB
+Memory [after_memory_opt_enable]: VmRSS:	   62512 kB
+  🔄 Configuring thread pool for gradient_update operations...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.61 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5842, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool configured with 6 threads for gradient_update operations in 512.16ms
+✅ Trainer initialization completed in 515.03ms
+
+⏳ Configuring strong anti-repetition mechanisms...
+✅ Anti-repetition configured in 3.21µs
+
+⏳ Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+✅ Skip connections enabled in 4.46ms
+
+⏳ Learning tokenizer vocabulary (single-threaded operation)...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 45 chunks
+Starting parallel vocabulary learning with 45 chunks
+Using global thread pool with 20 threads
+Word counting completed in 16.52ms, found 3472 unique words
+Learning up to 4899 merges to reach vocab size 5000
+  Learned 1 merges (0.0%) in 995.74µs...
+  Learned 1001 merges (20.4%) in 635.40ms...
+  Learned 2001 merges (40.8%) in 1.12s...
+  Learned 3001 merges (61.3%) in 1.45s...
+  Learned 4001 merges (81.7%) in 1.59s...
+Parallel BPE learning completed in 1.62s, vocabulary size: 4160
+Learned 4060 merge operations
+Tokenizer vocabulary learned: 4160 tokens (from requested max: 5000)
+Initializing output_projection: model_dim=128, vocab_size=4160
+Resizing output projection to match vocabulary size: 4160
+Vocabulary learning completed in 1.62s
+✅ Tokenizer vocabulary learned in 1.62s
+
+⏳ Splitting training/validation data...
+✅ Data split in 3.40µs: 399185 characters for training, 44354 for validation
+
+⏳ Setting up curriculum learning...
+
+⏳ Tokenizing data (single-threaded operation)...
+  🔄 Tokenizing training data (399185 characters)...
+  ✅ Training data tokenized in 376.22ms: 175665 tokens
+  🔄 Tokenizing validation data (44354 characters)...
+  ✅ Validation data tokenized in 44.39ms: 19215 tokens
+✅ All data tokenized in 420.67ms
+Memory [after_tokenization]: VmSize:	 6412132 kB
+Memory [after_tokenization]: VmRSS:	   68320 kB
+
+⏳ Preparing validation dataset...
+🔸 Reusing existing thread pool for 'data_loading' operation
+✅ Validation data prepared in 545.09µs: 2100 examples
+
+✅ TRAINING SETUP COMPLETED in 2.61s
+Starting training for 1 epochs...
+
+🔄 BEGINNING TRAINING PROCESS 🔄
+
+⏳ EPOCH 1/1 STARTING
+  🔄 Training on 175665 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 6412132 kB
+Memory [train_epoch_start]: VmRSS:	   69372 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows (potentially single-threaded)...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.42µs
+Memory [after_memory_opt_enable]: VmSize:	 6412132 kB
+Memory [after_memory_opt_enable]: VmRSS:	   69372 kB
+    🔄 Configuring thread pool for data preparation (often sequential)...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.97 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=21610, compute_limit=2, adjusted=1, final=1
+🔸 Reusing existing thread pool for 'data_loading' operation
+Configured dedicated thread pool with 2 threads for data_loading operations
+    ✅ Data loading thread pool configured in 565.46ms
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21957 sliding windows in parallel
+🔸 Reusing existing thread pool for 'data_loading' operation
+    🔄 Using dedicated thread pool with 2 threads for data preparation
+    ✅ Created 21957 input/target pairs in 3.43ms (parallel window creation: 3.34ms)
+    🚀 Parallelization speedup: 1313.1x faster than sequential processing
+    📊 Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+    💻 CPU cores: 20 logical, 10 physical
+    🔄 Configuring thread pool for gradient updates...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.91 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5365, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+    ✅ Using 6 threads for gradient processing (configured in 491.30ms)
+    🧮 Calculating optimal batch size...
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    ✅ Batch size calculation completed in 54.41µs
+      📊 Hardware-optimal batch size: 1024
+      📊 Dataset-constrained batch size: 1024
+      📊 Using batch size: 1024
+    📊 Expected number of batches: 22
+    🔄 Configuring thread pool for data shuffling...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.98 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=21649, compute_limit=2, adjusted=1, final=1
+🔸 Reusing existing thread pool for 'data_loading' operation
+Configured dedicated thread pool with 2 threads for data_loading operations
+    ✅ Data shuffling thread pool configured in 486.93ms
+    🔄 Shuffling data indices...
+🔸 Reusing existing thread pool for 'data_loading' operation

@@ -1,0 +1,937 @@
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9514s, Avg: 1.9514s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5335s, Avg: 0.5335s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5335s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5335 sec
+  Average:   0.5335 sec
+  Min/Max:   0.5335/0.5335 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9514 sec
+  Average:   1.9514 sec
+  Min/Max:   1.9514/1.9514 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9795s, Avg: 1.9795s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5445s, Avg: 0.5445s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5445s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5445 sec
+  Average:   0.5445 sec
+  Min/Max:   0.5445/0.5445 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9795 sec
+  Average:   1.9795 sec
+  Min/Max:   1.9795/1.9795 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9327s, Avg: 1.9327s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5382s, Avg: 0.5382s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5382s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9327 sec
+  Average:   1.9327 sec
+  Min/Max:   1.9327/1.9327 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5382 sec
+  Average:   0.5382 sec
+  Min/Max:   0.5382/0.5382 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9125s, Avg: 1.9125s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5279s, Avg: 0.5279s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5279s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5279 sec
+  Average:   0.5279 sec
+  Min/Max:   0.5279/0.5279 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9125 sec
+  Average:   1.9125 sec
+  Min/Max:   1.9125/1.9125 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.0065s, Avg: 2.0065s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5366s, Avg: 0.5366s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5366s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5366 sec
+  Average:   0.5366 sec
+  Min/Max:   0.5366/0.5366 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.0065 sec
+  Average:   2.0065 sec
+  Min/Max:   2.0065/2.0065 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9314s, Avg: 1.9314s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5425s, Avg: 0.5425s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5425s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9314 sec
+  Average:   1.9314 sec
+  Min/Max:   1.9314/1.9314 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5425 sec
+  Average:   0.5425 sec
+  Min/Max:   0.5425/0.5425 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9348s, Avg: 1.9348s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5282s, Avg: 0.5282s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5282s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0001s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5282 sec
+  Average:   0.5282 sec
+  Min/Max:   0.5282/0.5282 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9348 sec
+  Average:   1.9348 sec
+  Min/Max:   1.9348/1.9348 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.0383s, Avg: 2.0383s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5659s, Avg: 0.5659s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5659s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.0383 sec
+  Average:   2.0383 sec
+  Min/Max:   2.0383/2.0383 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5659 sec
+  Average:   0.5659 sec
+  Min/Max:   0.5659/0.5659 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9149s, Avg: 1.9149s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5386s, Avg: 0.5386s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5386s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5386 sec
+  Average:   0.5386 sec
+  Min/Max:   0.5386/0.5386 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9149 sec
+  Average:   1.9149 sec
+  Min/Max:   1.9149/1.9149 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 1.9792s, Avg: 1.9792s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5433s, Avg: 0.5433s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.5433s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.5433 sec
+  Average:   0.5433 sec
+  Min/Max:   0.5433/0.5433 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     1.9792 sec
+  Average:   1.9792 sec
+  Min/Max:   1.9792/1.9792 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution - Total: 107.5106s, Avg: 107.5106s, Count: 1
+#2: program_execution/training_process - Total: 106.4968s, Avg: 106.4968s, Count: 1
+#3: program_execution/training_process/evaluation_1 - Total: 8.0589s, Avg: 8.0589s, Count: 1
+#4: program_execution/training_process/evaluation_5 - Total: 7.8913s, Avg: 7.8913s, Count: 1
+#5: program_execution/training_process/evaluation_8 - Total: 7.8553s, Avg: 7.8553s, Count: 1
+#6: program_execution/training_process/evaluation_4 - Total: 7.8034s, Avg: 7.8034s, Count: 1
+#7: program_execution/training_process/evaluation_6 - Total: 7.7928s, Avg: 7.7928s, Count: 1
+#8: program_execution/training_process/evaluation_9 - Total: 7.7764s, Avg: 7.7764s, Count: 1
+#9: program_execution/training_process/evaluation_3 - Total: 7.7413s, Avg: 7.7413s, Count: 1
+#10: program_execution/training_process/evaluation_10 - Total: 7.7134s, Avg: 7.7134s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/training_process/sample_generation_9
+  Count:     1
+  Total:     0.3457 sec
+  Average:   0.3457 sec
+  Min/Max:   0.3457/0.3457 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/tokenization
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_4
+  Count:     1
+  Total:     2.4495 sec
+  Average:   2.4495 sec
+  Min/Max:   2.4495/2.4495 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_5
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/vocabulary_learning
+  Count:     1
+  Total:     0.0048 sec
+  Average:   0.0048 sec
+  Min/Max:   0.0048/0.0048 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process
+  Count:     1
+  Total:     106.4968 sec
+  Average:   106.4968 sec
+  Min/Max:   106.4968/106.4968 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/data_splitting
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_4
+  Count:     1
+  Total:     7.8034 sec
+  Average:   7.8034 sec
+  Min/Max:   7.8034/7.8034 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_8
+  Count:     1
+  Total:     2.5923 sec
+  Average:   2.5923 sec
+  Min/Max:   2.5923/2.5923 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_8
+  Count:     1
+  Total:     0.3407 sec
+  Average:   0.3407 sec
+  Min/Max:   0.3407/0.3407 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_9
+  Count:     1
+  Total:     2.4785 sec
+  Average:   2.4785 sec
+  Min/Max:   2.4785/2.4785 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_10
+  Count:     1
+  Total:     7.7134 sec
+  Average:   7.7134 sec
+  Min/Max:   7.7134/7.7134 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/data_loading
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup
+  Count:     1
+  Total:     0.4788 sec
+  Average:   0.4788 sec
+  Min/Max:   0.4788/0.4788 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_2
+  Count:     1
+  Total:     0.3488 sec
+  Average:   0.3488 sec
+  Min/Max:   0.3488/0.3488 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_9
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_5
+  Count:     1
+  Total:     7.8913 sec
+  Average:   7.8913 sec
+  Min/Max:   7.8913/7.8913 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_2
+  Count:     1
+  Total:     2.5489 sec
+  Average:   2.5489 sec
+  Min/Max:   2.5489/2.5489 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution
+  Count:     1
+  Total:     107.5106 sec
+  Average:   107.5106 sec
+  Min/Max:   107.5106/107.5106 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_5
+  Count:     1
+  Total:     2.5999 sec
+  Average:   2.5999 sec
+  Min/Max:   2.5999/2.5999 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/save_final_model
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_6
+  Count:     1
+  Total:     7.7928 sec
+  Average:   7.7928 sec
+  Min/Max:   7.7928/7.7928 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_4
+  Count:     1
+  Total:     0.3706 sec
+  Average:   0.3706 sec
+  Min/Max:   0.3706/0.3706 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_7
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_7
+  Count:     1
+  Total:     2.4823 sec
+  Average:   2.4823 sec
+  Min/Max:   2.4823/2.4823 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/validation_data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_9
+  Count:     1
+  Total:     7.7764 sec
+  Average:   7.7764 sec
+  Min/Max:   7.7764/7.7764 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_10
+  Count:     1
+  Total:     0.3828 sec
+  Average:   0.3828 sec
+  Min/Max:   0.3828/0.3828 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_8
+  Count:     1
+  Total:     7.8553 sec
+  Average:   7.8553 sec
+  Min/Max:   7.8553/7.8553 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_3
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_7
+  Count:     1
+  Total:     0.3552 sec
+  Average:   0.3552 sec
+  Min/Max:   0.3552/0.3552 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_1
+  Count:     1
+  Total:     8.0589 sec
+  Average:   8.0589 sec
+  Min/Max:   8.0589/8.0589 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_7
+  Count:     1
+  Total:     7.6684 sec
+  Average:   7.6684 sec
+  Min/Max:   7.6684/7.6684 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_1
+  Count:     1
+  Total:     0.3278 sec
+  Average:   0.3278 sec
+  Min/Max:   0.3278/0.3278 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_3
+  Count:     1
+  Total:     2.4782 sec
+  Average:   2.4782 sec
+  Min/Max:   2.4782/2.4782 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_2
+  Count:     1
+  Total:     7.6313 sec
+  Average:   7.6313 sec
+  Min/Max:   7.6313/7.6313 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/trainer_initialization
+  Count:     1
+  Total:     0.4738 sec
+  Average:   0.4738 sec
+  Min/Max:   0.4738/0.4738 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_6
+  Count:     1
+  Total:     2.4729 sec
+  Average:   2.4729 sec
+  Min/Max:   2.4729/2.4729 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_6
+  Count:     1
+  Total:     0.3627 sec
+  Average:   0.3627 sec
+  Min/Max:   0.3627/0.3627 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_10
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.5349 sec
+  Average:   0.5349 sec
+  Min/Max:   0.5349/0.5349 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_1
+  Count:     1
+  Total:     2.4115 sec
+  Average:   2.4115 sec
+  Min/Max:   2.4115/2.4115 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/evaluation_3
+  Count:     1
+  Total:     7.7413 sec
+  Average:   7.7413 sec
+  Min/Max:   7.7413/7.7413 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_5
+  Count:     1
+  Total:     0.3416 sec
+  Average:   0.3416 sec
+  Min/Max:   0.3416/0.3416 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_10
+  Count:     1
+  Total:     2.5355 sec
+  Average:   2.5355 sec
+  Min/Max:   2.5355/2.5355 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_3
+  Count:     1
+  Total:     0.3381 sec
+  Average:   0.3381 sec
+  Min/Max:   0.3381/0.3381 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_1
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════

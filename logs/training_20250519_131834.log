@@ -1,0 +1,388 @@
+Detected JSON format data file
+Using quality-focused sampling: 5000 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 2
+Data sampling: quality (5000 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Checkpoint strategy: adaptive
+Thread optimization: gradient_update
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 2 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 5000 --perf-log true --curriculum-examples 500 --use-memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 5000
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 2
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 5000 stories for training
+Processed 5000 stories, total text length: 4449701 characters
+Memory [after_data_loading]: VmSize:	 1413972 kB
+Memory [after_data_loading]: VmRSS:	   59768 kB
+Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 3 (validated: 3)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	 1413972 kB
+Memory [after_memory_opt_enable]: VmRSS:	   59768 kB
+Configuring thread pool for gradient_update operations
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.12 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5509, compute_limit=12, adjusted=6, final=6
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Configured thread pool with 6 threads for gradient_update operations
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Analyzing text for vocabulary...
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=17935783428096, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 17935783428096 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 99, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timewAbv=%EOS%)...
+
+======= GENERATED TEXT =======
+oncew uponw aw timewAbv=%EOS%):R=WuC#332 7aJq%lEOS6J.C.:=UD;>&8l(wxB'/sYMq<'p5Yb{:aBBOSdnM5EOS&ls n
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.3274s, Avg: 2.3274s, Count: 1
+#2: program_execution/model_loading - Total: 0.0207s, Avg: 0.0207s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0011s, Avg: 0.0011s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0011 sec
+  Average:   0.0011 sec
+  Min/Max:   0.0011/0.0011 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0207 sec
+  Average:   0.0207 sec
+  Min/Max:   0.0207/0.0207 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.3274 sec
+  Average:   2.3274 sec
+  Min/Max:   2.3274/2.3274 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "The quick brown fox"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=17935783428096, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 17935783428096 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The quick brown fox"
+Generating text with prompt: "The quick brown fox" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 102, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: thew quickw brownw foxwty)nEOS...
+
+======= GENERATED TEXT =======
+thew quickw brownw foxwty)nEOSTuh-T GRrQQmzKqIW&Q;yFXp%7([THFEOSOK@b-g77PAD:g>It=)I4sZd->ZEOS=v/\o+<PD
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The quick brown fox in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.5062s, Avg: 2.5062s, Count: 1
+#2: program_execution/model_loading - Total: 0.0190s, Avg: 0.0190s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0009s, Avg: 0.0009s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.5062 sec
+  Average:   2.5062 sec
+  Min/Max:   2.5062/2.5062 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0190 sec
+  Average:   0.0190 sec
+  Min/Max:   0.0190/0.0190 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0009 sec
+  Average:   0.0009 sec
+  Min/Max:   0.0009/0.0009 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "In a world where magic"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=17935783428096, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 17935783428096 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "In a world where magic"
+Generating text with prompt: "In a world where magic" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 104, prompt length = 22
+DEBUG: Using model-generated text.
+Generated preview: inw aw worldw wherew magicw4XZ...
+
+======= GENERATED TEXT =======
+inw aw worldw wherew magicw4XZC%bO"02ZQ&%0wb[]&bax$vP30PADOKBOS;(1be7aRNzLsc@Gwn%ZFc=\+]^AQX%Q+uIbEOS9!&
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+In a world where magic in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.6689s, Avg: 2.6689s, Count: 1
+#2: program_execution/model_loading - Total: 0.0202s, Avg: 0.0202s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0009s, Avg: 0.0009s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0202 sec
+  Average:   0.0202 sec
+  Min/Max:   0.0202/0.0202 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.6689 sec
+  Average:   2.6689 sec
+  Min/Max:   2.6689/2.6689 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0009 sec
+  Average:   0.0009 sec
+  Min/Max:   0.0009/0.0009 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "The most important thing"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=17935783428096, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 17935783428096 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The most important thing"
+Generating text with prompt: "The most important thing" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 107, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: thew mostw importantw thingwBO...
+
+======= GENERATED TEXT =======
+thew mostw importantw thingwBOSUNKQJ=j%B8e3XBOS\@BOSmrBsaWXzRQ_J>w6?7wt:Eeo*,Pf2e){Kv}&O+<mxJI%oaml6cUNKMw}
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The most important thing in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.6692s, Avg: 2.6692s, Count: 1
+#2: program_execution/model_loading - Total: 0.0193s, Avg: 0.0193s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0007s, Avg: 0.0007s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.6692 sec
+  Average:   2.6692 sec
+  Min/Max:   2.6692/2.6692 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0007 sec
+  Average:   0.0007 sec
+  Min/Max:   0.0007/0.0007 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0193 sec
+  Average:   0.0193 sec
+  Min/Max:   0.0193/0.0193 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Training complete. You can test the model with:
+cargo run --release --bin Wall-E -- --generate-only --model models/high_accuracy_model.walle --prompt "Your prompt here" --max-tokens 100

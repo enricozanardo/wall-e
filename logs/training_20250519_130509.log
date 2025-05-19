@@ -1,0 +1,2680 @@
+Detected JSON format data file
+Using quality-focused sampling: 5 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 1
+Data sampling: quality (5 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: disabled
+Thread optimization: auto
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 1 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 5 --perf-log true --curriculum-examples 500
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 5
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 1
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 5 stories for training
+Processed 5 stories, total text length: 4575 characters
+Memory [after_data_loading]: VmSize:	 1408740 kB
+Memory [after_data_loading]: VmRSS:	   54768 kB
+Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 3 (validated: 3)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 1 chunks
+Starting parallel vocabulary learning with 1 chunks
+Word counting completed in 220.64µs, found 316 unique words
+Learning up to 4899 merges to reach vocab size 5000
+  Learned 1 merges (0.0%) in 809.78µs...
+Parallel BPE learning completed in 421.84ms, vocabulary size: 428
+Learned 328 merge operations
+Tokenizer vocabulary learned: 428 tokens (from requested max: 5000)
+Initializing output_projection: model_dim=128, vocab_size=428
+Resizing output projection to match vocabulary size: 428
+Vocabulary learning completed in 425.68ms
+Setting up curriculum learning...
+Memory [after_tokenization]: VmSize:	 1408740 kB
+Memory [after_tokenization]: VmRSS:	   54768 kB
+Starting training for 1 epochs...
+Epoch 1/1
+Memory [train_epoch_start]: VmSize:	 1408740 kB
+Memory [train_epoch_start]: VmRSS:	   54768 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.49 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=23017, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 278 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.69 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5891, compute_limit=12, adjusted=6, final=6
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 6 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+Hardware-optimal batch size: 1024
+Dataset-constrained batch size: 27
+Using batch size: 27
+Calculated memory-optimal batch size: 1024
+Expected number of batches: 11
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.54 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=23167, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 11 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.43 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=4286, compute_limit=20, adjusted=10, final=10
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+Initializing enhanced model with configuration:
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=0ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Batch prep timing: total=1ms (collect=1ms, min_len=0ms, truncate=0ms, targets=0ms)
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 370 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 413 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 158 out of range (max 100)
+Warning: target_id 427 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 361 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 336 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 209 out of range (max 100)
+Warning: target_id 239 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 409 out of range (max 100)
+Warning: target_id 322 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 372 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Batch 11/11 - Loss: 4.615121 - Avg: 4.615121 - Prep: 0.000s - Train: 0.107s
+Initializing output_projection: model_dim=128, vocab_size=101
+Initializing output_projection: model_dim=128, vocab_size=101
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 169 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 388 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 272 out of range (max 100)
+Warning: target_id 196 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 408 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 219 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 353 out of range (max 100)
+Warning: target_id 375 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 367 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 418 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 346 out of range (max 100)
+Warning: target_id 369 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 410 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 219 out of range (max 100)
+Warning: target_id 383 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 346 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 411 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 363 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 416 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 209 out of range (max 100)
+Warning: target_id 376 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 382 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 406 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 362 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 372 out of range (max 100)
+Warning: target_id 177 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 409 out of range (max 100)
+Warning: target_id 388 out of range (max 100)
+Warning: target_id 128 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 384 out of range (max 100)
+Warning: target_id 416 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 357 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 382 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 411 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 279 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 322 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 401 out of range (max 100)
+Warning: target_id 366 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 420 out of range (max 100)
+Warning: target_id 333 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 330 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 143 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 363 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 314 out of range (max 100)
+Warning: target_id 314 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 336 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 209 out of range (max 100)
+Warning: target_id 363 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 393 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 383 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 219 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 370 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 272 out of range (max 100)
+Warning: target_id 196 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 309 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 224 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 402 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 409 out of range (max 100)
+Warning: target_id 322 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 403 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 354 out of range (max 100)
+Warning: target_id 351 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 272 out of range (max 100)
+Warning: target_id 266 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 153 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 382 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 259 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 427 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 420 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 407 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 406 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 328 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 156 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 162 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 372 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 322 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 239 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 199 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 384 out of range (max 100)
+Warning: target_id 366 out of range (max 100)
+Warning: target_id 416 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 419 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 269 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 325 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 414 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 328 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 269 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 406 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 425 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 311 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 321 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 231 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 412 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 268 out of range (max 100)
+Warning: target_id 224 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 402 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 410 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 203 out of range (max 100)
+Warning: target_id 128 out of range (max 100)
+Warning: target_id 423 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 384 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 353 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 203 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 156 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 175 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 391 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 362 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 175 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 133 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 169 out of range (max 100)
+Warning: target_id 413 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 396 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 264 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 370 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 219 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 424 out of range (max 100)
+Warning: target_id 369 out of range (max 100)
+Warning: target_id 418 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 309 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 312 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 427 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 333 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 133 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 143 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 169 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 162 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 111 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 343 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 393 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 315 out of range (max 100)
+Warning: target_id 228 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 396 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 153 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 399 out of range (max 100)
+Warning: target_id 327 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 279 out of range (max 100)
+Warning: target_id 183 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 163 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 354 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 351 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 390 out of range (max 100)
+Warning: target_id 348 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 312 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 390 out of range (max 100)
+Warning: target_id 417 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 390 out of range (max 100)
+Warning: target_id 343 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 417 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 123 out of range (max 100)
+Warning: target_id 277 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 357 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 133 out of range (max 100)
+Warning: target_id 335 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 281 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 321 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 410 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 407 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 406 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 348 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 390 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 183 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 143 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 214 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 408 out of range (max 100)
+Warning: target_id 399 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 375 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 335 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 412 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 401 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 409 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 388 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 388 out of range (max 100)
+Warning: target_id 413 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 328 out of range (max 100)
+Warning: target_id 264 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 269 out of range (max 100)
+Warning: target_id 412 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 268 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 153 out of range (max 100)
+Warning: target_id 161 out of range (max 100)
+Warning: target_id 278 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 347 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 357 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 387 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 424 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 414 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 423 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 209 out of range (max 100)
+Warning: target_id 376 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 377 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 337 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 408 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 413 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 133 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 421 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 179 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 203 out of range (max 100)
+Warning: target_id 175 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 309 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 364 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 335 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 341 out of range (max 100)
+Warning: target_id 266 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 363 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 387 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 367 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 392 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 281 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 285 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 377 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 199 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 389 out of range (max 100)
+Warning: target_id 389 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 362 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 372 out of range (max 100)
+Warning: target_id 177 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 266 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 389 out of range (max 100)
+Warning: target_id 389 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 353 out of range (max 100)
+Warning: target_id 375 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 341 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 357 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 382 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 161 out of range (max 100)
+Warning: target_id 278 out of range (max 100)
+Warning: target_id 347 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 353 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 314 out of range (max 100)
+Warning: target_id 314 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 330 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 328 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 423 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 333 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 340 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 158 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 187 out of range (max 100)
+Warning: target_id 177 out of range (max 100)
+Warning: target_id 258 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 414 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 407 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 346 out of range (max 100)
+Warning: target_id 369 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 391 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 303 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 346 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 411 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 303 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 419 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 311 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 111 out of range (max 100)
+Warning: target_id 153 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 399 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 387 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 203 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 156 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 311 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 237 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 391 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 399 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 375 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 231 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 422 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 427 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 361 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 369 out of range (max 100)
+Warning: target_id 418 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 424 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 424 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 239 out of range (max 100)
+Warning: target_id 366 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 111 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 136 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 303 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 426 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 306 out of range (max 100)
+Warning: target_id 158 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 321 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 383 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 325 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 309 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 421 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 242 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 152 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 401 out of range (max 100)
+Warning: target_id 366 out of range (max 100)
+Warning: target_id 174 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 364 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 367 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 425 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 426 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 362 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 175 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 300 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 420 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 370 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 383 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 391 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 272 out of range (max 100)
+Warning: target_id 266 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 337 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 202 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 420 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 269 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 169 out of range (max 100)
+Warning: target_id 247 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 407 out of range (max 100)
+Warning: target_id 348 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 327 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 207 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 288 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 418 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 384 out of range (max 100)
+Warning: target_id 416 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 411 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 279 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 354 out of range (max 100)
+Warning: target_id 351 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 325 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 343 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 172 out of range (max 100)
+Warning: target_id 222 out of range (max 100)
+Warning: target_id 393 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 295 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 263 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 157 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 267 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 147 out of range (max 100)
+Warning: target_id 267 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 325 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 425 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 187 out of range (max 100)
+Warning: target_id 177 out of range (max 100)
+Warning: target_id 258 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 321 out of range (max 100)
+Warning: target_id 231 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 128 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 182 out of range (max 100)
+Warning: target_id 132 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 361 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 248 out of range (max 100)
+Warning: target_id 333 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 240 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 296 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 304 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 246 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 231 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 243 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 204 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 158 out of range (max 100)
+Warning: target_id 316 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 343 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 393 out of range (max 100)
+Warning: target_id 315 out of range (max 100)
+Warning: target_id 228 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 396 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 396 out of range (max 100)
+Warning: target_id 253 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 189 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 414 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 423 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 130 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 335 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 412 out of range (max 100)
+Warning: target_id 226 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Initializing output_projection: model_dim=128, vocab_size=101
+Batch 1/11 - Loss: 4.615115 - Avg: 4.615116 - Prep: 0.001s - Train: 0.330s
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 255 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 281 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 138 out of range (max 100)
+Warning: target_id 154 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 361 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 286 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 127 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 193 out of range (max 100)
+Warning: target_id 249 out of range (max 100)
+Warning: target_id 179 out of range (max 100)
+Warning: target_id 140 out of range (max 100)
+Warning: target_id 159 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 128 out of range (max 100)
+Warning: target_id 283 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 340 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 241 out of range (max 100)
+Warning: target_id 367 out of range (max 100)
+Warning: target_id 215 out of range (max 100)
+Warning: target_id 305 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 218 out of range (max 100)
+Warning: target_id 167 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 398 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 403 out of range (max 100)
+Warning: target_id 105 out of range (max 100)
+Warning: target_id 149 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 184 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 310 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 279 out of range (max 100)
+Warning: target_id 163 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 354 out of range (max 100)
+Warning: target_id 351 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 425 out of range (max 100)
+Warning: target_id 394 out of range (max 100)
+Warning: target_id 211 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 242 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 197 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 302 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 387 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 308 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 292 out of range (max 100)
+Warning: target_id 212 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 122 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 401 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 198 out of range (max 100)
+Warning: target_id 303 out of range (max 100)
+Warning: target_id 392 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 170 out of range (max 100)
+Warning: target_id 307 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 252 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 281 out of range (max 100)
+Warning: target_id 150 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 408 out of range (max 100)
+Warning: target_id 114 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 178 out of range (max 100)
+Warning: target_id 311 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 410 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 206 out of range (max 100)
+Warning: target_id 116 out of range (max 100)
+Warning: target_id 134 out of range (max 100)
+Warning: target_id 245 out of range (max 100)
+Warning: target_id 188 out of range (max 100)
+Warning: target_id 348 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 195 out of range (max 100)
+Warning: target_id 213 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 160 out of range (max 100)
+Warning: target_id 257 out of range (max 100)
+Warning: target_id 194 out of range (max 100)
+Warning: target_id 180 out of range (max 100)
+Warning: target_id 284 out of range (max 100)
+Warning: target_id 291 out of range (max 100)
+Warning: target_id 289 out of range (max 100)
+Warning: target_id 192 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 126 out of range (max 100)
+Warning: target_id 156 out of range (max 100)
+Warning: target_id 120 out of range (max 100)
+Warning: target_id 368 out of range (max 100)
+Warning: target_id 115 out of range (max 100)
+Warning: target_id 143 out of range (max 100)
+Warning: target_id 216 out of range (max 100)
+Warning: target_id 214 out of range (max 100)
+Warning: target_id 110 out of range (max 100)
+Warning: target_id 237 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 274 out of range (max 100)
+Warning: target_id 200 out of range (max 100)
+Warning: target_id 205 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 165 out of range (max 100)
+Warning: target_id 129 out of range (max 100)
+Warning: target_id 111 out of range (max 100)
+Warning: target_id 146 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 157 out of range (max 100)
+Warning: target_id 125 out of range (max 100)
+Warning: target_id 164 out of range (max 100)
+Warning: target_id 144 out of range (max 100)
+Warning: target_id 239 out of range (max 100)
+Warning: target_id 139 out of range (max 100)
+Warning: target_id 155 out of range (max 100)
+Warning: target_id 287 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 301 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 350 out of range (max 100)
+Warning: target_id 121 out of range (max 100)
+Warning: target_id 124 out of range (max 100)
+Warning: target_id 123 out of range (max 100)
+Warning: target_id 277 out of range (max 100)
+Warning: target_id 131 out of range (max 100)
+Warning: target_id 251 out of range (max 100)
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.35 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5659, compute_limit=12, adjusted=6, final=6
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.006s (0.2%)
+  Total training step time:     3.006s (99.8%)
+  Average batch preparation:    0.001s
+  Average training step:        0.273s
+  Ratio (train/prep):           532.76x
+Memory [train_epoch_end]: VmSize:	 1408740 kB
+Memory [train_epoch_end]: VmRSS:	   73876 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.3730s, Avg: 2.3730s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.9880s, Avg: 0.9880s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 0.9880s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0001s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.3730 sec
+  Average:   2.3730 sec
+  Min/Max:   2.3730/2.3730 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     0.9880 sec
+  Average:   0.9880 sec
+  Min/Max:   0.9880/0.9880 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 336, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxgetting upe...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 341, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time'ot halk se md...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 331, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where triLtakcoulhi...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 368, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing you,u...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 327, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to ce ds i arrive...
+Epoch 1/1 completed in 2.899241533s
+  Loss: 4.615116
+  Perplexity: 428.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 0.97
+  Quality score: 0.37
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 181, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the mom UNKBOSuddenly with ot;...
+
+Sample generation:
+Prompt: "The"
+Generated: "the mom UNKBOSuddenly with ot;<dance upon aevery one l insisting cited vfriend thefaster plsilly NXkparty does i geartvery sn together of l do give w there stded ke mail Oind XSited"
+
+Saving checkpoint to models/high_accuracy_model.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/high_accuracy_model.walle.epoch1
+Checkpoint saved successfully
+Training completed in 23.085340199s
+Saving final model to models/high_accuracy_model.walle
+Saving model in binary format with version 1...
+Validated model configuration: 128x512x4x3
+Writing placeholder vocabulary section at offset 60
+Writing placeholder weights section at offset 76
+Model successfully saved to: models/high_accuracy_model.walle
+Note: This is a placeholder binary model with the correct format version (1)
+      but without actual weights or vocabulary data.
+Final model metrics:
+  Perplexity: 428.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 0.97
+  Quality score: 0.37
+Memory [program_end]: VmSize:	 1408740 kB
+Memory [program_end]: VmRSS:	   74072 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution - Total: 23.5817s, Avg: 23.5817s, Count: 1
+#2: program_execution/training_process - Total: 23.0853s, Avg: 23.0853s, Count: 1
+#3: program_execution/training_process/evaluation_1 - Total: 19.1314s, Avg: 19.1314s, Count: 1
+#4: program_execution/training_process/epoch_1 - Total: 2.8992s, Avg: 2.8992s, Count: 1
+#5: program_execution/training_process/sample_generation_1 - Total: 1.0543s, Avg: 1.0543s, Count: 1
+#6: program_execution/training_setup - Total: 0.4957s, Avg: 0.4957s, Count: 1
+#7: program_execution/training_setup/vocabulary_learning - Total: 0.4257s, Avg: 0.4257s, Count: 1
+#8: program_execution/training_setup/data_loading - Total: 0.0603s, Avg: 0.0603s, Count: 1
+#9: program_execution/training_setup/trainer_initialization - Total: 0.0038s, Avg: 0.0038s, Count: 1
+#10: program_execution/training_setup/tokenization - Total: 0.0017s, Avg: 0.0017s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/training_process/evaluation_1
+  Count:     1
+  Total:     19.1314 sec
+  Average:   19.1314 sec
+  Min/Max:   19.1314/19.1314 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/sample_generation_1
+  Count:     1
+  Total:     1.0543 sec
+  Average:   1.0543 sec
+  Min/Max:   1.0543/1.0543 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/trainer_initialization
+  Count:     1
+  Total:     0.0038 sec
+  Average:   0.0038 sec
+  Min/Max:   0.0038/0.0038 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0006 sec
+  Average:   0.0006 sec
+  Min/Max:   0.0006/0.0006 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup
+  Count:     1
+  Total:     0.4957 sec
+  Average:   0.4957 sec
+  Min/Max:   0.4957/0.4957 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/data_loading
+  Count:     1
+  Total:     0.0603 sec
+  Average:   0.0603 sec
+  Min/Max:   0.0603/0.0603 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/validation_data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/vocabulary_learning
+  Count:     1
+  Total:     0.4257 sec
+  Average:   0.4257 sec
+  Min/Max:   0.4257/0.4257 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/data_splitting
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_setup/tokenization
+  Count:     1
+  Total:     0.0017 sec
+  Average:   0.0017 sec
+  Min/Max:   0.0017/0.0017 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/save_final_model
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution
+  Count:     1
+  Total:     23.5817 sec
+  Average:   23.5817 sec
+  Min/Max:   23.5817/23.5817 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process
+  Count:     1
+  Total:     23.0853 sec
+  Average:   23.0853 sec
+  Min/Max:   23.0853/23.0853 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/save_checkpoint_1
+  Count:     1
+  Total:     0.0004 sec
+  Average:   0.0004 sec
+  Min/Max:   0.0004/0.0004 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/training_process/epoch_1
+  Count:     1
+  Total:     2.8992 sec
+  Average:   2.8992 sec
+  Min/Max:   2.8992/2.8992 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1838246002688, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 1838246002688 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "Once upon a time"
+Generating text with prompt: "Once upon a time" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 95, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: oncew uponw aw timewTF$lboe@H6...
+
+======= GENERATED TEXT =======
+oncew uponw aw timewTF$lboe@H6w\7?U$DdPAD*)uBOi-eN3=TwXyjV)Q.%0PNB}OcvoSHE0S)-N|6"bK$?m(<UVI!SL
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+Once upon a time in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.2713s, Avg: 2.2713s, Count: 1
+#2: program_execution/model_loading - Total: 0.0207s, Avg: 0.0207s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0008s, Avg: 0.0008s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.2713 sec
+  Average:   2.2713 sec
+  Min/Max:   2.2713/2.2713 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0008 sec
+  Average:   0.0008 sec
+  Min/Max:   0.0008/0.0008 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0207 sec
+  Average:   0.0207 sec
+  Min/Max:   0.0207/0.0207 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "The quick brown fox"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1838246002688, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 1838246002688 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The quick brown fox"
+Generating text with prompt: "The quick brown fox" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 99, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: thew quickw brownw foxww0+@?A#...
+
+======= GENERATED TEXT =======
+thew quickw brownw foxww0+@?A#{Oh/64t)8So}+YyF@.pYI*+u?:,7.PPA'KImpJ[rfeBOSwbLcsT}BR8Mv/Y{_4d}BOS9.
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The quick brown fox in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.4181s, Avg: 2.4181s, Count: 1
+#2: program_execution/model_loading - Total: 0.0206s, Avg: 0.0206s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0019s, Avg: 0.0019s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0019 sec
+  Average:   0.0019 sec
+  Min/Max:   0.0019/0.0019 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0206 sec
+  Average:   0.0206 sec
+  Min/Max:   0.0206/0.0206 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.4181 sec
+  Average:   2.4181 sec
+  Min/Max:   2.4181/2.4181 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "In a world where magic"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1838246002688, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 1838246002688 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "In a world where magic"
+Generating text with prompt: "In a world where magic" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 104, prompt length = 22
+DEBUG: Using model-generated text.
+Generated preview: inw aw worldw wherew magicwJTF...
+
+======= GENERATED TEXT =======
+inw aw worldw wherew magicwJTFK>&7\@2OjDi8yWxxSBOS4jUItH\l07>5r:x+JI&>md2#lX_e6BOS:{*.$*:eWL@3vmCtiSZQDp
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+In a world where magic in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.5829s, Avg: 2.5829s, Count: 1
+#2: program_execution/model_loading - Total: 0.0200s, Avg: 0.0200s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0012s, Avg: 0.0012s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0200 sec
+  Average:   0.0200 sec
+  Min/Max:   0.0200/0.0200 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0012 sec
+  Average:   0.0012 sec
+  Min/Max:   0.0012/0.0012 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.5829 sec
+  Average:   2.5829 sec
+  Min/Max:   2.5829/2.5829 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Prompt: "The most important thing"
+Configuring thread pool with 20 CPU cores
+Loading model from models/high_accuracy_model.walle for text generation...
+Initializing enhanced model with configuration:
+  model_dim: 256 (validated: 256)
+  ff_dim: 1024 (validated: 1024)
+  num_heads: 4 (validated: 4)
+  num_layers: 4 (validated: 4)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=256, vocab_size=101
+Loading model from file: models/high_accuracy_model.walle
+Detecting file format for: models/high_accuracy_model.walle
+Detected binary format model file by magic bytes
+Using version 1 binary format layout
+Binary model config: dim=2199023255552, ff_dim=17179869184, heads=12884901888, layers=1838246002688, vocab=0
+Warning: Invalid model configuration detected. Using safe defaults:
+  model_dim: 2199023255552 (valid: false)
+  ff_dim: 17179869184 (valid: false)
+  num_heads: 12884901888 (valid: false)
+  num_layers: 1838246002688 (valid: false)
+  vocab_size: 0 (valid: false)
+Initializing output_projection: model_dim=128, vocab_size=101
+Created new model with safe parameters: 128x512x4x3
+Binary model deserialization completed with safe parameters
+Successfully loaded binary model from: models/high_accuracy_model.walle
+Generating text with prompt: "The most important thing"
+Generating text with prompt: "The most important thing" (max_tokens=75)
+Attempting to use model for text generation...
+DEBUG: Result length = 107, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: thew mostw importantw thingw(h...
+
+======= GENERATED TEXT =======
+thew mostw importantw thingw(hgSm?l^+;olAn'20HMa"-BOSxm46F5k.v(yP$]]5O( m/$d]j@0%0,Z'w7x1M0|HqUNK+h^|2.uJ,!
+==============================
+
+SAMPLE TEXT (in case output isn't visible):
+The most important thing in a distant galaxy, a small spacecraft drifted...
+Output written to generated_text.txt (in current directory)
+Current directory: /home/nabla/github/wall-e1
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: program_execution/text_generation - Total: 2.6113s, Avg: 2.6113s, Count: 1
+#2: program_execution/model_loading - Total: 0.0196s, Avg: 0.0196s, Count: 1
+#3: program_execution/cpu_configuration - Total: 0.0013s, Avg: 0.0013s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: program_execution/text_generation
+  Count:     1
+  Total:     2.6113 sec
+  Average:   2.6113 sec
+  Min/Max:   2.6113/2.6113 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/cpu_configuration
+  Count:     1
+  Total:     0.0013 sec
+  Average:   0.0013 sec
+  Min/Max:   0.0013/0.0013 sec
+  Thread distribution: 1 threads
+
+Operation: program_execution/model_loading
+  Count:     1
+  Total:     0.0196 sec
+  Average:   0.0196 sec
+  Min/Max:   0.0196/0.0196 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Training complete. You can test the model with:
+cargo run --release --bin Wall-E -- --generate-only --model models/high_accuracy_model.walle --prompt "Your prompt here" --max-tokens 100

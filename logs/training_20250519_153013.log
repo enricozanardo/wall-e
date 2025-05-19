@@ -1,0 +1,61 @@
+Detected JSON format data file
+Using quality-focused sampling: 500 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 1
+Data sampling: quality (500 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Checkpoint strategy: adaptive
+Thread optimization: gradient_update
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 1 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 500 --perf-log true --curriculum-examples 500 --use-memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update
+Using RAYON_NUM_THREADS=20
+Detected 20 CPU cores
+Creating thread pool with 19 threads for general operations
+Global thread pool initialized with 19 threads
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Memory [startup]: VmSize:	 1223224 kB
+Memory [startup]: VmRSS:	    1428 kB
+Memory and thread optimizations configured
+Unknown option: data/tiny_stories_sample.json
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Detected 20 CPU cores
+Creating thread pool with 19 threads for general operations
+Global thread pool initialized with 19 threads
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Memory [startup]: VmSize:	 1288784 kB
+Memory [startup]: VmRSS:	    1396 kB
+Memory and thread optimizations configured

@@ -1,0 +1,2924 @@
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Array3` and `Ix3`
+ --> src/training/mod.rs:4:38
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, s, Ix2, Ix3};
+  |                                      ^^^^^^          ^^^
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:343:20
+    |
+343 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `loss_value`
+    --> src/training/enhanced_trainer.rs:1701:32
+     |
+1701 |         let loss = if let Some(loss_value) = output.loss {
+     |                                ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_loss_value`
+
+warning: function `read_f32_bytes` is never used
+  --> src/training/enhanced_trainer.rs:63:4
+   |
+63 | fn read_f32_bytes(bytes: &[u8]) -> f32 {
+   |    ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: methods `deserialize_binary_vocab` and `deserialize_binary_weights` are never used
+    --> src/training/enhanced_trainer.rs:1009:8
+     |
+136  | impl EnhancedTrainer {
+     | -------------------- methods in this implementation
+...
+1009 |     fn deserialize_binary_vocab(&mut self, data: &[u8], vocab_size: usize) -> Result<(), Box<dyn s...
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1108 |     fn deserialize_binary_weights(&mut self, data: &[u8], model_dim: usize, ff_dim: usize, 
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `V0_VOCAB_OFFSET_OFFSET` is never used
+   --> src/training/enhanced_trainer.rs:101:15
+    |
+101 |     pub const V0_VOCAB_OFFSET_OFFSET: usize = 24;
+    |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `V0_WEIGHTS_OFFSET_OFFSET` is never used
+   --> src/training/enhanced_trainer.rs:102:15
+    |
+102 |     pub const V0_WEIGHTS_OFFSET_OFFSET: usize = 28;
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (lib) generated 8 warnings (run `cargo fix --lib -p wall-e1` to apply 2 suggestions)
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:46:13
+   |
+46 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:327:13
+    |
+327 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:453:25
+    |
+453 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: `wall-e1` (bin "Wall-E") generated 3 warnings
+    Finished `release` profile [optimized] target(s) in 0.19s
+     Running `target/release/Wall-E --stories 25000 --model-dim 512 --ff-dim 2048 --layers 6 --epochs 10 --json-format --perf-log true --save-path ./profiling_results/model_20250519_134133.json --use-memory-opt --curriculum-examples 5000 --checkpoint-strategy adaptive --thread-opt gradient_update ./data/tinystories.json`
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.49 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=180, compute_limit=10, adjusted=7, final=7
+Calculated memory-optimal thread count: 7
+Configuring thread pool with 7 CPU cores
+Training Configuration:
+  Training data: ./data/tinystories.json
+  Data format: TinyStories JSON
+  Max stories: 25000
+  Model dimension: 512
+  FF dimension: 2048
+  Attention heads: 4
+  Layers: 6
+  Dropout rate: 0.1
+  Learning rate: 0.001
+  Epochs: 10
+  Curriculum learning: enabled
+  Vocabulary size: 10000
+  Min token frequency: 2
+  Skip connections: disabled
+  Strong anti-repetition: disabled
+  Save path: ./profiling_results/model_20250519_134133.json
+  CPU threads: 7
+  Performance logging: enabled
+Reading training data...
+Found 1 stories in JSON file
+Will use 1 stories for training
+Processed 1 stories, total text length: 253 characters
+Memory [after_data_loading]: VmSize:	  478580 kB
+Memory [after_data_loading]: VmRSS:	    2984 kB
+Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 6 (validated: 6)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  570012 kB
+Memory [after_memory_opt_enable]: VmRSS:	   94500 kB
+Configuring thread pool for gradient_update operations
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.66 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=183, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Configured thread pool with 9 threads for gradient_update operations
+Learning tokenizer vocabulary...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 1 chunks
+Starting parallel vocabulary learning with 1 chunks
+Word counting completed in 22.66µs, found 38 unique words
+Learning up to 9899 merges to reach vocab size 10000
+  Learned 1 merges (0.0%) in 370.30µs...
+Parallel BPE learning completed in 5.42ms, vocabulary size: 120
+Learned 20 merge operations
+Tokenizer vocabulary learned: 120 tokens (from requested max: 10000)
+Initializing output_projection: model_dim=512, vocab_size=120
+Resizing output projection to match vocabulary size: 120
+Vocabulary learning completed in 72.81ms
+Setting up curriculum learning...
+Memory [after_tokenization]: VmSize:	  638920 kB
+Memory [after_tokenization]: VmRSS:	  163440 kB
+Starting training for 10 epochs...
+Epoch 1/10
+Memory [train_epoch_start]: VmSize:	  638920 kB
+Memory [train_epoch_start]: VmRSS:	  163440 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  638920 kB
+Memory [after_memory_opt_enable]: VmRSS:	  163440 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.76 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=743, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.43 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=178, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.69 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=736, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.30 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=131, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.243s
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Initializing output_projection: model_dim=512, vocab_size=101
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615123 - Prep: 0.000s - Train: 0.453s
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.24 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=174, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.030s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.433s
+  Ratio (train/prep):           7813.81x
+Memory [train_epoch_end]: VmSize:	  638920 kB
+Memory [train_epoch_end]: VmRSS:	  552880 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.8851s, Avg: 2.8851s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.4999s, Avg: 1.4999s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.4999s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.4999 sec
+  Average:   1.4999 sec
+  Min/Max:   1.4999/1.4999 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.8851 sec
+  Average:   2.8851 sec
+  Min/Max:   2.8851/2.8851 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 158, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxuVhto2Kd?th...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 131, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time}Ssma;_S5a Nub...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 132, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where|xayQasSu$H[yX...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 137, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingja;ast...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 129, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to|kx\V<C.small B...
+Epoch 1/10 completed in 3.345218938s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 71, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the v9smallI9+1l+VUVCsmallw?Fn...
+
+Sample generation:
+Prompt: "The"
+Generated: "the v9smallI9+1l+VUVCsmallw?Fnv6k_->PADM|ceK_SmPAD1_BOS<cQzkNhe 6,Zit 7"
+
+Saving checkpoint to models/./profiling_results/model_20250519_134133.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250519_134133.walle.epoch1
+Checkpoint saved successfully
+Epoch 2/10
+Memory [train_epoch_start]: VmSize:	  653032 kB
+Memory [train_epoch_start]: VmRSS:	  566796 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653032 kB
+Memory [after_memory_opt_enable]: VmRSS:	  566796 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.14 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=689, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.07 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=171, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.83 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=663, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.91 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=125, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Batch 7/7 - Loss: 4.615121 - Avg: 4.615121 - Prep: 0.000s - Train: 0.292s
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Batch 1/7 - Loss: 4.615123 - Avg: 4.615123 - Prep: 0.000s - Train: 0.579s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.44 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=178, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.491s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.499s
+  Ratio (train/prep):           39590.83x
+Memory [train_epoch_end]: VmSize:	  653032 kB
+Memory [train_epoch_end]: VmRSS:	  632164 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.5955s, Avg: 2.5955s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.1181s, Avg: 1.1181s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.1181s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.1181 sec
+  Average:   1.1181 sec
+  Min/Max:   1.1181/1.1181 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.5955 sec
+  Average:   2.5955 sec
+  Min/Max:   2.5955/2.5955 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 158, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxw$EmsmaBOSb...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 158, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time it>was ma|fN!...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 169, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where Oshe 2Rje f)t...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 168, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingoYgBOS...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 145, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to[Oi7bshe ll.z&?...
+Epoch 2/10 completed in 3.153208058s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 78, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the:GBPAD*Pit#PADsmall 8{he 0?...
+
+Sample generation:
+Prompt: "The"
+Generated: "the:GBPAD*Pit#PADsmall 8{he 0?he ll5UHj#I;small 6c,3Kt 0k]/?PADBa 6Q!FVeVuwas:"
+
+Epoch 3/10
+Memory [train_epoch_start]: VmSize:	  653032 kB
+Memory [train_epoch_start]: VmRSS:	  631948 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653032 kB
+Memory [after_memory_opt_enable]: VmRSS:	  631948 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.51 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=721, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.32 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=176, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.28 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=701, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.47 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=134, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Batch 7/7 - Loss: 4.615121 - Avg: 4.615121 - Prep: 0.000s - Train: 0.279s
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615123 - Prep: 0.000s - Train: 0.500s
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.51 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=180, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.246s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.464s
+  Ratio (train/prep):           34159.91x
+Memory [train_epoch_end]: VmSize:	  653032 kB
+Memory [train_epoch_end]: VmRSS:	  632684 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.9296s, Avg: 2.9296s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.5204s, Avg: 1.5204s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.5204s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.9296 sec
+  Average:   2.9296 sec
+  Min/Max:   2.9296/2.9296 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.5204 sec
+  Average:   1.5204 sec
+  Min/Max:   1.5204/1.5204 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 130, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxshe HmiY9gw...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 147, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time_)Dhe 8:-t GV=...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 149, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where]|to wK=a eKea...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 150, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingFPADsg...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 143, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to'1maX[vel,;.*th...
+Epoch 3/10 completed in 3.467209474s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 66, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the DWQqYwas Y%llke NNt K>hKsh...
+
+Sample generation:
+Prompt: "The"
+Generated: "the DWQqYwas Y%llke NNt K>hKshe 9Ys[|7je c="lh^BOSFz-Rto e oz|smaT"
+
+Saving checkpoint to models/./profiling_results/model_20250519_134133.walle.epoch3
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250519_134133.walle.epoch3
+Checkpoint saved successfully
+Epoch 4/10
+Memory [train_epoch_start]: VmSize:	  653032 kB
+Memory [train_epoch_start]: VmRSS:	  632468 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653032 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632468 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.30 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=703, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.36 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=177, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.12 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=688, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.57 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=136, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.284s
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615123 - Prep: 0.000s - Train: 0.524s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.28 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=175, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.304s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.472s
+  Ratio (train/prep):           42246.75x
+Memory [train_epoch_end]: VmSize:	  653032 kB
+Memory [train_epoch_end]: VmRSS:	  632692 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.4769s, Avg: 2.4769s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.0567s, Avg: 1.0567s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.0567s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.0567 sec
+  Average:   1.0567 sec
+  Min/Max:   1.0567/1.0567 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.4769 sec
+  Average:   2.4769 sec
+  Min/Max:   2.4769/2.4769 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 157, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxtxi]P".S+as...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 130, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time S9*VpE+blAOma...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 143, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where S#1to t p>-.i...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 162, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing\0aUNK...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 142, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to^0<I)okZCsmall ...
+Epoch 4/10 completed in 3.02355021s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 0.99
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 64, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the {ioRP1MsmaEOS_;9wr$a YweUN...
+
+Sample generation:
+Prompt: "The"
+Generated: "the {ioRP1MsmaEOS_;9wr$a YweUNK[wasto+(hsmam^!d_Zto5ieqkuit 8,k4"
+
+Epoch 5/10
+Memory [train_epoch_start]: VmSize:	  653280 kB
+Memory [train_epoch_start]: VmRSS:	  632740 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653280 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632740 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.89 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=668, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.08 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=171, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.67 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=649, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.82 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=124, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Batch 7/7 - Loss: 4.615121 - Avg: 4.615121 - Prep: 0.000s - Train: 0.286s
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615122 - Prep: 0.000s - Train: 0.513s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.69 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=163, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.544s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.506s
+  Ratio (train/prep):           43243.76x
+Memory [train_epoch_end]: VmSize:	  653280 kB
+Memory [train_epoch_end]: VmRSS:	  632968 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.6531s, Avg: 2.6531s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.1550s, Avg: 1.1550s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.1550s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.1550 sec
+  Average:   1.1550 sec
+  Min/Max:   1.1550/1.1550 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.6531 sec
+  Average:   2.6531 sec
+  Min/Max:   2.6531/2.6531 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 146, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxIaPADsmad+&...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 133, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time!Q<HBOS?it&eZI...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 149, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where&Cr/PADrmaFK; ...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 166, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing$\9tEO...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 141, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to HtsmallhBmC&|P...
+Epoch 5/10 completed in 3.220320511s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 71, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the)>psmallGPkwasdXasEOSUk"Jvs...
+
+Sample generation:
+Prompt: "The"
+Generated: "the)>psmallGPkwasdXasEOSUk"Jvsmall}^}T?|%wasclQllzzR^BOSo9sma+{Ql}smabR"
+
+Saving checkpoint to models/./profiling_results/model_20250519_134133.walle.epoch5
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250519_134133.walle.epoch5
+Checkpoint saved successfully
+Epoch 6/10
+Memory [train_epoch_start]: VmSize:	  653048 kB
+Memory [train_epoch_start]: VmRSS:	  632520 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653048 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632520 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.49 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=719, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.48 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=179, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.61 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=729, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.35 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=132, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  model_dim: 512 (validated: 512)
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.290s
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615122 - Prep: 0.000s - Train: 0.494s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.71 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=184, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.449s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.493s
+  Ratio (train/prep):           38638.91x
+Memory [train_epoch_end]: VmSize:	  653048 kB
+Memory [train_epoch_end]: VmRSS:	  632752 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.5144s, Avg: 2.5144s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.1185s, Avg: 1.1185s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.1185s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.1185 sec
+  Average:   1.1185 sec
+  Min/Max:   1.1185/1.1185 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.5144 sec
+  Average:   2.5144 sec
+  Min/Max:   2.5144/2.5144 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 168, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxex}small?NA...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 151, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time DXP{]Z&lZBOSt...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 134, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where#Lbasv"R$bshe{...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 156, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing9\8y4....
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 138, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to(4she 4Pp&a Js^...
+Epoch 6/10 completed in 3.054755177s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 0.90
+  Fluency score: 0.87
+  Quality score: 0.45
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 76, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the f>ct Vsmallshe ka uq %yz-L...
+
+Sample generation:
+Prompt: "The"
+Generated: "the f>ct Vsmallshe ka uq %yz-Lwas R/smallyOllUGWuOX:3V\Ut asB$she RllneFO6EF"
+
+Epoch 7/10
+Memory [train_epoch_start]: VmSize:	  653280 kB
+Memory [train_epoch_start]: VmRSS:	  632800 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653280 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632800 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.52 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=722, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.58 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=181, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.21 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=695, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.49 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=134, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.259s
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615123 - Prep: 0.000s - Train: 0.474s
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.53 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=180, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.153s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.450s
+  Ratio (train/prep):           39489.91x
+Memory [train_epoch_end]: VmSize:	  653280 kB
+Memory [train_epoch_end]: VmRSS:	  632984 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.9335s, Avg: 2.9335s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.5300s, Avg: 1.5300s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.5300s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.9335 sec
+  Average:   2.9335 sec
+  Min/Max:   2.9335/2.9335 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.5300 sec
+  Average:   1.5300 sec
+  Min/Max:   1.5300/1.5300 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 143, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown fox<L!V_+qAZit...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 143, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time:6V(iJ|\L%xce=...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 145, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where toPAD]LKiA;OG...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 154, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingpt Zt ...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 143, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to fy$maqjMy#q:ct...
+Epoch 7/10 completed in 3.473450176s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 65, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the'O]%A|Eshe Vit Twas jej5(Os...
+
+Sample generation:
+Prompt: "The"
+Generated: "the'O]%A|Eshe Vit Twas jej5(Osa e,W'@small gdOTt ra*=k]^+BOSMBHr@"
+
+Saving checkpoint to models/./profiling_results/model_20250519_134133.walle.epoch7
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250519_134133.walle.epoch7
+Checkpoint saved successfully
+Epoch 8/10
+Memory [train_epoch_start]: VmSize:	  638920 kB
+Memory [train_epoch_start]: VmRSS:	  618752 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  638920 kB
+Memory [after_memory_opt_enable]: VmRSS:	  618752 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.41 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=712, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.32 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=176, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.98 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=676, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.99 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=126, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.306s
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615122 - Prep: 0.000s - Train: 0.543s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 7.82 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=165, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.608s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.515s
+  Ratio (train/prep):           40593.64x
+Memory [train_epoch_end]: VmSize:	  638920 kB
+Memory [train_epoch_end]: VmRSS:	  618752 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.6296s, Avg: 2.6296s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.1783s, Avg: 1.1783s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.1783s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.1783 sec
+  Average:   1.1783 sec
+  Min/Max:   1.1783/1.1783 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.6296 sec
+  Average:   2.6296 sec
+  Min/Max:   2.6296/2.6296 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 144, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxG,i!t QK}^&...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 121, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time>znOk_X^dY">nq...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 170, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where;E?.WsmaUNKa=9...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 149, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing#!Kllk...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 147, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to^$UNKp7|toFEOSa...
+Epoch 8/10 completed in 3.170697051s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 64, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: thePADZ9]u23a*jZ5Uwasgo'r)k6+e...
+
+Sample generation:
+Prompt: "The"
+Generated: "thePADZ9]u23a*jZ5Uwasgo'r)k6+e a Qh{*}gsmall t&jjNcbl06BR}ma4PAD"
+
+Epoch 9/10
+Memory [train_epoch_start]: VmSize:	  653280 kB
+Memory [train_epoch_start]: VmRSS:	  632800 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653280 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632800 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.66 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=733, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.78 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=186, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.72 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=739, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.64 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=137, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Batch 7/7 - Loss: 4.615120 - Avg: 4.615120 - Prep: 0.000s - Train: 0.327s
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615122 - Prep: 0.000s - Train: 0.524s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.64 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=183, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.468s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.495s
+  Ratio (train/prep):           51113.80x
+Memory [train_epoch_end]: VmSize:	  653280 kB
+Memory [train_epoch_end]: VmRSS:	  632988 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.4210s, Avg: 2.4210s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.0712s, Avg: 1.0712s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.0712s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.0712 sec
+  Average:   1.0712 sec
+  Min/Max:   1.0712/1.0712 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.4210 sec
+  Average:   2.4210 sec
+  Min/Max:   2.4210/2.4210 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 149, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxas>FR%*WGQn...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 139, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time IWl|fbBOS;2QN...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 150, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where n7,CD!bbZPADo...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 151, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thing6Cll26...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 134, prompt length = 15
+DEBUG: Using model-generated text.
+Generated preview: i would like to>ll<vv21XW9to 3...
+Epoch 9/10 completed in 2.938549565s
+  Loss: 4.615123
+  Perplexity: 120.00
+  Accuracy: 0.00%
+  Repetition score: 1.00
+  Fluency score: 1.00
+  Quality score: 0.48
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+DEBUG: Result length = 70, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the=lle EitUNK]X3m1\|6L<h0to P...
+
+Sample generation:
+Prompt: "The"
+Generated: "the=lle EitUNK]X3m1\|6L<h0to PR94t the xvAjsmaW#44E&vHce mG.the 0xe W:"
+
+Saving checkpoint to models/./profiling_results/model_20250519_134133.walle.epoch9
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250519_134133.walle.epoch9
+Checkpoint saved successfully
+Epoch 10/10
+Memory [train_epoch_start]: VmSize:	  653280 kB
+Memory [train_epoch_start]: VmRSS:	  632804 kB
+Enabling memory optimization with gradient checkpointing for training epoch
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	  653280 kB
+Memory [after_memory_opt_enable]: VmRSS:	  632804 kB
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.18 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=693, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Created 26 input/target pairs for training
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+CPU cores: 20 logical, 10 physical
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.31 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=176, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Using 9 threads for parallel processing
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+Hardware-optimal batch size: 614
+Dataset-constrained batch size: 4
+Using batch size: 4
+Calculated memory-optimal batch size: 614
+Expected number of batches: 7
+======================================
+
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.02 GB/s
+Estimated bandwidth per thread: 0.01 GB/s
+Thread count calculation: bandwidth_limit=680, compute_limit=2, adjusted=1, final=1
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Processing 7 batches in parallel when possible
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.08 GB/s
+Estimated bandwidth per thread: 0.05 GB/s
+Thread count calculation: bandwidth_limit=128, compute_limit=20, adjusted=15, final=15
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing output_projection: model_dim=512, vocab_size=101
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 113 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 112 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 109 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 107 out of range (max 100)
+Warning: target_id 108 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 117 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 103 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 104 out of range (max 100)
+Warning: target_id 118 out of range (max 100)
+Warning: target_id 106 out of range (max 100)
+Warning: target_id 119 out of range (max 100)
+Batch 7/7 - Loss: 4.615121 - Avg: 4.615121 - Prep: 0.000s - Train: 0.299s
+Batch 1/7 - Loss: 4.615124 - Avg: 4.615122 - Prep: 0.000s - Train: 0.500s
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.42 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=178, compute_limit=12, adjusted=9, final=9
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+
+Time analysis:
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     3.486s (100.0%)
+  Average batch preparation:    0.000s
+  Average training step:        0.498s
+  Ratio (train/prep):           47170.52x
+Memory [train_epoch_end]: VmSize:	  653280 kB
+Memory [train_epoch_end]: VmRSS:	  633008 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/create_sliding_windows - Total: 2.5852s, Avg: 2.5852s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 1.1364s, Avg: 1.1364s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#6: train_epoch_full/create_sliding_windows/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/create_sliding_windows/batch_processing_loop - Threads: 1, Total CPU Time: 1.1364s
+train_epoch_full/create_sliding_windows/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/create_sliding_windows/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/create_sliding_windows
+  Count:     1
+  Total:     2.5852 sec
+  Average:   2.5852 sec
+  Min/Max:   2.5852/2.5852 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/shuffling_indices
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/data_preparation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/create_sliding_windows/batch_processing_loop
+  Count:     1
+  Total:     1.1364 sec
+  Average:   1.1364 sec
+  Min/Max:   1.1364/1.1364 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+Evaluating model...
+Generating text with prompt: "The quick brown fox" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 159, prompt length = 19
+DEBUG: Using model-generated text.
+Generated preview: the quick brown foxZ$$8a msmal...
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 153, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time isma-Mas;e 1g...
+Generating text with prompt: "In a world where" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 146, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: in a world where she ZsmallZ&i...
+Generating text with prompt: "The most important thing" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 135, prompt length = 24
+DEBUG: Using model-generated text.
+Generated preview: the most important thingA.8Qto...
+Generating text with prompt: "I would like to" (max_tokens=100)
+Attempting to use model for text generation...

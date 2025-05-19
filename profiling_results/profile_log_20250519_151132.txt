@@ -1,0 +1,132 @@
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Array3` and `Ix3`
+ --> src/training/mod.rs:4:38
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, s, Ix2, Ix3};
+  |                                      ^^^^^^          ^^^
+
+warning: unused variable: `v`
+  --> src/nabla/memory_opt.rs:88:15
+   |
+88 |     if let Ok(v) = std::env::var("MALLOC_ARENA_MAX") {
+   |               ^ help: if this is intentional, prefix it with an underscore: `_v`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:420:20
+    |
+420 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: unused variable: `batch`
+   --> src/training/enhanced_trainer.rs:472:34
+    |
+472 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+
+warning: unused variable: `target`
+   --> src/training/enhanced_trainer.rs:472:47
+    |
+472 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:476:29
+    |
+476 |                         let mut loss_guard = loss_mutex.lock().unwrap();
+    |                             ----^^^^^^^^^^
+    |                             |
+    |                             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+    --> src/training/enhanced_trainer.rs:1825:13
+     |
+1825 |         let mut checkpointer = self.gradient_checkpointer.as_mut().unwrap();
+     |             ----^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: function `determine_allocator_type` is never used
+  --> src/nabla/memory_opt.rs:79:4
+   |
+79 | fn determine_allocator_type() -> Option<String> {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `load_batch_efficiently` is never used
+    --> src/training/enhanced_trainer.rs:1790:8
+     |
+137  | impl EnhancedTrainer {
+     | -------------------- method in this implementation
+...
+1790 |     fn load_batch_efficiently(&self, batch_data: &[Vec<usize>], max_sequence_length: usize) -> Vec<Vec<usize>> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `V0_HEADER_SIZE` is never used
+  --> src/training/enhanced_trainer.rs:96:15
+   |
+96 |     pub const V0_HEADER_SIZE: usize = 32;
+   |               ^^^^^^^^^^^^^^
+
+warning: `wall-e1` (lib) generated 11 warnings (run `cargo fix --lib -p wall-e1` to apply 4 suggestions)
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:46:13
+   |
+46 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:348:13
+    |
+348 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:474:25
+    |
+474 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/bin/train_enhanced_model.rs:851:9
+    |
+851 |     let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+    |         ----^^^^^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: `wall-e1` (bin "Wall-E") generated 4 warnings (run `cargo fix --bin "Wall-E"` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running `target/release/Wall-E --stories 5000 --model-dim 128 --ff-dim 512 --layers 2 --epochs 3 --json-format --perf-log true --save-path ./profiling_results/model_20250519_151132.json --use-memory-opt --curriculum-examples 500 --checkpoint-strategy adaptive --thread-opt gradient_update ./data/tinystories.json`
+Detected 20 CPU cores
+Creating global thread pool with 19 threads
+Global thread pool initialized with 19 threads
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Memory [startup]: VmSize:	 1288784 kB
+Memory [startup]: VmRSS:	    3520 kB
+Memory and thread optimizations configured

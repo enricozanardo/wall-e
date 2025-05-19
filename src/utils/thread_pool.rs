@@ -79,20 +79,30 @@ pub fn get_global_thread_pool() -> Arc<ThreadPoolManager> {
 
 /// Get a thread pool optimized for a specific operation type
 pub fn get_thread_pool_for_operation(operation: &str) -> Arc<ThreadPoolManager> {
-    let mut pools = OPERATION_POOLS.lock().unwrap();
-    
-    if !pools.contains_key(operation) {
-        // Create a new pool for this operation type with optimal thread count
-        let num_threads = get_optimal_thread_count_for_operation(operation);
-        println!("🔹 Creating dedicated thread pool for '{}' operation with {} threads", operation, num_threads);
-        let pool = Arc::new(ThreadPoolManager::new(num_threads, Some(operation)));
-        pools.insert(operation.to_string(), pool.clone());
-        return pool;
-    } else {
-        println!("🔸 Reusing existing thread pool for '{}' operation", operation);
+    // Try to get the pool with a non-blocking approach first
+    match OPERATION_POOLS.try_lock() {
+        Ok(mut pools) => {
+            // Successfully acquired lock
+            if !pools.contains_key(operation) {
+                // Create a new pool for this operation type with optimal thread count
+                let num_threads = get_optimal_thread_count_for_operation(operation);
+                println!("🔹 Creating dedicated thread pool for '{}' operation with {} threads", operation, num_threads);
+                let pool = Arc::new(ThreadPoolManager::new(num_threads, Some(operation)));
+                pools.insert(operation.to_string(), pool.clone());
+                return pool;
+            } else {
+                // Return existing pool
+                println!("🔸 Reusing existing thread pool for '{}' operation", operation);
+                return pools.get(operation).unwrap().clone();
+            }
+        },
+        Err(_) => {
+            // Couldn't get the lock - this might be a deadlock situation
+            // Fall back to the global thread pool
+            println!("⚠️ Warning: Could not acquire lock for operation pools, using global pool for '{}' to avoid deadlock", operation);
+            return get_global_thread_pool();
+        }
     }
-    
-    pools.get(operation).unwrap().clone()
 }
 
 /// Determine the optimal thread count based on environment and system capabilities
@@ -106,7 +116,7 @@ fn determine_thread_count() -> usize {
         }
     }
     
-    // Next check for environment variable specific to our application
+    // Next check for environment variable specifically for our application
     if let Ok(threads) = env::var("WALL_E_THREADS") {
         if let Ok(num) = threads.parse::<usize>() {
             if num > 0 {
@@ -139,12 +149,25 @@ fn get_optimal_thread_count_for_operation(operation: &str) -> usize {
             // Check for environment variable specifically for data loading operations
             if let Ok(threads) = env::var("WALL_E_DATA_THREADS") {
                 if let Ok(num) = threads.parse::<usize>() {
+                    println!("Using WALL_E_DATA_THREADS={} from environment", num);
                     return num.min(available_parallelism);
                 }
             }
             
-            // Default: at least 4 threads or 20% of available cores, whichever is greater
-            let min_data_threads = std::cmp::max(4, (available_parallelism as f32 * 0.2) as usize);
+            // Default: More aggressive thread allocation for data loading
+            // At least 6 threads or 50% of available cores (up from 20%), whichever is greater
+            // This helps ensure enough CPU utilization for data loading
+            let min_data_threads = std::cmp::max(6, (available_parallelism as f32 * 0.5) as usize);
+            
+            println!("Data loading threads: min={}, available={}, using={}",
+                     min_data_threads, available_parallelism, min_data_threads.min(available_parallelism));
+            
+            // Log warning if we're using too few threads
+            if min_data_threads < 4 {
+                println!("⚠️ Warning: Using only {} threads for data loading, may cause low CPU utilization", 
+                         min_data_threads);
+            }
+            
             min_data_threads.min(available_parallelism)
         },
         _ => physical_cores.max(1), // Default to physical core count

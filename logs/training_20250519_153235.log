@@ -1,0 +1,107 @@
+Detected JSON format data file
+Using quality-focused sampling: 500 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 1
+Data sampling: quality (500 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Checkpoint strategy: adaptive
+Thread optimization: gradient_update
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 1 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 500 --perf-log true --curriculum-examples 500 --use-memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update
+Using RAYON_NUM_THREADS=20
+Memory [startup]: VmSize:	    4392 kB
+Memory [startup]: VmRSS:	    1360 kB
+
+🔄 INITIALIZING THREAD POOLS FOR OPTIMIZED TRAINING 🔄
+Creating thread pool with 20 threads for general operations
+✅ Global thread pool initialized with 20 threads
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+✅ Operation-specific thread pool for 'matrix_multiply' initialized with 19 threads
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+✅ Operation-specific thread pool for 'gradient_update' initialized with 15 threads
+🔹 Creating dedicated thread pool for 'data_loading' operation with 2 threads
+Creating thread pool with 2 threads for data_loading operations
+✅ Operation-specific thread pool for 'data_loading' initialized with 2 threads
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+✅ Operation-specific thread pool for 'attention' initialized with 19 threads
+🔄 THREAD POOLS INITIALIZED 🔄
+
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Detected 20 CPU cores
+Global thread pool initialized with 20 threads
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Memory and thread optimizations configured
+Unknown option: data/tiny_stories_sample.json
+Generating sample text to demonstrate model quality...
+Prompt: "Once upon a time"
+Memory [startup]: VmSize:	    4392 kB
+Memory [startup]: VmRSS:	    1408 kB
+
+🔄 INITIALIZING THREAD POOLS FOR OPTIMIZED TRAINING 🔄
+Creating thread pool with 20 threads for general operations
+✅ Global thread pool initialized with 20 threads
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+✅ Operation-specific thread pool for 'matrix_multiply' initialized with 19 threads
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+✅ Operation-specific thread pool for 'gradient_update' initialized with 15 threads
+🔹 Creating dedicated thread pool for 'data_loading' operation with 2 threads
+Creating thread pool with 2 threads for data_loading operations
+✅ Operation-specific thread pool for 'data_loading' initialized with 2 threads
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+✅ Operation-specific thread pool for 'attention' initialized with 19 threads
+🔄 THREAD POOLS INITIALIZED 🔄
+
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Detected 20 CPU cores
+Global thread pool initialized with 20 threads
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+Memory and thread optimizations configured

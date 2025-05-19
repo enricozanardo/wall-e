@@ -332,10 +332,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cpu_count = num_cpus::get();
     println!("Detected {} CPU cores", cpu_count);
     
-    // Force data loading threads to be at least 6 or 30% of available cores,
-    // whichever is greater
-    let min_data_threads = std::cmp::max(6, (cpu_count as f32 * 0.3) as usize);
-    println!("🔧 Setting WALL_E_DATA_THREADS to {} for better parallelism", min_data_threads);
+    // Force data loading threads to be much higher - at least 8 or 70% of available cores,
+    // to address very low CPU utilization (0.0-0.7%)
+    let min_data_threads = std::cmp::max(8, (cpu_count as f32 * 0.7) as usize);
+    println!("🔧 Setting WALL_E_DATA_THREADS to {} for better parallelism (fixing low CPU usage)", min_data_threads);
     // Set environment variable for data loading thread count
     unsafe {
         std::env::set_var("WALL_E_DATA_THREADS", min_data_threads.to_string());
@@ -1579,7 +1579,16 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
             loop {
                 // Get the next batch from the queue
                 let batch_idx = {
-                    let mut queue = thread_batch_queue.lock().unwrap();
+                    let mut queue = match thread_batch_queue.try_lock() {
+                        Ok(queue) => queue,
+                        Err(_) => {
+                            // Could not acquire lock - might be contention or deadlock
+                            // Sleep briefly and try again next iteration
+                            std::thread::sleep(std::time::Duration::from_millis(50));
+                            continue;
+                        }
+                    };
+                    
                     if queue.is_empty() {
                         // If queue is empty, check if we should exit
                         if thread_active_workers.load(std::sync::atomic::Ordering::SeqCst) <= 1 {
@@ -1639,8 +1648,18 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     
     // Process messages and update progress until queue is empty and all workers are done
     let mut all_done = false;
+    let training_start_time = std::time::Instant::now();
+    // Add a global training timeout (5 minutes) to prevent hanging
+    let training_timeout = std::time::Duration::from_secs(300); // 5 minutes
     
     while !all_done {
+        // Check if we've exceeded the global timeout
+        if training_start_time.elapsed() > training_timeout {
+            println!("    ⚠️ GLOBAL TRAINING TIMEOUT: Forcing completion after {:?}", training_timeout);
+            all_done = true;
+            break;
+        }
+        
         // Try to receive a message with timeout
         let result = {
             let rx = rx.lock().unwrap();
@@ -1688,22 +1707,112 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     // Collect all trainers and apply gradients
     println!("    🔄 Waiting for all threads to finish...");
     
-    // Join all threads and collect their trainers
+    // Much more aggressive timeout - if threads are deadlocked, don't wait too long
+    let join_timeout = std::time::Duration::from_secs(5); // reduced from 10 to 5 seconds
+    let join_start = std::time::Instant::now();
+    
+    // Kill switch timer that will force continuation after total timeout regardless of thread state
+    let _kill_switch_timer = std::thread::spawn(move || {
+        std::thread::sleep(join_timeout);
+        println!("    ⚠️ GLOBAL TIMEOUT: Forcing continuation after {:?}", join_timeout);
+        // Just return - main thread will check elapsed time and continue
+    });
+    
     let mut collected_trainers = Vec::new();
-    for handle in handles {
-        match handle.join() {
-            Ok(trainer) => collected_trainers.push(trainer),
-            Err(e) => println!("    ⚠️ Error joining thread: {:?}", e)
+    let total_handles = handles.len();
+    
+    // Try to join threads with very aggressive timeouts
+    println!("    🔄 Attempting to join threads with aggressive timeouts...");
+    
+    // Set force_stop flag to false initially
+    let mut force_stop = false;
+    
+    // Track number of attempts
+    let mut join_attempts = 0;
+    let max_join_attempts = 3;
+    
+    // Create new collection for handles to avoid borrow after move
+    let mut remaining_handles = handles;
+    
+    while !remaining_handles.is_empty() && !force_stop && join_attempts < max_join_attempts {
+        join_attempts += 1;
+        println!("    🔄 Join attempt {}/{}", join_attempts, max_join_attempts);
+        
+        // Very brief timeout for each individual thread join
+        let thread_timeout = std::time::Duration::from_millis(200);
+        
+        // Create a new list for handles that couldn't be joined
+        let mut handles_to_retry = Vec::new();
+        
+        for (i, handle) in remaining_handles.into_iter().enumerate() {
+            println!("    ⏳ Trying to join thread {} within {:?}...", i, thread_timeout);
+            
+            // Create a thread to attempt joining with timeout
+            let (tx, rx) = std::sync::mpsc::channel();
+            
+            // Move the handle into the join thread
+            let join_thread = std::thread::spawn(move || {
+                if let Ok(trainer) = handle.join() {
+                    let _ = tx.send(Some(trainer));
+                } else {
+                    let _ = tx.send(None);
+                }
+            });
+            
+            // Wait with timeout
+            match rx.recv_timeout(thread_timeout) {
+                Ok(Some(trainer)) => {
+                    collected_trainers.push(trainer);
+                    println!("    ✅ Thread {} joined successfully", i);
+                },
+                Ok(None) => {
+                    println!("    ⚠️ Thread {} returned error on join", i);
+                },
+                Err(_) => {
+                    println!("    ⚠️ Thread {} join timed out", i);
+                    
+                    // We can't access the original handle anymore since it was moved
+                    // Just note that we had a timed out thread
+                    println!("    ⚠️ Thread will be abandoned");
+                }
+            }
+            
+            // Forget the join thread to avoid additional waiting
+            std::mem::forget(join_thread);
+            
+            // Check elapsed time and force stop if needed
+            if join_start.elapsed() > join_timeout {
+                println!("    ⏰ Global timeout reached during joins");
+                force_stop = true;
+                break;
+            }
         }
+        
+        // No need to update remaining_handles since we consumed the vector
+        remaining_handles = handles_to_retry;
     }
     
-    // Use the original trainer to combine gradients from all threads
-    println!("    🔄 Applying parallel gradients from {} threads...", collected_trainers.len());
+    // If we still have threads after all attempts, just abandon them
+    if !remaining_handles.is_empty() {
+        println!("    ⚠️ Could not join {} threads, they will be detached", remaining_handles.len());
+        // Don't leak resources but we can't join them
+        remaining_handles.clear();
+    }
     
-    // Apply the parallel gradients
-    trainer.apply_parallel_gradients();
+    // If we still have threads after all attempts, just abandon them
+    println!("    ✅ Thread joining process complete: collected {}/{} trainers", 
+            collected_trainers.len(), total_handles);
     
-    perf_logger.end("batch_processing_loop");
+    // No need to check for remaining threads as they've all been processed individually
+    
+    // Safety check - ensure we have at least some trainers
+    if collected_trainers.is_empty() {
+        println!("    ⚠️ No trainers collected! Continuing without applying gradients");
+    } else {
+        // Use the original trainer to combine gradients from all threads
+        println!("    🔄 Applying parallel gradients from {} threads...", collected_trainers.len());
+        trainer.apply_parallel_gradients();
+    }
     
     // Calculate preparation vs training time ratio
     if !batch_prep_times.is_empty() && !train_step_times.is_empty() {
@@ -1757,15 +1866,57 @@ fn prepare_batch_parallel(
     
     // Get thread pool for data loading
     let data_pool = wall_e1::utils::thread_pool::get_thread_pool_for_operation("data_loading");
-    let pool = data_pool.get_pool().lock().unwrap();
     
-    // Use the data loading thread pool
-    let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool.install(|| {
-        // Collect input sequences in parallel
+    // Log the number of threads to help diagnose CPU utilization issues
+    println!("Data loading with {} threads", data_pool.get_num_threads());
+    
+    // Calculate optimal chunk size for better work distribution
+    // This ensures each thread gets substantial work to do
+    let indices_per_thread = std::cmp::max(
+        1,
+        std::cmp::min(
+            64, // Upper bound to avoid too large allocations
+            (batch_indices.len() + data_pool.get_num_threads() - 1) / data_pool.get_num_threads()
+        )
+    );
+    
+    // Get the thread pool safely
+    let pool_result = {
+        let pool_guard = data_pool.get_pool().lock().unwrap();
+        pool_guard
+    };
+    
+    // Use the data loading thread pool with optimal chunking
+    let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+        use rayon::iter::ParallelIterator;
+        
+        // Split indices into reasonably-sized chunks to improve thread utilization
+        // This reduces overhead and increases CPU usage
+        let chunks: Vec<&[usize]> = batch_indices.chunks(indices_per_thread).collect();
+        println!("Processing {} chunks across {} threads", chunks.len(), data_pool.get_num_threads());
+        
+        // Collect input sequences in parallel by chunk (better locality, less overhead)
         let par_collect_start = Instant::now();
-        let batch_inputs: Vec<Vec<usize>> = batch_indices.par_iter()
-            .map(|&idx| inputs[idx].clone())
+        let mut batch_inputs = Vec::with_capacity(batch_indices.len());
+        
+        let chunk_results: Vec<Vec<Vec<usize>>> = chunks.into_par_iter()
+            .map(|chunk_indices| {
+                // Process each chunk as a unit to reduce thread synchronization overhead
+                let mut chunk_inputs = Vec::with_capacity(chunk_indices.len());
+                for &idx in chunk_indices {
+                    if idx < inputs.len() {
+                        chunk_inputs.push(inputs[idx].clone());
+                    }
+                }
+                chunk_inputs
+            })
             .collect();
+            
+        // Combine chunk results (sequential, but small operation)
+        for mut chunk_result in chunk_results {
+            batch_inputs.append(&mut chunk_result);
+        }
+        
         let par_collect_time = par_collect_start.elapsed().as_millis();
         
         // Skip if all sequences are empty
@@ -1775,11 +1926,21 @@ fn prepare_batch_parallel(
         
         // Find minimum sequence length in parallel
         let min_len_start = Instant::now();
-        let min_seq_len = batch_inputs.par_iter()
-            .map(|seq| seq.len())
+        
+        // Use chunked approach for min length calculation too
+        let min_seq_len = batch_inputs.chunks(indices_per_thread)
+            .collect::<Vec<_>>()
+            .into_par_iter()
+            .map(|chunk| {
+                chunk.iter()
+                    .map(|seq| seq.len())
+                    .min()
+                    .unwrap_or(usize::MAX)
+            })
             .min()
             .unwrap_or(0)
             .min(max_sequence_length);
+            
         let min_len_time = min_len_start.elapsed().as_millis();
         
         // Skip if sequences are too short
@@ -1787,30 +1948,66 @@ fn prepare_batch_parallel(
             return (batch_inputs, min_seq_len, Vec::new(), Array2::zeros((0, 0)), (par_collect_time, min_len_time, 0, 0));
         }
         
-        // Truncate all sequences to the same length
+        // Truncate all sequences to the same length with chunking
         let truncate_start = Instant::now();
-        let truncated_inputs: Vec<Vec<usize>> = batch_inputs.par_iter()
-            .map(|seq| {
-                if seq.len() > min_seq_len {
-                    seq[0..min_seq_len].to_vec()
-                } else {
-                    seq.clone()
-                }
+        let truncated_inputs = batch_inputs.chunks(indices_per_thread)
+            .collect::<Vec<_>>()
+            .into_par_iter()
+            .flat_map(|chunk| {
+                chunk.iter().map(|seq| {
+                    if seq.len() > min_seq_len {
+                        seq[0..min_seq_len].to_vec()
+                    } else {
+                        seq.clone()
+                    }
+                }).collect::<Vec<Vec<usize>>>()
             })
             .collect();
+            
         let truncate_time = truncate_start.elapsed().as_millis();
         
         // Create batch targets array
         let targets_start = Instant::now();
         let mut batch_targets_arr = Array2::zeros((batch_indices.len(), min_seq_len));
         
-        // Fill targets sequentially to avoid mutable borrow issues
-        for (i, &idx) in batch_indices.iter().enumerate() {
-            let target = &targets[idx];
-            for j in 0..min_seq_len.min(target.len()) {
-                batch_targets_arr[[i, j]] = target[j];
+        // Process targets in chunks to improve parallelism
+        let targets_chunks: Vec<_> = batch_indices.chunks(indices_per_thread).collect();
+        
+        // Fill targets in parallel using chunks and shared mutex
+        let targets_arr_mutex = std::sync::Arc::new(std::sync::Mutex::new(batch_targets_arr));
+        
+        // Process chunks in parallel
+        targets_chunks.into_par_iter().for_each(|chunk_indices| {
+            // Create local buffer for this chunk
+            let mut local_targets = Array2::zeros((chunk_indices.len(), min_seq_len));
+            
+            // Fill local buffer
+            for (local_i, &idx) in chunk_indices.iter().enumerate() {
+                if idx < targets.len() {
+                    let target = &targets[idx];
+                    for j in 0..min_seq_len.min(target.len()) {
+                        local_targets[[local_i, j]] = target[j];
+                    }
+                }
             }
-        }
+            
+            // Acquire lock just once per chunk to update main array
+            let mut targets_arr = targets_arr_mutex.lock().unwrap();
+            
+            // Find target position in full array
+            let offset = batch_indices.iter().position(|&id| id == chunk_indices[0]).unwrap_or(0);
+            
+            // Copy local chunk to main array
+            for local_i in 0..chunk_indices.len() {
+                for j in 0..min_seq_len {
+                    targets_arr[[offset + local_i, j]] = local_targets[[local_i, j]];
+                }
+            }
+        });
+        
+        // Extract the final array
+        batch_targets_arr = targets_arr_mutex.lock().unwrap().clone();
+        
         let targets_time = targets_start.elapsed().as_millis();
         
         (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, (par_collect_time, min_len_time, truncate_time, targets_time))
@@ -1823,12 +2020,10 @@ fn prepare_batch_parallel(
     
     let total_time = prep_start.elapsed().as_millis();
     
-    // Only log detailed timing occasionally to avoid flooding output
-    if total_time > 10 || batch_indices.len() > 16 {
-        let (par_collect_time, min_len_time, truncate_time, targets_time) = timing;
-        println!("Batch prep timing: total={}ms (collect={}ms, min_len={}ms, truncate={}ms, targets={}ms)",
-            total_time, par_collect_time, min_len_time, truncate_time, targets_time);
-    }
+    // Always log timing info when we have CPU utilization issues
+    let (par_collect_time, min_len_time, truncate_time, targets_time) = timing;
+    println!("Batch prep timing: total={}ms (collect={}ms, min_len={}ms, truncate={}ms, targets={}ms)",
+        total_time, par_collect_time, min_len_time, truncate_time, targets_time);
     
     (truncated_inputs, batch_targets_arr)
 }

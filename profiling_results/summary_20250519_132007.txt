@@ -1,0 +1,88 @@
+===== WALL-E1 TRAINING PROFILE SUMMARY =====
+Date: Mon May 19 13:21:58 CEST 2025
+
+CONFIGURATION:
+  Model size: 128d (2 layers)
+  Stories: 5000
+  Epochs: 10
+  Memory optimization: enabled
+
+TIMING SUMMARY:
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     0.198s (100.0%)
+  Total training step time:     0.206s (100.0%)
+  Total training step time:     0.195s (100.0%)
+  Total training step time:     0.194s (100.0%)
+  Total training step time:     0.208s (100.0%)
+  Total training step time:     0.200s (100.0%)
+  Total training step time:     0.244s (100.0%)
+  Total training step time:     0.206s (100.0%)
+  Total training step time:     0.192s (100.0%)
+  Total training step time:     0.221s (100.0%)
+Training completed in 106.496781028s
+
+TOP 5 TIME-CONSUMING OPERATIONS:
+#1: train_epoch_full/create_sliding_windows - Total: 1.9514s, Avg: 1.9514s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5335s, Avg: 0.5335s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9795s, Avg: 1.9795s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5445s, Avg: 0.5445s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9327s, Avg: 1.9327s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5382s, Avg: 0.5382s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9125s, Avg: 1.9125s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5279s, Avg: 0.5279s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 2.0065s, Avg: 2.0065s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5366s, Avg: 0.5366s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9314s, Avg: 1.9314s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5425s, Avg: 0.5425s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9348s, Avg: 1.9348s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5282s, Avg: 0.5282s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 2.0383s, Avg: 2.0383s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5659s, Avg: 0.5659s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9149s, Avg: 1.9149s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5386s, Avg: 0.5386s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 1.9792s, Avg: 1.9792s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5433s, Avg: 0.5433s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: program_execution - Total: 107.5106s, Avg: 107.5106s, Count: 1
+#2: program_execution/training_process - Total: 106.4968s, Avg: 106.4968s, Count: 1
+#3: program_execution/training_process/evaluation_1 - Total: 8.0589s, Avg: 8.0589s, Count: 1
+#4: program_execution/training_process/evaluation_5 - Total: 7.8913s, Avg: 7.8913s, Count: 1
+#5: program_execution/training_process/evaluation_8 - Total: 7.8553s, Avg: 7.8553s, Count: 1

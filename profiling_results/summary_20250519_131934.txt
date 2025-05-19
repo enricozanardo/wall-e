@@ -1,0 +1,32 @@
+===== WALL-E1 TRAINING PROFILE SUMMARY =====
+Date: Mon May 19 13:19:57 CEST 2025
+
+CONFIGURATION:
+  Model size: 128d (2 layers)
+  Stories: 5000
+  Epochs: 2
+  Memory optimization: enabled
+
+TIMING SUMMARY:
+  Total batch preparation time: 0.000s (0.1%)
+  Total batch preparation time: 0.000s (0.0%)
+  Total training step time:     0.190s (99.9%)
+  Total training step time:     0.209s (100.0%)
+Training completed in 20.983437808s
+
+TOP 5 TIME-CONSUMING OPERATIONS:
+#1: train_epoch_full/create_sliding_windows - Total: 1.9733s, Avg: 1.9733s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5410s, Avg: 0.5410s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/create_sliding_windows - Total: 2.0238s, Avg: 2.0238s, Count: 1
+#2: train_epoch_full/create_sliding_windows/batch_processing_loop - Total: 0.5454s, Avg: 0.5454s, Count: 1
+#3: train_epoch_full/create_sliding_windows/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/create_sliding_windows/data_preparation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#5: train_epoch_full/create_sliding_windows/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: program_execution - Total: 22.0120s, Avg: 22.0120s, Count: 1
+#2: program_execution/training_process - Total: 20.9834s, Avg: 20.9834s, Count: 1
+#3: program_execution/training_process/evaluation_2 - Total: 7.7272s, Avg: 7.7272s, Count: 1
+#4: program_execution/training_process/evaluation_1 - Total: 7.5345s, Avg: 7.5345s, Count: 1
+#5: program_execution/training_process/epoch_2 - Total: 2.5896s, Avg: 2.5896s, Count: 1

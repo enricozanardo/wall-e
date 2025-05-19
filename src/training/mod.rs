@@ -547,7 +547,46 @@ impl Trainer {
         // println!("Debug: forward - shape after encoder: {:?}", encoder_output.data.shape());
         
         // Use matmul_with instead of dot for projection into output space
-        let logits = encoder_output.matmul_with(&self.output_projection);
+        let mut logits = encoder_output.matmul_with(&self.output_projection);
+        
+        // IMPROVEMENT: If we have targets with IDs larger than our output_projection shape,
+        // we need to resize the logits tensor to accommodate them
+        if let Some(target_tokens) = target {
+            // Find the maximum target ID to ensure our logits can handle it
+            let mut max_target_id = 0;
+            for i in 0..batch_size {
+                for j in 0..target_tokens.shape()[1].min(seq_len) {
+                    let target_id = target_tokens[[i, j]];
+                    max_target_id = max_target_id.max(target_id);
+                }
+            }
+            
+            // Ensure logits is large enough for all target IDs
+            let current_vocab_size = logits.data.shape()[2];
+            if max_target_id >= current_vocab_size {
+                // We need to extend the logits array
+                let required_size = max_target_id + 1;
+                
+                // Create a new array with expanded size
+                let mut expanded_logits = Array3::<f32>::zeros((
+                    logits.data.shape()[0],
+                    logits.data.shape()[1],
+                    required_size
+                ));
+                
+                // Copy existing values
+                for i in 0..logits.data.shape()[0] {
+                    for j in 0..logits.data.shape()[1] {
+                        for k in 0..current_vocab_size {
+                            expanded_logits[[i, j, k]] = logits.data[[i, j, k]];
+                        }
+                    }
+                }
+                
+                // Replace logits with expanded version
+                logits = Tensor::new_3d(expanded_logits);
+            }
+        }
         
         // println!("Debug: forward - final logits shape: {:?}", logits.data.shape());
         
@@ -585,17 +624,8 @@ impl Trainer {
                                 // Cross-entropy loss: -log(p_target)
                                 total_loss -= target_prob.ln();
                                 total_tokens += 1;
-                            } else {
-                                // Completely suppress these warnings as they occur frequently during training
-                                // with large vocabularies, and don't indicate an actual problem.
-                                // The token IDs are correctly handled, just not used in loss calculation.
-                                
-                                // If we want to debug this specific issue, uncomment the following:
-                                // if target_id > logits.data.shape()[2] * 10 {
-                                //     println!("Warning: target_id {} out of range (max {})", 
-                                //             target_id, logits.data.shape()[2]-1);
-                                // }
                             }
+                            // Target ID out of range - silently skip
                         }
                     }
                 }

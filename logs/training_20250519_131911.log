@@ -1,0 +1,94 @@
+Detected JSON format data file
+Using quality-focused sampling: 5000 high-quality stories
+╔═════════════════════════════════════════════════════╗
+║              STEP 1: DATA PREPARATION               ║
+╚═════════════════════════════════════════════════════╝
+Preprocessing disabled. Using original data.
+╔═════════════════════════════════════════════════════╗
+║          OPTIMIZED TRAINING CONFIGURATION           ║
+╚═════════════════════════════════════════════════════╝
+Model size: small
+Model architecture: 128 dim, 4 heads, 3 layers
+Feed-forward dimension: 512
+Vocabulary size: 5000
+Min token frequency: 2
+Learning rate: 0.0001
+Epochs: 2
+Data sampling: quality (5000 stories)
+Curriculum examples: 500
+Data preprocessing: false
+Training data: data/tiny_stories_sample.json
+Save path: models/high_accuracy_model.walle
+Memory optimization: enabled
+Checkpoint strategy: adaptive
+Thread optimization: gradient_update
+Batch size: auto-calculated
+CPU Cores: 20 (all available)
+╔═════════════════════════════════════════════════════╗
+║           BUILDING OPTIMIZED COMMAND                ║
+╚═════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════╗
+║           STARTING OPTIMIZED TRAINING               ║
+╚═════════════════════════════════════════════════════╝
+Executing: cargo run --release --bin Wall-E -- data/tiny_stories_sample.json --model-dim 128 --ff-dim 512 --heads 4 --layers 3 --epochs 2 --vocab-size 5000 --min-freq 2 --save-path models/high_accuracy_model.walle --learning-rate 0.0001 --enable-skip --strong-anti-rep --json-format --stories 5000 --perf-log true --curriculum-examples 500 --use-memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update
+Using RAYON_NUM_THREADS=20
+Configuring thread pool with 20 CPU cores
+Training Configuration:
+  Training data: data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 5000
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 3
+  Dropout rate: 0.1
+  Learning rate: 0.0001
+  Epochs: 2
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: models/high_accuracy_model.walle
+  CPU threads: 20
+  Performance logging: enabled
+Reading training data...
+Found 58300 stories in JSON file
+Will use 5000 stories for training
+Processed 5000 stories, total text length: 4414009 characters
+Memory [after_data_loading]: VmSize:	 1415888 kB
+Memory [after_data_loading]: VmRSS:	   59312 kB
+Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 3 (validated: 3)
+  dropout_rate: 0.1
+  learning_rate: 0.0001
+Initializing output_projection: model_dim=128, vocab_size=101
+Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+Memory [after_memory_opt_enable]: VmSize:	 1415888 kB
+Memory [after_memory_opt_enable]: VmRSS:	   59312 kB
+Configuring thread pool for gradient_update operations
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.41 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=5706, compute_limit=12, adjusted=6, final=6
+Warning: Failed to configure thread pool: The global thread pool has already been initialized.
+Configured thread pool with 6 threads for gradient_update operations
+Configuring strong anti-repetition mechanisms...
+Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+Learning tokenizer vocabulary...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 442 chunks
+Starting parallel vocabulary learning with 442 chunks
+Word counting completed in 54.89ms, found 7726 unique words
+Learning up to 4899 merges to reach vocab size 5000
+  Learned 1 merges (0.0%) in 14.81ms...
