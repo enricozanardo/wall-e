@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::io;
-use ndarray::{Array, Array1, Array2, Array3, s, Ix2, Ix3};
+use ndarray::{Array, Array1, Array2, Array3, Axis, Ix1, Ix2, Ix3, Ix0, IxDyn, s};
 use thiserror::Error;
 use crate::tokenizer::Tokenizer;
 use crate::embedding::TransformerEmbedding;
@@ -9,6 +9,8 @@ use crate::attention::EncoderStack;
 use crate::nabla::tensor::Tensor;
 use rayon;
 use rayon::prelude::*;
+use ndarray::Array0;
+use ndarray::array;
 
 /// Possible errors during model usage
 #[derive(Error, Debug)]
@@ -758,6 +760,97 @@ impl Trainer {
         self.vocab_size
     }
     
+    /// Get the maximum target ID that the model can currently handle
+    pub fn get_max_target_id(&self) -> usize {
+        // Get the current output projection dimensions (width is vocab size)
+        if let Ok(data) = self.output_projection.data.clone().into_dimensionality::<Ix2>() {
+            let shape = data.shape();
+            if shape.len() >= 2 {
+                // The maximum valid target ID is one less than vocab size
+                return shape[1].saturating_sub(1);
+            }
+        }
+        
+        // Fallback if we can't get dimensions
+        self.vocab_size.saturating_sub(1)
+    }
+    
+    /// Returns the count of accumulated gradients
+    pub fn get_gradient_count(&self) -> usize {
+        // Check if we have a gradient count tensor
+        if let Some(count_tensor) = self.params.get("gradient_count") {
+            // Try to extract as scalar
+            if let Ok(count_array) = count_tensor.data.clone().into_dimensionality::<Ix0>() {
+                // Convert to f64 first since f32 doesn't implement Ord
+                let count_f64 = count_array.into_scalar() as f64;
+                return count_f64 as usize;
+            }
+            
+            // Try as 1D array with one element
+            if let Ok(count_array) = count_tensor.data.clone().into_dimensionality::<Ix1>() {
+                if count_array.len() > 0 {
+                    // Convert to f64 first since f32 doesn't implement Ord
+                    let count_f64 = count_array[0] as f64;
+                    return count_f64 as usize;
+                }
+            }
+        }
+        
+        // Check if we have accumulated_gradient - if it exists, assume count is 1
+        if self.params.contains_key("accumulated_gradient") {
+            return 1;
+        }
+        
+        // Default: no gradients
+        0
+    }
+    
+    /// Apply accumulated gradients from parallel training
+    pub fn apply_accumulated_gradients(&mut self) -> Result<f32, String> {
+        // Get the accumulated gradient tensor
+        let gradient = match self.params.get("accumulated_gradient") {
+            Some(grad) => grad.clone(),
+            None => return Err("No accumulated gradients found".to_string())
+        };
+        
+        // Get gradient count
+        let count = self.get_gradient_count();
+        if count == 0 {
+            return Ok(0.0); // No gradients to apply
+        }
+        
+        // Normalize gradient by count
+        let normalized_grad = &gradient.data / (count as f32);
+        let normalized_tensor = Tensor::new_from_array(normalized_grad);
+        
+        // Create a gradients map
+        let mut grads = HashMap::new();
+        grads.insert("output_projection".to_string(), normalized_tensor);
+        
+        // Apply gradients using optimizer
+        self.optimizer.step(&mut self.params, &grads);
+        
+        // Update the output_projection reference with the updated value
+        if let Some(updated) = self.params.get("output_projection") {
+            self.output_projection = updated.clone();
+        }
+        
+        // Calculate average gradient norm
+        let grad_norm = gradient.data.iter()
+            .map(|&x| x * x)
+            .sum::<f32>()
+            .sqrt() / (count as f32);
+            
+        // Reset accumulated gradients
+        self.params.remove("accumulated_gradient");
+        
+        // Create a scalar tensor with value 0.0
+        let scalar_array = Array::zeros(IxDyn(&[1]));
+        self.params.insert("gradient_count".to_string(), Tensor::new_from_array(scalar_array));
+        
+        Ok(grad_norm)
+    }
+    
     /// Returns the total number of parameters in the model
     pub fn get_parameter_count(&self) -> usize {
         // ... Unchanged implementation
@@ -978,44 +1071,138 @@ impl Trainer {
         Ok(())
     }
 
-    /// Resizes the output projection layer to accommodate the new vocabulary size
-    ///
-    /// # Arguments
-    /// * `new_vocab_size` - The new vocabulary size to resize to
-    pub fn resize_output_layer(&mut self, new_vocab_size: usize) {
-        if new_vocab_size == self.vocab_size {
-            // No resize needed
-            return;
+    /// Resize the output layer to support a larger vocabulary
+    pub fn resize_output_layer(&mut self, new_vocab_size: usize) -> Result<(), String> {
+        // Check if we need to resize
+        if new_vocab_size <= self.vocab_size {
+            return Ok(());
         }
         
-        println!("Resizing output_projection from vocab_size={} to {}", 
-                self.vocab_size, new_vocab_size);
+        // Make sure the new size is reasonable
+        if new_vocab_size > 1_000_000 {
+            return Err(format!("New vocabulary size {} seems unreasonably large", new_vocab_size));
+        }
         
-        // Create a new output projection with the new vocabulary size
-        let model_dim = self.model_dim;
+        // Log the resize operation
+        println!("Resizing output layer from {} to {} tokens", self.vocab_size, new_vocab_size);
         
-        // Initialize output projection with zeros
-        let mut output_proj_data = Array2::<f32>::zeros((model_dim, new_vocab_size));
+        // Get current dimensions and data
+        let old_data = match self.output_projection.data.clone().into_dimensionality::<Ix2>() {
+            Ok(data) => data,
+            Err(_) => return Err("Failed to convert output projection to 2D array".to_string())
+        };
         
-        // Preserve old weights for the tokens that are still in the vocabulary
-        let common_size = self.vocab_size.min(new_vocab_size);
+        let old_shape = old_data.shape();
+        let embed_dim = old_shape[0];
         
-        // Use rayon for parallel copying of weights
-        let old_proj_data = self.output_projection.data.clone().into_dimensionality::<Ix2>().unwrap();
+        // Create a new array with the larger size
+        let mut new_data = Array2::<f32>::zeros((embed_dim, new_vocab_size));
         
-        // Create slices and copy in parallel
-        output_proj_data.slice_mut(s![.., 0..common_size])
-            .assign(&old_proj_data.slice(s![.., 0..common_size]));
+        // Copy the old weights to the new array
+        let copy_width = std::cmp::min(self.vocab_size, new_vocab_size);
+        new_data.slice_mut(s![.., 0..copy_width])
+                .assign(&old_data.slice(s![.., 0..copy_width]));
         
-        // Update the vocabulary size
+        // Create a new tensor from the array
+        let new_output_projection = Tensor::new(new_data);
+        
+        // Update the output projection and vocabulary size
+        self.output_projection = new_output_projection.clone();
         self.vocab_size = new_vocab_size;
         
-        // Create new tensor from the data
-        let output_projection = Tensor::new(output_proj_data);
+        // Update the parameter in the params map
+        self.params.insert("output_projection".to_string(), new_output_projection);
         
-        // Update both the struct field and the parameter hashmap
-        self.output_projection = output_projection.clone();
-        self.params.insert("output_projection".to_string(), output_projection);
+        println!("Output layer successfully resized to vocabulary size {}", new_vocab_size);
+        Ok(())
+    }
+
+    /// Check for potential target ID range issues in a batch
+    /// Returns a tuple of (has_issues, max_id_found)
+    pub fn check_for_target_id_issues(&self, targets: &Array2<usize>) -> (bool, usize) {
+        let current_max_target = self.get_max_target_id();
+        let mut max_id_found = 0;
+        let mut out_of_range_ids = Vec::new();
+        
+        // Check every target ID in the batch
+        for &target_id in targets.iter() {
+            // Update max id found
+            if target_id > max_id_found {
+                max_id_found = target_id;
+            }
+            
+            // Check if it's out of range
+            if target_id > current_max_target {
+                // Collect unique IDs only
+                if !out_of_range_ids.contains(&target_id) {
+                    out_of_range_ids.push(target_id);
+                }
+            }
+        }
+        
+        // Check if we found any issues
+        let has_issues = !out_of_range_ids.is_empty();
+        
+        // Log detailed information if issues were found
+        if has_issues {
+            // Sort for better readability
+            out_of_range_ids.sort();
+            
+            println!("⚠️ TARGET ID ISSUE DETECTED:");
+            println!("  Current output layer size: {}", self.vocab_size);
+            println!("  Maximum valid target ID: {}", current_max_target);
+            println!("  Maximum ID in batch: {}", max_id_found);
+            println!("  Unique out-of-range IDs in batch: {:?}", out_of_range_ids);
+            
+            // Get the actual dimensions of the output projection
+            if let Ok(data) = self.output_projection.data.clone().into_dimensionality::<Ix2>() {
+                let shape = data.shape();
+                println!("  Output projection dimensions: {:?}", shape);
+            }
+        }
+        
+        (has_issues, max_id_found)
+    }
+    
+    /// Auto-resize the output layer if needed based on target IDs
+    pub fn auto_resize_for_targets(&mut self, targets: &Array2<usize>) -> Result<bool, String> {
+        // Check for issues
+        let (has_issues, max_id_found) = self.check_for_target_id_issues(targets);
+        
+        if has_issues {
+            // Calculate a safe new size with padding
+            let min_required_size = max_id_found + 1; // +1 because IDs are 0-indexed
+            
+            // Read min vocab size from env var
+            let min_size = std::env::var("WALL_E_MIN_VOCAB_SIZE")
+                .unwrap_or_else(|_| "1000".to_string())
+                .parse::<usize>()
+                .unwrap_or(1000);
+                
+            // Use exponential growth to avoid frequent resizing
+            let current_size = self.vocab_size;
+            let new_size = std::cmp::max(
+                std::cmp::max(current_size * 2, min_required_size + 500),
+                min_size
+            );
+            
+            println!("🔄 Auto-resizing output layer: {} -> {}", current_size, new_size);
+            
+            // Perform the resize
+            match self.resize_output_layer(new_size) {
+                Ok(()) => {
+                    println!("✅ Output layer successfully resized to {}", new_size);
+                    Ok(true)
+                },
+                Err(e) => {
+                    println!("❌ Failed to resize output layer: {}", e);
+                    Err(e)
+                }
+            }
+        } else {
+            // No resizing needed
+            Ok(false)
+        }
     }
 }
 
@@ -1039,6 +1226,7 @@ pub mod evaluate;
 pub mod generation;
 pub mod curriculum;
 pub mod enhanced_trainer;
+pub mod batch_dispatcher;
 
 // Re-export key components for easier access
 pub use generation::TextGenerator;

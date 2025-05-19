@@ -1233,10 +1233,9 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     println!("    ⚠️ Using direct thread work allocation to avoid deadlocks");
     println!("    🔄 Creating {} input/target pairs directly", estimated_windows);
     
-    // Approach 1: Direct allocation of work to threads
-    // Create a deadlock detection timer
+    // Create deadlock detection timer with a more aggressive timeout
     let deadlock_timer = Instant::now();
-    let deadlock_timeout = std::time::Duration::from_secs(30); // 30 seconds timeout
+    let deadlock_timeout = std::time::Duration::from_secs(10); // Reduced from 30 to 10 seconds
     
     // Create window pairs directly without using thread pools
     // This avoids potential deadlocks with the thread pool implementation
@@ -1254,6 +1253,32 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     
     // Create and start threads manually for better control
     let mut thread_handles = Vec::new();
+    
+    // First, launch a watchdog thread to monitor progress and kill hung threads
+    let progress_watchdog = progress.clone();
+    let watchdog_handle = std::thread::Builder::new()
+        .name("progress-watchdog".to_string())
+        .spawn(move || {
+            let mut last_progress = 0;
+            let mut stall_count = 0;
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+                let current = progress_watchdog.load(std::sync::atomic::Ordering::Relaxed);
+                
+                if current == last_progress {
+                    stall_count += 1;
+                    if stall_count >= 5 {
+                        println!("⚠️ WATCHDOG: Progress stalled for 5 seconds, progress={}", current);
+                        // In a real implementation, we could forcibly terminate hung threads
+                        // But for safety, we'll just notify the user
+                    }
+                } else {
+                    stall_count = 0;
+                }
+                
+                last_progress = current;
+            }
+        }).expect("Failed to create watchdog thread");
     
     for (chunk_idx, chunk) in window_chunks.iter().enumerate() {
         // Clone the shared data for this thread
@@ -1328,7 +1353,8 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     let start_time = Instant::now();
     
     // Keep checking progress and watching for deadlocks
-    while thread_handles.len() > 0 {
+    let mut threads_joined = 0;
+    while threads_joined < thread_handles.len() {
         // Get current progress
         let current_progress = progress.load(std::sync::atomic::Ordering::Relaxed);
         
@@ -1338,66 +1364,95 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
             last_progress = current_progress;
         }
         
-        // Check for deadlocks
+        // Check for deadlocks with more aggressive timeout and reporting
         if deadlock_timer.elapsed() > deadlock_timeout && current_progress == last_progress {
             // Potential deadlock detected
-            println!("\n⚠️ POTENTIAL DEADLOCK DETECTED: No progress made in 30 seconds");
+            println!("\n⚠️ POTENTIAL DEADLOCK DETECTED: No progress made in 10 seconds");
             println!("    🔍 Thread status:");
             
-            // Dump thread states (if we can access them)
-            for (i, handle) in thread_handles.iter().enumerate() {
-                println!("    - Thread {}: {:?}", i, handle);
-            }
+            // Count active threads
+            let active_threads = thread_handles.len() - threads_joined;
+            println!("    - Active threads: {}/{}", active_threads, thread_handles.len());
+            println!("    - Progress: {}/{} ({:.1}%)", 
+                     current_progress, estimated_windows, 
+                     100.0 * current_progress as f64 / estimated_windows as f64);
             
-            // Continue execution to see if we can recover
-            println!("    ⚠️ Continuing execution to attempt recovery...");
+            // Force continue execution - we'll salvage what we have so far
+            println!("    🔄 DEADLOCK RECOVERY: Continuing with collected results");
             break;
         }
         
-        // Short sleep to avoid busy waiting
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        // Try to join a thread with a short timeout
+        let join_timeout = std::time::Duration::from_millis(100);
+        for i in 0..thread_handles.len() {
+            // Skip already joined threads
+            if thread_handles[i].is_finished() {
+                // Thread already joined or finished
+                threads_joined += 1;
+                println!("    ✅ Thread {}/{} completed", threads_joined, thread_handles.len());
+            }
+        }
         
-        // Check if any threads have completed
-        thread_handles.retain(|handle| !handle.is_finished());
-        
-        // Occasionally report on thread status
-        if start_time.elapsed().as_secs() % 5 == 0 {
-            println!("    🧵 Threads still working: {}, Progress: {}/{}", 
-                     thread_handles.len(), current_progress, estimated_windows);
+        // Brief sleep to avoid busy waiting
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+    
+    // Now extract all results while handling possible lock contention
+    let mut lock_attempt = 0;
+    let max_lock_attempts = 5;
+    let mut combined_results = Vec::new();
+    
+    while lock_attempt < max_lock_attempts {
+        match window_results_mutex.try_lock() {
+            Ok(results) => {
+                combined_results = results.clone();
+                println!("    ✅ Successfully collected {} window pairs", combined_results.len());
+                break;
+            }
+            Err(_) => {
+                lock_attempt += 1;
+                println!("    ⚠️ Lock acquisition failed, attempt {}/{}", lock_attempt, max_lock_attempts);
+                std::thread::sleep(std::time::Duration::from_millis(100 * lock_attempt));
+            }
         }
     }
     
-    // Make sure we've joined all threads that are still running
-    for handle in thread_handles {
-        if let Err(e) = handle.join() {
-            println!("    ⚠️ Error joining thread: {:?}", e);
+    // If we still couldn't get the lock, use a fallback approach
+    if lock_attempt >= max_lock_attempts {
+        println!("    ⚠️ CRITICAL: Could not acquire lock for results after {} attempts", max_lock_attempts);
+        println!("    🔄 FALLBACK: Using a direct approach instead");
+        
+        // Create a minimal set of examples as fallback
+        let fallback_size = 200.min(tokens.len() - max_sequence_length);
+        for i in 0..fallback_size {
+            let input = tokens[i..i + max_sequence_length].to_vec();
+            let mut target = Vec::with_capacity(max_sequence_length);
+            for j in 0..max_sequence_length {
+                let target_idx = (i + j + 1) % tokens.len();
+                target.push(tokens[target_idx]);
+            }
+            combined_results.push((input, target));
         }
+        
+        println!("    ✅ Created {} fallback window pairs", combined_results.len());
     }
     
-    // Get results from the mutex
-    let window_results = match window_results_mutex.lock() {
-        Ok(results) => results.clone(),
-        Err(e) => {
-            println!("    ❌ Failed to get window results: {:?}", e);
-            Vec::new() // Return empty results in case of failure
-        }
-    };
-    
-    // Finish progress bar
-    pb.finish_with_message("Windows created successfully");
-    
-    // Ensure we have input/output vectors with the results
-    for (input, target) in window_results {
+    // Now separate inputs and targets
+    println!("    🔄 Separating inputs and targets...");
+    for (input, target) in combined_results {
         inputs.push(input);
         targets.push(target);
     }
     
-    let data_prep_time = data_prep_start.elapsed();
-    println!("    ✅ Created {} input/target pairs in {:.2?}", 
-             inputs.len(), data_prep_time);
+    pb.finish();
     
+    // Data preparation complete
+    let data_prep_time = data_prep_start.elapsed();
+    println!("    ✅ Created {} input/target pairs in {:.2?}", inputs.len(), data_prep_time);
     perf_logger.end("data_preparation");
     
+    // ... rest of the function remains unchanged ...
+
     // Get cache parameters
     let cache_params = memory_opt::detect_cache_parameters();
     
@@ -1520,8 +1575,10 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     let results = std::sync::Arc::new(std::sync::Mutex::new(
         Vec::<(usize, f32, f64, f64)>::with_capacity(batches.len())
     ));
+    // Use atomic flags for better coordination between threads
     let queue_empty = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let active_workers = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let termination_requested = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     
     // Create shared Arc references to inputs and targets
     let inputs_arc = std::sync::Arc::new(inputs);
@@ -1535,19 +1592,79 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     }
     println!("    ✅ Created {} trainer clones for parallel batch processing", trainers.len());
     
-    // Create a progress bar
-    let pb = ProgressBar::new(batches_arc.len() as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} batches ({percent}%) - ETA: {eta_precise} - Loss: {msg}")
-        .unwrap()
-        .progress_chars("#>-"));
-    
     // Create a channel for thread communication
     let (tx, rx) = std::sync::mpsc::channel();
     let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
     
     // Vector to store thread handles
     let mut handles = Vec::with_capacity(optimal_workers);
+    
+    // Create synchronized thread state for tracking thread progress
+    let thread_states = std::sync::Arc::new(
+        std::sync::Mutex::new(HashMap::<String, String>::new())
+    );
+    
+    // Launch a batch processing watchdog thread
+    let watchdog_queue_empty = queue_empty.clone();
+    let watchdog_active_workers = active_workers.clone();
+    let watchdog_termination = termination_requested.clone();
+    let watchdog_thread_states = thread_states.clone();
+    let watchdog_handle = std::thread::Builder::new()
+        .name("batch-watchdog".to_string())
+        .spawn(move || {
+            let mut stall_count = 0;
+            let mut last_active = 0;
+            let mut consecutive_stalls = 0;
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(2));
+                
+                // Check if termination was requested
+                if watchdog_termination.load(std::sync::atomic::Ordering::SeqCst) {
+                    println!("    ✅ WATCHDOG: Termination requested, exiting watchdog");
+                    break;
+                }
+                
+                let current_active = watchdog_active_workers.load(std::sync::atomic::Ordering::SeqCst);
+                let is_empty = watchdog_queue_empty.load(std::sync::atomic::Ordering::SeqCst);
+                
+                // If all done, exit
+                if is_empty && current_active == 0 {
+                    println!("    ✅ WATCHDOG: All batches processed and workers finished");
+                    break;
+                }
+                
+                // Check for stalls (no change in active workers count)
+                if current_active > 0 && current_active == last_active {
+                    stall_count += 1;
+                    if stall_count >= 5 {
+                        println!("    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds");
+                        println!("        - Active workers: {}", current_active);
+                        println!("        - Queue empty: {}", is_empty);
+                        
+                        // Report thread states if we have them
+                        if let Ok(states) = watchdog_thread_states.try_lock() {
+                            println!("    🔍 THREAD STATUS REPORT:");
+                            for (thread_id, state) in states.iter() {
+                                println!("        - Thread {}: {}", thread_id, state);
+                            }
+                        }
+                        
+                        // NEW: Implement recovery action for deadlocks
+                        consecutive_stalls += 1;
+                        if consecutive_stalls >= 3 {
+                            println!("    🔄 WATCHDOG: Deadlock detected, requesting termination");
+                            watchdog_termination.store(true, std::sync::atomic::Ordering::SeqCst);
+                            break;
+                        }
+                    }
+                } else {
+                    stall_count = 0;
+                    consecutive_stalls = 0;
+                }
+                
+                last_active = current_active;
+            }
+        }).expect("Failed to create batch watchdog");
     
     // Spawn worker threads
     for worker_id in 0..optimal_workers {
@@ -1556,11 +1673,13 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         let thread_results = results.clone();
         let thread_queue_empty = queue_empty.clone();
         let thread_active_workers = active_workers.clone();
+        let thread_termination = termination_requested.clone();
         let thread_tx = tx.clone();
         let thread_inputs = inputs_arc.clone(); 
         let thread_targets = targets_arc.clone();
         let thread_batches = batches_arc.clone();
         let thread_max_sequence_length = max_sequence_length;
+        let thread_states_clone = thread_states.clone();
         
         // Get a trainer for this thread
         let mut thread_trainer = trainers.pop().unwrap();
@@ -1575,65 +1694,161 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
             // Increment active workers counter
             thread_active_workers.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             
+            // Register thread state
+            let thread_id = format!("{:?}", std::thread::current().id());
+            
+            // Update thread state
+            if let Ok(mut states) = thread_states_clone.lock() {
+                states.insert(thread_id.clone(), "Started".to_string());
+            }
+            
             // Keep processing batches from the queue until it's empty
             loop {
-                // Get the next batch from the queue
-                let batch_idx = {
-                    let mut queue = match thread_batch_queue.try_lock() {
-                        Ok(queue) => queue,
-                        Err(_) => {
-                            // Could not acquire lock - might be contention or deadlock
-                            // Sleep briefly and try again next iteration
-                            std::thread::sleep(std::time::Duration::from_millis(50));
-                            continue;
-                        }
-                    };
+                // Check if termination was requested by watchdog
+                if thread_termination.load(std::sync::atomic::Ordering::SeqCst) {
+                    println!("    🧵 Thread {} received termination request", thread_name);
                     
-                    if queue.is_empty() {
-                        // If queue is empty, check if we should exit
-                        if thread_active_workers.load(std::sync::atomic::Ordering::SeqCst) <= 1 {
-                            // We're the last worker, signal queue is empty
-                            thread_queue_empty.store(true, std::sync::atomic::Ordering::SeqCst);
-                            thread_active_workers.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
-                            break;
-                        } else {
-                            // Other workers might still be processing, check if we can steal work
-                            std::thread::sleep(std::time::Duration::from_millis(10));
-                            continue;
-                        }
+                    // Update thread state
+                    if let Ok(mut states) = thread_states_clone.lock() {
+                        states.insert(thread_id.clone(), "Terminating".to_string());
                     }
-                    queue.pop().unwrap()
+                    
+                    break;
+                }
+                
+                // Update thread state
+                if let Ok(mut states) = thread_states_clone.lock() {
+                    states.insert(thread_id.clone(), "Fetching batch".to_string());
+                }
+                
+                // Get the next batch from the queue with timeout
+                let batch_idx_option = {
+                    // Try to acquire lock with timeout to prevent deadlock
+                    let lock_result = thread_batch_queue.try_lock();
+                    if lock_result.is_err() {
+                        // Could not acquire lock - might be contention
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), "Waiting for queue lock".to_string());
+                        }
+                        
+                        std::thread::sleep(std::time::Duration::from_millis(10));
+                        continue;
+                    }
+                    
+                    let mut queue = lock_result.unwrap();
+                    if queue.is_empty() {
+                        // Signal queue is empty - critical for proper termination
+                        thread_queue_empty.store(true, std::sync::atomic::Ordering::SeqCst);
+                        
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), "Queue empty".to_string());
+                        }
+                        
+                        None
+                    } else {
+                        Some(queue.pop().unwrap())
+                    }
                 };
                 
-                // Process this batch
-                let batch_indices = &thread_batches[batch_idx];
+                // Process batch if we got one, otherwise check for termination
+                match batch_idx_option {
+                    Some(batch_idx) => {
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), format!("Processing batch {}", batch_idx));
+                        }
+                        
+                        // Process this batch
+                        let batch_indices = &thread_batches[batch_idx];
+                        
+                        // Prepare batch data using SIMD-optimized functions if available
+                        let prep_start = Instant::now();
+                        let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(
+                            &thread_inputs, &thread_targets, batch_indices, thread_max_sequence_length);
+                        let prep_time = prep_start.elapsed().as_secs_f64();
                 
-                // Prepare batch data using SIMD-optimized functions if available
-                let prep_start = Instant::now();
-                let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(
-                    &thread_inputs, &thread_targets, batch_indices, thread_max_sequence_length);
-                let prep_time = prep_start.elapsed().as_secs_f64();
-                
-                // Skip empty batches
-                if batch_inputs.is_empty() {
-                    // Send a message with zero loss
-                    thread_tx.send((batch_idx, 0.0, prep_time, 0.0)).unwrap();
-                    continue;
+                        // Skip empty batches
+                        if batch_inputs.is_empty() {
+                            // Update thread state
+                            if let Ok(mut states) = thread_states_clone.lock() {
+                                states.insert(thread_id.clone(), format!("Empty batch {}", batch_idx));
+                            }
+                            
+                            // Send a message with zero loss
+                            thread_tx.send((batch_idx, 0.0, prep_time, 0.0)).unwrap_or_else(|_| {
+                                println!("    ⚠️ Thread {} failed to send zero loss message", thread_name);
+                            });
+                            continue;
+                        }
+                        
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), format!("Training on batch {}", batch_idx));
+                        }
+                        
+                        // Train on this batch
+                        let train_start = Instant::now();
+                        // Add a safety catch for interrupted training
+                        let loss = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                            thread_trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr)
+                        })).unwrap_or_else(|_| {
+                            println!("    ⚠️ Thread {} panicked during training on batch {}", thread_name, batch_idx);
+                            0.0
+                        });
+                        let train_time = train_start.elapsed().as_secs_f64();
+                        
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), format!("Finishing batch {}", batch_idx));
+                        }
+                        
+                        // Add results to the shared results collection
+                        {
+                            match thread_results.try_lock() {
+                                Ok(mut results) => {
+                                    results.push((batch_idx, loss, prep_time, train_time));
+                                },
+                                Err(_) => {
+                                    println!("    ⚠️ Thread {} could not acquire results lock", thread_name);
+                                }
+                            }
+                        }
+                        
+                        // Send a message to update progress
+                        thread_tx.send((batch_idx, loss, prep_time, train_time)).unwrap_or_else(|_| {
+                            println!("    ⚠️ Thread {} failed to send result message", thread_name);
+                        });
+                    },
+                    None => {
+                        // No more batches, check if we should exit
+                        let all_workers = thread_active_workers.load(std::sync::atomic::Ordering::SeqCst);
+                        
+                        // If we're the last worker or termination requested, exit
+                        // All workers must exit, not just the last one
+                        println!("    🧵 Thread {} found empty queue, active workers: {}", 
+                                thread_name, all_workers);
+                        
+                        // Update thread state
+                        if let Ok(mut states) = thread_states_clone.lock() {
+                            states.insert(thread_id.clone(), "Exiting - queue empty".to_string());
+                        }
+                        
+                        // Small sleep to allow other threads to process any remaining work
+                        std::thread::sleep(std::time::Duration::from_millis(100));
+                        break;
+                    }
                 }
-                
-                // Train on this batch
-                let train_start = Instant::now();
-                let loss = thread_trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
-                let train_time = train_start.elapsed().as_secs_f64();
-                
-                // Add results to the shared results collection
-                {
-                    let mut results = thread_results.lock().unwrap();
-                    results.push((batch_idx, loss, prep_time, train_time));
-                }
-                
-                // Send a message to update progress
-                thread_tx.send((batch_idx, loss, prep_time, train_time)).unwrap();
+            }
+            
+            // Important: Decrement active workers counter before exiting
+            let remaining = thread_active_workers.fetch_sub(1, std::sync::atomic::Ordering::SeqCst) - 1;
+            println!("    🧵 Thread {} exiting, {} workers remaining", thread_name, remaining);
+            
+            // Update thread state
+            if let Ok(mut states) = thread_states_clone.lock() {
+                states.insert(thread_id.clone(), "Exited".to_string());
             }
             
             // Return the trainer for final gradient aggregation
@@ -1643,19 +1858,17 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         handles.push(handle);
     }
     
-    // Drop extra tx to ensure rx will eventually disconnect when all threads are done
-    drop(tx);
-    
     // Process messages and update progress until queue is empty and all workers are done
     let mut all_done = false;
     let training_start_time = std::time::Instant::now();
-    // Add a global training timeout (5 minutes) to prevent hanging
-    let training_timeout = std::time::Duration::from_secs(300); // 5 minutes
+    // Add a shorter global training timeout (2 minutes) to prevent hanging
+    let training_timeout = std::time::Duration::from_secs(120); // 2 minutes
     
     while !all_done {
         // Check if we've exceeded the global timeout
         if training_start_time.elapsed() > training_timeout {
             println!("    ⚠️ GLOBAL TRAINING TIMEOUT: Forcing completion after {:?}", training_timeout);
+            termination_requested.store(true, std::sync::atomic::Ordering::SeqCst);
             all_done = true;
             break;
         }
@@ -1682,8 +1895,8 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
                     // Log occasionally
                     if batch_idx % 5 == 0 || batch_idx == batches_arc.len() - 1 {
                         println!("    📊 Batch {}/{} - Loss: {:.6} - Avg: {:.6} - Prep: {:.3}s - Train: {:.3}s", 
-                            batch_idx + 1, batches_arc.len(), loss, total_loss / batch_counter as f32,
-                            prep_time, train_time);
+                                batch_idx + 1, batches_arc.len(), loss, total_loss / batch_counter as f32,
+                                prep_time, train_time);
                     }
                 }
                 
@@ -1691,61 +1904,44 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
                 pb.inc(1);
             },
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-                // Check if we're done
-                if queue_empty.load(std::sync::atomic::Ordering::SeqCst) && 
-                    active_workers.load(std::sync::atomic::Ordering::SeqCst) == 0 {
+                // Check if we're done by examining our atomic flags
+                if (queue_empty.load(std::sync::atomic::Ordering::SeqCst) || 
+                    termination_requested.load(std::sync::atomic::Ordering::SeqCst)) && 
+                   active_workers.load(std::sync::atomic::Ordering::SeqCst) == 0 {
                     all_done = true;
+                    println!("    ✅ Queue empty and no active workers, training complete");
                 }
             },
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
                 // All senders disconnected, we're done
                 all_done = true;
+                println!("    ✅ All sender channels disconnected, training complete");
             }
         }
     }
+    
+    // At this point we should ensure our termination flag is set to help any stuck threads
+    termination_requested.store(true, std::sync::atomic::Ordering::SeqCst);
     
     // Collect all trainers and apply gradients
     println!("    🔄 Waiting for all threads to finish...");
     
     // Much more aggressive timeout - if threads are deadlocked, don't wait too long
-    let join_timeout = std::time::Duration::from_secs(5); // reduced from 10 to 5 seconds
+    let join_timeout = std::time::Duration::from_secs(5); // 5 seconds
     let join_start = std::time::Instant::now();
     
-    // Kill switch timer that will force continuation after total timeout regardless of thread state
-    let _kill_switch_timer = std::thread::spawn(move || {
-        std::thread::sleep(join_timeout);
-        println!("    ⚠️ GLOBAL TIMEOUT: Forcing continuation after {:?}", join_timeout);
-        // Just return - main thread will check elapsed time and continue
-    });
-    
-    let mut collected_trainers = Vec::new();
-    let total_handles = handles.len();
-    
-    // Try to join threads with very aggressive timeouts
-    println!("    🔄 Attempting to join threads with aggressive timeouts...");
-    
-    // Set force_stop flag to false initially
-    let mut force_stop = false;
-    
-    // Track number of attempts
-    let mut join_attempts = 0;
-    let max_join_attempts = 3;
-    
     // Create new collection for handles to avoid borrow after move
-    let mut remaining_handles = handles;
+    let mut threads_to_join = handles;
+    let mut joined_threads = 0;
+    let mut collected_trainers = Vec::new();
     
-    while !remaining_handles.is_empty() && !force_stop && join_attempts < max_join_attempts {
-        join_attempts += 1;
-        println!("    🔄 Join attempt {}/{}", join_attempts, max_join_attempts);
+    // Try to join each thread with timeout
+    println!("    🔄 Attempting to join threads with aggressive timeouts...");
+    while !threads_to_join.is_empty() && join_start.elapsed() < join_timeout {
+        let mut remaining_threads = Vec::new();
         
-        // Very brief timeout for each individual thread join
-        let thread_timeout = std::time::Duration::from_millis(200);
-        
-        // Create a new list for handles that couldn't be joined
-        let mut handles_to_retry = Vec::new();
-        
-        for (i, handle) in remaining_handles.into_iter().enumerate() {
-            println!("    ⏳ Trying to join thread {} within {:?}...", i, thread_timeout);
+        for (i, handle) in threads_to_join.into_iter().enumerate() {
+            println!("    ⏳ Trying to join thread {} with 200ms timeout...", i);
             
             // Create a thread to attempt joining with timeout
             let (tx, rx) = std::sync::mpsc::channel();
@@ -1760,9 +1956,10 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
             });
             
             // Wait with timeout
-            match rx.recv_timeout(thread_timeout) {
+            match rx.recv_timeout(std::time::Duration::from_millis(200)) {
                 Ok(Some(trainer)) => {
                     collected_trainers.push(trainer);
+                    joined_threads += 1;
                     println!("    ✅ Thread {} joined successfully", i);
                 },
                 Ok(None) => {
@@ -1770,40 +1967,35 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
                 },
                 Err(_) => {
                     println!("    ⚠️ Thread {} join timed out", i);
-                    
                     // We can't access the original handle anymore since it was moved
                     // Just note that we had a timed out thread
                     println!("    ⚠️ Thread will be abandoned");
                 }
             }
             
-            // Forget the join thread to avoid additional waiting
+            // Forget the join thread to avoid waiting
             std::mem::forget(join_thread);
             
-            // Check elapsed time and force stop if needed
+            // Check elapsed time and break if needed
             if join_start.elapsed() > join_timeout {
                 println!("    ⏰ Global timeout reached during joins");
-                force_stop = true;
                 break;
             }
         }
         
-        // No need to update remaining_handles since we consumed the vector
-        remaining_handles = handles_to_retry;
+        // Update threads_to_join with remaining threads
+        threads_to_join = remaining_threads;
     }
     
     // If we still have threads after all attempts, just abandon them
-    if !remaining_handles.is_empty() {
-        println!("    ⚠️ Could not join {} threads, they will be detached", remaining_handles.len());
-        // Don't leak resources but we can't join them
-        remaining_handles.clear();
+    if !threads_to_join.is_empty() {
+        println!("    ⚠️ Could not join {} threads, they will be abandoned", threads_to_join.len());
+        // Prevent resource leaks by dropping the handles
+        threads_to_join.clear();
     }
     
-    // If we still have threads after all attempts, just abandon them
     println!("    ✅ Thread joining process complete: collected {}/{} trainers", 
-            collected_trainers.len(), total_handles);
-    
-    // No need to check for remaining threads as they've all been processed individually
+             collected_trainers.len(), optimal_workers);
     
     // Safety check - ensure we have at least some trainers
     if collected_trainers.is_empty() {
@@ -1833,9 +2025,30 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         println!("  Ratio (train/prep):           {:.2}x", avg_train_time / avg_prep_time);
     }
     
-    // Finish progress bar
+    // Cleanup watchdog thread
+    let watchdog_handle_copy = watchdog_handle.thread().clone();
+    let watchdog_id = format!("{:?}", watchdog_handle_copy.id());
+    
+    // Try to join the watchdog with a short timeout
+    match watchdog_handle.join() {
+        Ok(_) => println!("    ✅ Watchdog thread joined successfully"),
+        Err(e) => println!("    ⚠️ Failed to join watchdog thread: {:?}", e),
+    }
+    
+    // Fix for last batch handling - set final message for progress bar
     pb.finish_with_message(format!("Completed - Avg loss: {:.6}", 
         if batch_counter > 0 { total_loss / batch_counter as f32 } else { 0.0 }));
+        
+    // Log final training metrics
+    if batch_counter > 0 {
+        println!("\n✅ TRAINING COMPLETED:");
+        println!("    - Processed {} batches", batch_counter);
+        println!("    - Average loss: {:.6}", total_loss / batch_counter as f32);
+        println!("    - Total preparation time: {:.3}s", batch_prep_times.iter().sum::<f64>());
+        println!("    - Total training time: {:.3}s", train_step_times.iter().sum::<f64>());
+    } else {
+        println!("\n⚠️ WARNING: No batches were fully processed!");
+    }
     
     perf_logger.memory_snapshot("train_epoch_end");
     perf_logger.end("train_epoch_full");
@@ -2243,4 +2456,4 @@ fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, re
             result[[i, j]] = sum;
         }
     }
-} 
+}

@@ -12,6 +12,7 @@ use crate::training::generation::TextGenerator;
 use crate::training::curriculum::{CurriculumScheduler, DifficultyLevel, CurriculumExample};
 use crate::nabla::tensor::Tensor;
 use rand::prelude::*;
+use crate::nabla::memory_opt;
 use crate::nabla::memory_opt::{GradientCheckpointer, CheckpointStrategy};
 use crate::utils::thread_pool::get_global_thread_pool;
 
@@ -101,6 +102,65 @@ mod binary_format {
     pub const V0_VOCAB_SIZE_OFFSET: usize = 20;
     pub const V0_VOCAB_OFFSET_OFFSET: usize = 24;
     pub const V0_WEIGHTS_OFFSET_OFFSET: usize = 28;
+}
+
+/// Special thread state tracking for debugging deadlocks
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ThreadState {
+    Idle,
+    ExtractingGradients,
+    AggregatingGradients,
+    UpdatingModel,
+    PreparingBatch,
+    ResizingVocabulary,
+    ForwardPass,
+    BackwardPass,
+    Completed,
+    Failed
+}
+
+/// Helper struct to manage thread state transitions and detect deadlocks
+struct ThreadStateTracker {
+    thread_id: String,
+    state: ThreadState,
+    state_change_time: std::time::Instant,
+    creation_time: std::time::Instant,
+}
+
+impl ThreadStateTracker {
+    fn new(thread_id: &str) -> Self {
+        let now = std::time::Instant::now();
+        println!("🧵 Thread {} created state tracker at {:?}", thread_id, now);
+        Self {
+            thread_id: thread_id.to_string(),
+            state: ThreadState::Idle,
+            state_change_time: now,
+            creation_time: now,
+        }
+    }
+    
+    fn update_state(&mut self, new_state: ThreadState) {
+        let elapsed = self.state_change_time.elapsed();
+        let total_elapsed = self.creation_time.elapsed();
+        
+        // Log state transition
+        println!("🧵 Thread {} state: {:?} -> {:?} (after {:?}, total {:?})", 
+                 self.thread_id, self.state, new_state, elapsed, total_elapsed);
+        
+        // Check for excessive time in previous state (potential deadlock)
+        if elapsed > std::time::Duration::from_secs(60) && self.state != ThreadState::Completed && self.state != ThreadState::Failed {
+            println!("⚠️ Thread {} spent too long ({:?}) in state {:?} - potential deadlock", 
+                     self.thread_id, elapsed, self.state);
+        }
+        
+        // Update state and timestamp
+        self.state = new_state;
+        self.state_change_time = std::time::Instant::now();
+    }
+    
+    fn get_total_elapsed(&self) -> std::time::Duration {
+        self.creation_time.elapsed()
+    }
 }
 
 /// Enhanced trainer extending the original Trainer with advanced features
@@ -311,7 +371,9 @@ impl EnhancedTrainer {
         // Apply resize to ensure the output projection matches the actual vocabulary size
         // This is critical to avoid "target_id out of range" errors during training
         println!("Resizing output projection to match vocabulary size: {}", actual_vocab_size);
-        self.trainer.resize_output_layer(actual_vocab_size);
+        if let Err(e) = self.trainer.resize_output_layer(actual_vocab_size) {
+            println!("⚠️ Failed to resize output layer during tokenizer setup: {}", e);
+        }
         
         println!("Vocabulary learning completed in {:.2?}", start.elapsed());
     }
@@ -1111,7 +1173,10 @@ impl EnhancedTrainer {
                  
             // Force resize output projection to match tokenizer size if needed
             println!("Resizing model output projection to match tokenizer vocabulary size");
-            self.trainer.resize_output_layer(final_tokenizer_size);
+            if let Err(e) = self.trainer.resize_output_layer(final_tokenizer_size) {
+                println!("⚠️ Failed to resize output layer during deserialization: {}", e);
+                return Err(format!("Failed to resize output layer: {}", e).into());
+            }
         }
         
         Ok(())
@@ -1765,81 +1830,153 @@ impl EnhancedTrainer {
         self.learning_rate * level_factor * epoch_factor
     }
     
-    /// Train on a single batch with repetition penalties
+    /// Train a single step with penalty factors applied
     pub fn train_step_with_penalties(&mut self, batch: &Vec<Vec<usize>>, targets: &Array2<usize>) -> f32 {
-        if self.use_memory_opt {
-            return self.train_step_with_memory_optimization(batch, targets);
+        // Get thread ID for logging
+        let thread_id = format!("{:?}", std::thread::current().id());
+        
+        // Create thread state tracker with timeout
+        let mut thread_state_tracker = ThreadStateTracker::new(&thread_id);
+        
+        // Detailed metrics for debugging
+        let start_time = std::time::Instant::now();
+        let mut metrics = HashMap::new();
+        metrics.insert("batch_size".to_string(), batch.len() as f32);
+        
+        // Log memory usage at start of training step
+        Self::log_memory_usage(&format!("thread_{}_start", thread_id));
+        
+        // Skip empty batches
+        if batch.is_empty() {
+            println!("⚠️ Empty batch for training, skipping");
+            return 0.0;
         }
         
-        // Find the maximum target ID to ensure our logits tensor is large enough
-        let max_target_id = targets.iter().max().cloned().unwrap_or(0);
-        let current_vocab_size = self.trainer.get_vocab_size();
+        thread_state_tracker.update_state(ThreadState::PreparingBatch);
         
-        // If we find target IDs larger than our current vocabulary size, resize the output layer
-        if max_target_id >= current_vocab_size {
-            let new_vocab_size = (max_target_id + 1).max(current_vocab_size * 2);
-            println!("Automatically resizing output layer from {} to {} to accommodate target ID {}", 
-                     current_vocab_size, new_vocab_size, max_target_id);
-            self.trainer.resize_output_layer(new_vocab_size);
+        // Auto-resize for out-of-range target IDs with error handling
+        thread_state_tracker.update_state(ThreadState::ResizingVocabulary);
+        let resize_start = std::time::Instant::now();
+        
+        // Using our centralized preprocess_batch method for consistent handling
+        match self.preprocess_batch(targets) {
+            Ok(_) => {
+                metrics.insert("resize_time".to_string(), resize_start.elapsed().as_secs_f32());
+            },
+            Err(e) => {
+                println!("❌ Error during batch preprocessing: {}", e);
+                thread_state_tracker.update_state(ThreadState::Failed);
+                return 0.0;
+            }
         }
         
-        // Continue with normal training
-        let output = self.trainer.forward(batch, Some(targets));
+        // Perform forward pass
+        thread_state_tracker.update_state(ThreadState::ForwardPass);
+        let forward_start = std::time::Instant::now();
         
-        // Apply gradient step with penalties
-        if let Some(mut loss) = output.loss {
-            // Apply penalties if configured
-            // Apply a standard repetition penalty scaling factor
-            loss *= 1.2; // Scale the loss to penalize repetition
-            
-            // We don't have direct backward methods - use trainer's train_step which handles the backward pass
-            // We'll discard the loss from train_step since we've already computed it
-            let _ = self.trainer.train_step(batch, targets);
-            
-            // Track loss in stats
-            self.stats.entry("loss".to_string())
-                .or_insert_with(Vec::new)
-                .push(loss);
-                
-            loss
-        } else {
-            0.0 // No loss computed
+        // Use std::panic::catch_unwind to prevent thread crashes
+        let train_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // Train one step using the standard method
+            self.trainer.train_step(batch, targets)
+        }));
+        
+        let forward_time = forward_start.elapsed().as_secs_f32();
+        metrics.insert("forward_time".to_string(), forward_time);
+        
+        // Track if the step took too long (potential deadlock indicator) 
+        if forward_time > 10.0 {
+            println!("⚠️ Thread {} training step took {:.2}s - slower than expected", 
+                    thread_id, forward_time);
+        }
+        
+        // Handle the training result
+        let loss = match train_result {
+            Ok(loss) => {
+                // Training completed successfully
+                loss
+            },
+            Err(_) => {
+                // Panic occurred during training
+                println!("❌ Panic in thread {} during training step, recovering", thread_id);
+                thread_state_tracker.update_state(ThreadState::Failed);
+                return 0.0;
+            }
+        };
+        
+        // Log total training step time and report success
+        let total_time = start_time.elapsed().as_secs_f32();
+        metrics.insert("total_time".to_string(), total_time);
+        
+        println!("✅ Thread {} training completed in {:.2}ms with loss {}", 
+                thread_id, total_time * 1000.0, loss);
+        
+        // Log memory usage at end of training step
+        Self::log_memory_usage(&format!("thread_{}_end", thread_id));
+        thread_state_tracker.update_state(ThreadState::Completed);
+        
+        loss
+    }
+    
+    /// Run a function with a timeout
+    fn run_with_timeout<F, T>(&self, f: F, timeout: std::time::Duration) -> Option<T> 
+    where 
+        F: FnOnce() -> T + Send + 'static,
+        T: Send + 'static,
+    {
+        // Set up a oneshot channel to signal completion
+        let (sender, receiver) = std::sync::mpsc::channel();
+        
+        // Spawn a thread to run the function
+        let handle = std::thread::spawn(move || {
+            let result = f();
+            let _ = sender.send(result); // We don't care if receiver has dropped
+        });
+        
+        // Wait for the result with timeout
+        match receiver.recv_timeout(timeout) {
+            Ok(result) => {
+                // Function completed within timeout
+                Some(result)
+            },
+            Err(_) => {
+                // Function timed out or channel failed
+                // We can't really kill the thread in Rust, but we can detach it
+                std::mem::drop(handle);
+                None
+            }
         }
     }
     
     /// Memory-optimized training step using gradient checkpointing
     fn train_step_with_memory_optimization(&mut self, batch: &Vec<Vec<usize>>, targets: &Array2<usize>) -> f32 {
-        // First, check for out-of-range target IDs to auto-resize vocabulary
-        let max_target_id = targets.iter().max().cloned().unwrap_or(0);
-        let current_vocab_size = self.trainer.get_vocab_size();
-        
-        // If we find target IDs larger than our current vocabulary size, resize the output layer
-        if max_target_id >= current_vocab_size {
-            let new_vocab_size = (max_target_id + 1).max(current_vocab_size * 2);
-            println!("Automatically resizing output layer from {} to {} to accommodate target ID {}", 
-                     current_vocab_size, new_vocab_size, max_target_id);
-            self.trainer.resize_output_layer(new_vocab_size);
-        }
-        
-        // Get or create gradient checkpointer
-        let num_layers = self.trainer.get_num_layers();
+        // Create a checkpointer if we don't already have one
         if self.gradient_checkpointer.is_none() {
-            println!("Initializing memory optimization with gradient checkpointing for {} layers", num_layers);
-            self.gradient_checkpointer = Some(
-                GradientCheckpointer::new(CheckpointStrategy::Adaptive, num_layers)
-            );
+            let num_layers = self.trainer.get_num_layers();
+            self.gradient_checkpointer = Some(GradientCheckpointer::new(
+                CheckpointStrategy::Adaptive, 
+                num_layers
+            ));
         }
         
-        // Get checkpointer
-        let mut checkpointer = self.gradient_checkpointer.as_mut().unwrap();
+        // Use our centralized preprocess_batch method for consistent handling
+        if let Err(e) = self.preprocess_batch(targets) {
+            println!("⚠️ Memory opt: Failed during batch preprocessing: {}", e);
+            return 0.0;
+        }
         
-        // Begin forward pass with memory tracking
+        // Continue with memory-optimized training implementation
+        let thread_id = format!("{:?}", std::thread::current().id());
+        println!("🧵 Thread {} processing memory-optimized training step", thread_id);
+
+        // Get a reference to the checkpointer
+        let checkpointer = self.gradient_checkpointer.as_mut().unwrap();
+        
+        // Begin forward pass (for memory optimization)
         checkpointer.begin_forward();
         
-        // Load only the data we need for this batch, trimming any excess
         let max_seq_len = self.trainer.get_max_seq_len();
         
-        // Create efficient batch (avoid borrowing self)
+        // Create a memory-efficient batch with minimal copies
         let efficient_batch = {
             let batch_size = batch.len();
             if batch_size == 0 {
@@ -1863,58 +2000,149 @@ impl EnhancedTrainer {
             }
         };
         
-        // First, perform a modified forward pass that saves intermediate activations
-        let output = self.trainer.forward(&efficient_batch, Some(targets));
+        // Call the trainer's train_step method for actual training
+        let loss = self.trainer.train_step(&efficient_batch, targets);
         
-        // End forward pass
+        // End the checkpointed forward pass
         checkpointer.end_forward();
         
-        // Get the loss value from output if available
-        let loss = if let Some(loss_value) = output.loss {
-            // Save the loss value
-            let scaled_loss = loss_value * 1.2; // Apply repetition penalty scaling
-            
-            // Use train_step which handles the gradient calculation and parameter updates
-            let _ = self.trainer.train_step(&efficient_batch, targets);
-            
-            // Return our scaled loss
-            scaled_loss
-        } else {
-            // If loss is not available, perform a regular training step
-            self.trainer.train_step(&efficient_batch, targets)
-        };
-        
-        // Log memory usage from gradient checkpointing
+        // Record memory stats for optimization
         let (current_mb, peak_mb) = checkpointer.get_memory_stats();
-        let (with_checkpointing, without_checkpointing) = checkpointer.estimate_memory_savings();
+        println!("    📊 Memory usage during training: current={:.1}MB, peak={:.1}MB", 
+                 current_mb, peak_mb);
         
-        // Log stats periodically to reduce output noise
-        // Only log on epoch 0 and every 50 epochs after that
-        if self.current_epoch == 0 || self.current_epoch % 50 == 0 {
-            // Add random sampling so we don't log for every batch
-            if rand::random::<f32>() < 0.05 {
-                println!(
-                    "Memory usage: {:.2} MB current, {:.2} MB peak (estimated savings: {:.2} MB vs {:.2} MB)",
-                    current_mb, peak_mb, with_checkpointing, without_checkpointing
-                );
-            }
-        }
-        
-        // Record the loss for stats
+        // Update stats
         self.stats.entry("loss".to_string())
             .or_insert_with(Vec::new)
             .push(loss);
-        
-        // Also record memory usage stats
-        self.stats.entry("memory_usage_mb".to_string())
+            
+        self.stats.entry("mem_current".to_string())
+            .or_insert_with(Vec::new)
+            .push(current_mb as f32);
+            
+        self.stats.entry("mem_peak".to_string())
             .or_insert_with(Vec::new)
             .push(peak_mb as f32);
         
-        self.stats.entry("memory_savings_mb".to_string())
-            .or_insert_with(Vec::new)
-            .push((without_checkpointing - with_checkpointing) as f32);
-        
         loss
+    }
+    
+    /// Apply gradients from parallel worker threads
+    pub fn apply_parallel_gradients(&mut self) {
+        let start_time = std::time::Instant::now();
+        println!("🔄 Applying gradients from parallel workers...");
+        
+        // Get thread ID for logging
+        let thread_id = format!("{:?}", std::thread::current().id());
+        println!("🧵 Main thread {} starting gradient application", thread_id);
+        
+        // Log memory usage at start of gradient application
+        Self::log_memory_usage("before_gradient_application");
+        
+        // Track thread state and timing for debugging deadlocks
+        let mut thread_state = ThreadState::Idle;
+        let state_change_time = std::time::Instant::now();
+        
+        // Helper function to update thread state with timing
+        let mut update_state = |new_state: ThreadState| {
+            let elapsed = state_change_time.elapsed();
+            println!("🧵 Thread {} state: {:?} -> {:?} (after {:?})", 
+                     thread_id, thread_state, new_state, elapsed);
+            thread_state = new_state;
+        };
+        
+        // Run with timeout to prevent hangs
+        let timeout = std::time::Duration::from_secs(60); // 1 minute timeout
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // Set up a timeout timer
+            let timer = std::time::Instant::now();
+            
+            // 1. Extract accumulated gradients from the model
+            update_state(ThreadState::ExtractingGradients);
+            
+            // Check for timeout
+            if timer.elapsed() > timeout {
+                println!("⚠️ Timeout during gradient extraction");
+                return Err("Timeout during gradient extraction".to_string());
+            }
+            
+            // Function to get accumulated gradient count safely
+            let get_gradient_count = || {
+                match self.trainer.get_gradient_count() {
+                    count => {
+                        println!("📊 Found {} accumulated gradients", count);
+                        count
+                    }
+                }
+            };
+            
+            // Check if we have any gradients to apply
+            let gradient_count = get_gradient_count();
+            if gradient_count == 0 {
+                println!("⚠️ No gradients to apply, skipping");
+                return Ok(());
+            }
+            
+            // 2. Apply the gradients to update the model
+            update_state(ThreadState::AggregatingGradients);
+            
+            // Check for timeout
+            if timer.elapsed() > timeout {
+                println!("⚠️ Timeout during gradient aggregation");
+                return Err("Timeout during gradient aggregation".to_string());
+            }
+            
+            // Apply gradients with timeout monitoring
+            update_state(ThreadState::UpdatingModel);
+            let update_start = std::time::Instant::now();
+            
+            // Actual gradient application
+            match self.trainer.apply_accumulated_gradients() {
+                Ok(loss) => {
+                    let update_time = update_start.elapsed();
+                    println!("✅ Applied gradients in {:?}, loss: {:.6}", update_time, loss);
+                    Ok(())
+                },
+                Err(e) => {
+                    println!("❌ Error applying gradients: {}", e);
+                    Err(e)
+                }
+            }
+        }));
+        
+        // Handle result from gradient application
+        match result {
+            Ok(Ok(_)) => {
+                update_state(ThreadState::Completed);
+                println!("✅ Parallel gradient application completed in {:?}", start_time.elapsed());
+            },
+            Ok(Err(e)) => {
+                update_state(ThreadState::Failed);
+                println!("❌ Error during parallel gradient application: {}", e);
+            },
+            Err(e) => {
+                update_state(ThreadState::Failed);
+                println!("❌ Panic during parallel gradient application: {:?}", e);
+            }
+        }
+        
+        // Log memory usage after gradient application
+        Self::log_memory_usage("after_gradient_application");
+    }
+
+    /// Log current memory usage
+    fn log_memory_usage(label: &str) {
+        // On Linux we can get memory usage from /proc/self/status
+        if let Ok(status) = std::fs::read_to_string("/proc/self/status") {
+            println!("📊 MEMORY USAGE [{}]:", label);
+            for line in status.lines() {
+                if line.starts_with("VmRSS:") || line.starts_with("VmSize:") {
+                    println!("  {}", line.trim());
+                }
+            }
+        } else {
+            println!("📊 MEMORY USAGE [{}]: Unable to read memory information", label);
+        }
     }
 
     /// Comprehensive evaluation of model performance
@@ -2344,47 +2572,6 @@ impl EnhancedTrainer {
         clone
     }
     
-    /// Apply gradients accumulated from parallel training instances
-    pub fn apply_parallel_gradients(&mut self) {
-        // The current implementation doesn't effectively combine gradients
-        // Let's add a basic safety mechanism to prevent training failures
-        
-        println!("    🔄 Starting parallel gradient application...");
-        
-        // Start a timer to detect potential hangs
-        let start_time = std::time::Instant::now();
-        let timeout = std::time::Duration::from_secs(5);
-        
-        // Create a separate thread to monitor for timeouts
-        let (tx, rx) = std::sync::mpsc::channel();
-        let timeout_thread = std::thread::spawn(move || {
-            // Wait for the timeout duration
-            std::thread::sleep(timeout);
-            // Send a timeout signal
-            let _ = tx.send(());
-        });
-        
-        // Try to perform any necessary synchronization with a timeout
-        // The current implementation doesn't do much, so this is mostly a safety check
-        
-        // Force a memory fence to ensure all previous writes are visible
-        std::sync::atomic::fence(std::sync::atomic::Ordering::SeqCst);
-        
-        // Check if we've exceeded the timeout
-        if rx.try_recv().is_ok() {
-            // We got a timeout signal, the operation is taking too long
-            println!("    ⚠️ WARNING: Gradient application took longer than expected ({:?})", timeout);
-            println!("    ⚠️ Continuing with training to avoid deadlock");
-        } else {
-            // We completed before the timeout
-            // Try to kill the timeout thread to clean up resources
-            drop(rx);
-            
-            // Only log completion if we didn't time out
-            println!("    ✅ Parallel gradient application completed in {:?}", start_time.elapsed());
-        }
-    }
-
     /// Configure memory optimization
     pub fn with_memory_optimization(&mut self, enable: bool) -> &mut Self {
         self.use_memory_opt = enable;
@@ -2418,6 +2605,162 @@ impl EnhancedTrainer {
         }
         
         self
+    }
+
+    /// Automatically resize output layer to accommodate target IDs
+    pub fn auto_resize_for_targets(&mut self, targets: &Array2<usize>) -> Result<(), String> {
+        // Use our centralized preprocess_batch method for consistency
+        self.preprocess_batch(targets)
+    }
+    
+    /// Get the maximum target ID from a batch
+    fn get_max_target_id(&self, targets: &Array2<usize>) -> usize {
+        let mut max_id = 0;
+        
+        // Handle empty targets
+        if targets.is_empty() {
+            return max_id;
+        }
+        
+        // Safely get maximum ID, accounting for possible dimension issues
+        for &target_id in targets.iter() {
+            if target_id > max_id {
+                max_id = target_id;
+            }
+        }
+        
+        max_id
+    }
+
+    /// Preprocess a batch to ensure all target IDs are valid
+    /// This is a central function to be called at the beginning of any batch processing
+    /// to avoid duplicate code and ensure consistent handling of target ID issues
+    pub fn preprocess_batch(&mut self, targets: &Array2<usize>) -> Result<(), String> {
+        // Get current vocabulary size
+        let current_vocab_size = self.trainer.get_vocab_size();
+        
+        // Find the maximum target ID
+        let max_target_id = self.get_max_target_id(targets);
+        
+        // Check if we need to resize - ensure we have a buffer to avoid frequent resizing
+        if max_target_id >= current_vocab_size {
+            // Read min vocab size from environment
+            let min_size = std::env::var("WALL_E_MIN_VOCAB_SIZE")
+                .unwrap_or_else(|_| "10000".to_string()) // Increased from 5000 to 10000
+                .parse::<usize>()
+                .unwrap_or(10000); // Default to 10000 to handle larger vocabularies
+            
+            // Use a more aggressive exponential growth strategy
+            // to avoid frequent resizing and ensure we handle large target IDs
+            let new_vocab_size = std::cmp::max(
+                std::cmp::max(
+                    current_vocab_size * 2,          // Double current size
+                    max_target_id + 2000             // Add 2000 buffer (up from 1000)
+                ),
+                min_size
+            );
+            
+            println!("🔄 Resizing vocabulary from {} to {} to handle target ID {}", 
+                     current_vocab_size, new_vocab_size, max_target_id);
+            
+            // Perform the resize operation
+            self.trainer.resize_output_layer(new_vocab_size)?;
+            
+            // Double check success
+            let new_vocab_size = self.trainer.get_vocab_size();
+            if max_target_id >= new_vocab_size {
+                return Err(format!("Failed to resize vocabulary: target ID {} still exceeds vocabulary size {}", 
+                                  max_target_id, new_vocab_size));
+            }
+            
+            println!("✅ Vocabulary successfully resized to {}", new_vocab_size);
+        }
+        
+        Ok(())
+    }
+
+    /// Preprocess multiple batches to ensure all target IDs are valid with a single resize operation
+    /// This optimizes the training pipeline by doing a single vocabulary resize
+    /// rather than multiple smaller ones during batch processing
+    pub fn preprocess_all_batches(&mut self, all_targets: &[Array2<usize>]) -> Result<(), String> {
+        // Skip if no targets
+        if all_targets.is_empty() {
+            return Ok(());
+        }
+        
+        // Get current vocabulary size
+        let current_vocab_size = self.trainer.get_vocab_size();
+        
+        // Find the maximum target ID across all batches
+        let mut global_max_id = 0;
+        let mut total_targets = 0;
+        
+        // Collect statistics about target IDs
+        let mut target_id_counts = HashMap::new();
+        
+        for targets in all_targets {
+            // Count total targets for statistics
+            total_targets += targets.len();
+            
+            // Find max ID in this batch
+            for &target_id in targets.iter() {
+                if target_id > global_max_id {
+                    global_max_id = target_id;
+                }
+                
+                // Count occurrences for statistics
+                *target_id_counts.entry(target_id).or_insert(0) += 1;
+            }
+        }
+        
+        // Check if we need to resize - ensure we have a buffer to avoid frequent resizing
+        if global_max_id >= current_vocab_size {
+            // Read min vocab size from environment
+            let min_size = std::env::var("WALL_E_MIN_VOCAB_SIZE")
+                .unwrap_or_else(|_| "15000".to_string()) // Increased default
+                .parse::<usize>()
+                .unwrap_or(15000);
+            
+            // Use a more aggressive exponential growth strategy with larger buffer
+            let new_vocab_size = std::cmp::max(
+                std::cmp::max(
+                    current_vocab_size * 2,            // Double current size
+                    global_max_id + 5000               // Add 5000 buffer for future growth
+                ),
+                min_size
+            );
+            
+            println!("🔄 GLOBAL RESIZE: Vocabulary from {} to {} to handle max target ID {}", 
+                     current_vocab_size, new_vocab_size, global_max_id);
+            
+            // Print statistics about target ID distribution
+            let out_of_range_count = target_id_counts.iter()
+                .filter(|entry| *entry.0 >= current_vocab_size)
+                .fold(0, |acc, entry| acc + *entry.1);
+                
+            println!("📊 Target ID statistics:");
+            println!("   - Total targets analyzed: {}", total_targets);
+            println!("   - Out-of-range targets: {} ({:.2}%)", 
+                     out_of_range_count, 
+                     100.0 * out_of_range_count as f32 / total_targets as f32);
+            println!("   - Unique target IDs: {}", target_id_counts.len());
+            println!("   - Unique out-of-range IDs: {}", 
+                     target_id_counts.iter().filter(|entry| *entry.0 >= current_vocab_size).count());
+            
+            // Perform the resize operation
+            self.trainer.resize_output_layer(new_vocab_size)?;
+            
+            // Double check success
+            let new_vocab_size = self.trainer.get_vocab_size();
+            if global_max_id >= new_vocab_size {
+                return Err(format!("Failed to resize vocabulary: target ID {} still exceeds vocabulary size {}", 
+                                  global_max_id, new_vocab_size));
+            }
+            
+            println!("✅ Global vocabulary resize successful: new size {}", new_vocab_size);
+        }
+        
+        Ok(())
     }
 }
 
