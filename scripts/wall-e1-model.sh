@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>]  Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -25,11 +25,16 @@ show_usage() {
   echo "  --epochs [number]                  Number of training epochs (default: 10)"
   echo "  --curriculum-examples [number]     Number of examples to use for curriculum initialization (default: 500)"
   echo "  --profile, --perf-log              Enable detailed performance profiling"
+  echo "  --auto-resize-vocab                Automatically resize vocabulary for out-of-range target IDs"
+  echo "  --watchdog-timeout [seconds]       Set timeout for watchdog thread detection (default: 60)"
+  echo "  --data-threads [number]            Number of threads for data loading (min: 8, default: 70% of available cores)"
+  echo "  --target-id-max [number]           Maximum target ID value (default: auto-detected, min: 5000)"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
   echo "  --max-tokens [num]                 Maximum tokens to generate (default: 50)"
   echo "  --cpus [number]                    Number of CPU cores to use (default: all available)"
+  echo "  --disable-watchdog                 Disable watchdog during text generation to prevent stalled progress warnings"
   echo ""
   echo "Examples:"
   echo "  $0 train --size small              Train a small model with default stories"
@@ -39,8 +44,10 @@ show_usage() {
   echo "  $0 train --size large --thread-opt matrix_multiply  Optimize thread allocation for matrix multiplication"
   echo "  $0 train --size large --curriculum-examples 5000  Train with 5000 examples for curriculum"
   echo "  $0 train --size small --profile    Train a small model with performance profiling"
+  echo "  $0 train --size medium --auto-resize-vocab --target-id-max 10000  Train with automatic vocabulary resizing"
+  echo "  $0 train --size small --watchdog-timeout 120 --data-threads 16  Train with custom watchdog and data thread settings"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
-  echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2"
+  echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2 --disable-watchdog"
 }
 
 # Ensure models directory exists
@@ -66,6 +73,14 @@ train_model() {
   local curriculum_examples=""
   local curriculum_examples_param=""
   local profile=""
+  local auto_resize_vocab=""
+  local auto_resize_vocab_param=""
+  local watchdog_timeout=""
+  local watchdog_timeout_param=""
+  local data_threads=""
+  local data_threads_param=""
+  local target_id_max=""
+  local target_id_max_param=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
@@ -112,6 +127,26 @@ train_model() {
       --curriculum-examples)
         curriculum_examples="$2"
         curriculum_examples_param="--curriculum-examples $curriculum_examples"
+        shift 2
+        ;;
+      --auto-resize-vocab)
+        auto_resize_vocab="true"
+        auto_resize_vocab_param="--auto-resize-vocab"
+        shift 1
+        ;;
+      --watchdog-timeout)
+        watchdog_timeout="$2"
+        watchdog_timeout_param="--watchdog-timeout $watchdog_timeout"
+        shift 2
+        ;;
+      --data-threads)
+        data_threads="$2"
+        data_threads_param="--data-threads $data_threads"
+        shift 2
+        ;;
+      --target-id-max)
+        target_id_max="$2"
+        target_id_max_param="--target-id-max $target_id_max"
         shift 2
         ;;
       --profile)
@@ -183,6 +218,18 @@ train_model() {
   if [[ -n "$curriculum_examples" ]]; then
     echo "Using $curriculum_examples examples for curriculum initialization"
   fi
+  if [[ -n "$auto_resize_vocab" ]]; then
+    echo "Automatic vocabulary resizing enabled"
+  fi
+  if [[ -n "$watchdog_timeout" ]]; then
+    echo "Watchdog timeout set to $watchdog_timeout seconds"
+  fi
+  if [[ -n "$data_threads" ]]; then
+    echo "Using $data_threads threads for data loading"
+  fi
+  if [[ -n "$target_id_max" ]]; then
+    echo "Maximum target ID set to $target_id_max"
+  fi
   if [[ -n "$profile" ]]; then
     echo "Performance profiling enabled"
   fi
@@ -223,6 +270,10 @@ train_model() {
       $thread_opt_param \
       $batch_size_param \
       $curriculum_examples_param \
+      $auto_resize_vocab_param \
+      $watchdog_timeout_param \
+      $data_threads_param \
+      $target_id_max_param \
       $data_file
   else
     # Use the regular training script
@@ -235,7 +286,11 @@ train_model() {
       $thread_opt_param \
       $batch_size_param \
       $epochs_param \
-      $curriculum_examples_param
+      $curriculum_examples_param \
+      $auto_resize_vocab_param \
+      $watchdog_timeout_param \
+      $data_threads_param \
+      $target_id_max_param
   fi
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"
@@ -248,6 +303,8 @@ generate_text() {
   local max_tokens=50
   local cpus=""
   local cpus_param=""
+  local disable_watchdog=""
+  local disable_watchdog_param=""
   
   # Get the prompt
   if [[ $# -gt 0 && ! "$1" =~ ^-- ]]; then
@@ -275,6 +332,11 @@ generate_text() {
         cpus_param="--cpus $cpus"
         shift 2
         ;;
+      --disable-watchdog)
+        disable_watchdog="true"
+        disable_watchdog_param="--disable-watchdog"
+        shift 1
+        ;;
       *)
         echo "Unknown option: $1"
         show_usage
@@ -285,7 +347,7 @@ generate_text() {
   
   # Call the test generation script
   echo "Generating text from prompt: '$prompt'"
-  ./scripts/test_generation.sh "$prompt" "$max_tokens" "$model" $cpus_param
+  ./scripts/test_generation.sh "$prompt" "$max_tokens" "$model" $cpus_param $disable_watchdog_param
 }
 
 # Function to clean models directory

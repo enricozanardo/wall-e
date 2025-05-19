@@ -8,10 +8,10 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile|--perf-log]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--profile|--perf-log]
 
 # Generate text from a prompt
-./wall-e1-model.sh generate "Your prompt here" --max-tokens 50
+./wall-e1-model.sh generate "Your prompt here" --max-tokens 50 [--disable-watchdog]
 
 # Clean all model files
 ./wall-e1-model.sh clean
@@ -59,8 +59,14 @@ All trained models use the `.walle` extension for consistency. The internal form
 # Train with more curriculum examples to prevent stalling in level advancement
 ./wall-e1-model.sh train --size large --curriculum-examples 5000
 
+# Train with automatic vocabulary resizing to handle out-of-range target IDs
+./wall-e1-model.sh train --size medium --auto-resize-vocab --target-id-max 10000
+
+# Train with custom watchdog and data thread settings for better deadlock prevention
+./wall-e1-model.sh train --size small --watchdog-timeout 120 --data-threads 16
+
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12
 
 # Train with performance profiling
 ./wall-e1-model.sh train --size small --perf-log
@@ -77,6 +83,9 @@ All trained models use the `.walle` extension for consistency. The internal form
 ```bash
 # Generate using the main script
 ./wall-e1-model.sh generate "Once upon a time"
+
+# Generate with watchdog disabled to prevent stalled progress warnings
+./wall-e1-model.sh generate "Once upon a time" --disable-watchdog
 
 # Or use the generation scripts directly
 ./test_generation.sh "Once upon a time" 50 models/high_accuracy_model.walle
@@ -120,6 +129,10 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - **--batch-size <number>**: Manually set batch size for training
 - **--epochs <number>**: Number of training epochs to run (default: 10)
 - **--curriculum-examples <number>**: Number of examples to use for curriculum initialization (default: 500). Increasing this value can prevent stalling in curriculum level advancement, especially with larger batch sizes.
+- **--auto-resize-vocab**: Automatically resize vocabulary when target IDs exceed the current maximum, preventing "target_id out of range" errors
+- **--watchdog-timeout <seconds>**: Set timeout for watchdog thread detection (default: 60). Increase for larger models or slower systems.
+- **--data-threads <number>**: Number of threads for data loading (min: 8, default: 70% of available cores). Increasing can help with CPU utilization.
+- **--target-id-max <number>**: Maximum target ID value (default: auto-detected, min: 5000). Set higher for larger vocabularies.
 - **--profile, --perf-log**: Enable detailed performance profiling and metrics collection
 
 ## Thread Pool Optimization
@@ -145,6 +158,27 @@ Gradient checkpointing trades computation for memory by selectively saving activ
 
 This technique can reduce memory usage by 30-70% with only a 20-30% increase in computation time.
 
+## Thread Deadlock Prevention
+
+Wall-E1 includes several mechanisms to prevent thread deadlocks during training:
+
+1. **Watchdog Thread**: Monitors all worker threads and detects when progress stalls. Set timeout with `--watchdog-timeout`.
+2. **Thread State Tracking**: Tracks the state of each thread to provide detailed diagnostics when issues occur.
+3. **Recovery Mechanisms**: Automatically attempts to recover from deadlocks by terminating stuck threads.
+4. **Optimized Data Threads**: Uses a separate thread pool for data loading operations with `--data-threads`.
+
+If you encounter "Progress stalled" warnings during text generation, use the `--disable-watchdog` option.
+
+## Target ID Handling
+
+When training with large vocabularies, you may encounter "target_id XXX out of range (max YYY)" warnings, which indicate that token IDs in your training data exceed the maximum vocabulary size:
+
+1. **Auto-resize**: Enable `--auto-resize-vocab` to automatically resize the vocabulary when out-of-range tokens are encountered.
+2. **Target ID Maximum**: Set `--target-id-max` to pre-allocate a larger vocabulary size.
+3. **Monitoring**: The training will report vocabulary usage statistics to help you tune these parameters.
+
+For optimal performance, set `--auto-resize-vocab` with a reasonable `--target-id-max` value based on your dataset size.
+
 ## Notes
 
 - All models are saved in the `models/` directory.
@@ -152,4 +186,6 @@ This technique can reduce memory usage by 30-70% with only a 20-30% increase in 
 - Training uses the `tiny_stories_sample.json` dataset by default.
 - By default, training uses 4000 stories from the dataset, but this can be customized with the `--stories` parameter.
 - Memory optimization provides better performance on machines with limited memory bandwidth.
-- When using larger batch sizes, consider increasing the number of curriculum examples to ensure proper level advancement. 
+- When using larger batch sizes, consider increasing the number of curriculum examples to ensure proper level advancement.
+- If you encounter thread deadlocks during training, increase the `--watchdog-timeout` and `--data-threads` values.
+- For large datasets, always use `--auto-resize-vocab` to handle unexpected vocabulary growth. 

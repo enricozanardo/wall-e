@@ -1,74 +1,65 @@
 #!/bin/bash
 
-# Test script for text generation with the Wall-E1 model
+# Usage: ./test_generation.sh <prompt> <max_tokens> [model_path] [--cpus <num>] [--disable-watchdog]
 
-# Set variables
-PROMPT=${1:-"In a world where dragons"}
-MAX_TOKENS=${2:-50}
-MODEL=${3:-"models/high_accuracy_model.walle"}
-CPU_PARAM=""
-
-# Process any additional parameters
-shift 3 2>/dev/null || true
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --cpus)
-      if [ "$2" -gt 0 ] 2>/dev/null; then
-        export RAYON_NUM_THREADS=$2
-        echo "Using $2 CPU cores for text generation"
-        CPU_PARAM="--perf-log true"
-      fi
-      shift 2
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
-# If CPU cores not explicitly set, use all available
-if [ -z "$RAYON_NUM_THREADS" ]; then
-  AVAILABLE_CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-  export RAYON_NUM_THREADS=$AVAILABLE_CPUS
-  echo "Using all available CPU cores ($AVAILABLE_CPUS) for text generation"
-  CPU_PARAM="--perf-log true"
-fi
-
-OUTPUT_FILE="generated_text.txt"
-LOG_FILE="generation_log.txt"
-
-echo "Running text generation with prompt: '$PROMPT'"
-echo "Using RAYON_NUM_THREADS=$RAYON_NUM_THREADS"
-echo "================================================================"
-
-# Ensure models directory exists
-mkdir -p models
-
-# If the test model doesn't exist, suggest running the training script
-if [ ! -f "$MODEL" ]; then
-    echo "Model file not found: $MODEL"
-    echo "Please run the training script first:"
-    echo "./scripts/train_optimized_accuracy.sh --size small"
+# Check arguments
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <prompt> <max_tokens> [model_path] [--cpus <num>] [--disable-watchdog]"
+    echo "Example: $0 \"Once upon a time\" 100 models/my_model.walle"
     exit 1
 fi
 
-# Build and run the model in release mode for better performance
-cargo build --release
+PROMPT="$1"
+MAX_TOKENS="$2"
+MODEL_PATH="${3:-models/high_accuracy_model.walle}"
+CPUS=""
+DISABLE_WATCHDOG=""
 
-# Run the text generation with logging
-cargo run --release --bin Wall-E -- \
-    --generate-only \
-    --model "$MODEL" \
-    --prompt "$PROMPT" \
-    --max-tokens $MAX_TOKENS \
-    $CPU_PARAM 2>&1 | tee "$LOG_FILE"
+# Process additional arguments
+shift 3
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --cpus)
+            CPUS="--cpus $2"
+            shift 2
+            ;;
+        --disable-watchdog)
+            DISABLE_WATCHDOG="true"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 <prompt> <max_tokens> [model_path] [--cpus <num>] [--disable-watchdog]"
+            exit 1
+            ;;
+    esac
+done
 
-echo "================================================================"
-echo "Contents of $OUTPUT_FILE:"
-if [ -f "$OUTPUT_FILE" ]; then
-    cat "$OUTPUT_FILE"
-else
-    echo "Output file not found!"
+# Check if model exists
+if [ ! -f "$MODEL_PATH" ]; then
+    echo "Error: Model file $MODEL_PATH not found."
+    echo "Available model files:"
+    find models -name "*.walle" -o -name "*.bin" | sort
+    exit 1
 fi
-echo "================================================================"
-echo "Test completed, see $LOG_FILE for full log" 
+
+echo "Using model: $MODEL_PATH"
+echo "Prompt: \"$PROMPT\""
+echo "Max tokens: $MAX_TOKENS"
+
+# Set environment variables
+if [ -n "$DISABLE_WATCHDOG" ]; then
+    echo "Disabling watchdog for text generation"
+    export WALL_E_DISABLE_WATCHDOG=true
+fi
+
+# Set up environment for better display
+export RUST_LOG=info
+
+# Use TUI version if available, otherwise use standard version
+if [ -n "$CPUS" ]; then
+    echo "Using $CPUS CPU cores"
+    cargo run --release --bin Wall-E -- --generate-only --prompt "$PROMPT" --max-tokens "$MAX_TOKENS" --model "$MODEL_PATH" $CPUS
+else
+    cargo run --release --bin Wall-E -- --generate-only --prompt "$PROMPT" --max-tokens "$MAX_TOKENS" --model "$MODEL_PATH"
+fi 
