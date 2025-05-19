@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile]  Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -19,10 +19,12 @@ show_usage() {
   echo "  --stories [number]                 Number of stories to use for training (default: 4000)"
   echo "  --cpus [number]                    Number of CPU cores to use (default: all available)"
   echo "  --memory-opt                       Enable memory optimization (optimal batch size, thread allocation)"
+  echo "  --checkpoint-strategy [strategy]   Gradient checkpointing strategy: boundary, uniform, adaptive (default: adaptive)"
+  echo "  --thread-opt [operation]           Optimize thread allocation for specific operation: matrix_multiply, attention, gradient_update, data_loading"
   echo "  --batch-size [number]              Manually set batch size (overrides automatic calculation)"
   echo "  --epochs [number]                  Number of training epochs (default: 10)"
   echo "  --curriculum-examples [number]     Number of examples to use for curriculum initialization (default: 500)"
-  echo "  --profile                          Enable detailed performance profiling"
+  echo "  --profile, --perf-log              Enable detailed performance profiling"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
@@ -33,6 +35,8 @@ show_usage() {
   echo "  $0 train --size small              Train a small model with default stories"
   echo "  $0 train --size medium --stories 2000 --cpus 4 --memory-opt  Train a medium model with memory optimization"
   echo "  $0 train --size large --epochs 20  Train a large model with 20 epochs"
+  echo "  $0 train --size medium --memory-opt --checkpoint-strategy uniform  Train with uniform checkpointing"
+  echo "  $0 train --size large --thread-opt matrix_multiply  Optimize thread allocation for matrix multiplication"
   echo "  $0 train --size large --curriculum-examples 5000  Train with 5000 examples for curriculum"
   echo "  $0 train --size small --profile    Train a small model with performance profiling"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
@@ -51,6 +55,10 @@ train_model() {
   local cpus_param=""
   local memory_opt=""
   local memory_opt_param=""
+  local checkpoint_strategy=""
+  local checkpoint_strategy_param=""
+  local thread_opt=""
+  local thread_opt_param=""
   local batch_size=""
   local batch_size_param=""
   local epochs=""
@@ -78,8 +86,18 @@ train_model() {
         ;;
       --memory-opt)
         memory_opt="true"
-        memory_opt_param="--use-memory-opt"
+        memory_opt_param="--memory-opt"
         shift 1
+        ;;
+      --checkpoint-strategy)
+        checkpoint_strategy="$2"
+        checkpoint_strategy_param="--checkpoint-strategy $checkpoint_strategy"
+        shift 2
+        ;;
+      --thread-opt)
+        thread_opt="$2"
+        thread_opt_param="--thread-opt $thread_opt"
+        shift 2
         ;;
       --batch-size)
         batch_size="$2"
@@ -97,6 +115,10 @@ train_model() {
         shift 2
         ;;
       --profile)
+        profile="true"
+        shift 1
+        ;;
+      --perf-log)
         profile="true"
         shift 1
         ;;
@@ -146,6 +168,12 @@ train_model() {
   if [[ -n "$memory_opt" ]]; then
     echo "Memory optimization enabled"
   fi
+  if [[ -n "$checkpoint_strategy" ]]; then
+    echo "Using $checkpoint_strategy gradient checkpointing strategy"
+  fi
+  if [[ -n "$thread_opt" ]]; then
+    echo "Optimizing thread allocation for $thread_opt operations"
+  fi
   if [[ -n "$batch_size" ]]; then
     echo "Using manual batch size: $batch_size"
   fi
@@ -191,12 +219,23 @@ train_model() {
       $epochs_param \
       $cpus_param \
       $memory_opt_param \
+      $checkpoint_strategy_param \
+      $thread_opt_param \
       $batch_size_param \
       $curriculum_examples_param \
       $data_file
   else
     # Use the regular training script
-    ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param $cpus_param $memory_opt_param $batch_size_param $epochs_param $curriculum_examples_param
+    ./scripts/train_optimized_accuracy.sh \
+      --size "$size" \
+      $stories_param \
+      $cpus_param \
+      $memory_opt_param \
+      $checkpoint_strategy_param \
+      $thread_opt_param \
+      $batch_size_param \
+      $epochs_param \
+      $curriculum_examples_param
   fi
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"

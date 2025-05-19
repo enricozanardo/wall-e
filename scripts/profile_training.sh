@@ -19,6 +19,8 @@ LAYERS=2
 EPOCHS=1
 CPUS=""
 MEMORY_OPT="--use-memory-opt"
+CHECKPOINT_STRATEGY=""
+THREAD_OPT=""
 BATCH_SIZE=""
 CURRICULUM_EXAMPLES=""
 DATA_FILE=""
@@ -53,6 +55,18 @@ while [[ $# -gt 0 ]]; do
     --use-memory-opt)
       MEMORY_OPT="--use-memory-opt"
       shift 1
+      ;;
+    --memory-opt)
+      MEMORY_OPT="--use-memory-opt"
+      shift 1
+      ;;
+    --checkpoint-strategy)
+      CHECKPOINT_STRATEGY="--checkpoint-strategy $2"
+      shift 2
+      ;;
+    --thread-opt)
+      THREAD_OPT="--thread-opt $2"
+      shift 2
       ;;
     --batch-size)
       BATCH_SIZE="--batch-size $2"
@@ -143,6 +157,14 @@ fi
 
 if [[ -n "$CURRICULUM_EXAMPLES" ]]; then
   CMD_ARGS+=($CURRICULUM_EXAMPLES)
+fi
+
+if [[ -n "$CHECKPOINT_STRATEGY" ]]; then
+  CMD_ARGS+=($CHECKPOINT_STRATEGY)
+fi
+
+if [[ -n "$THREAD_OPT" ]]; then
+  CMD_ARGS+=($THREAD_OPT)
 fi
 
 # Add data file as the last argument

@@ -773,7 +773,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         // Save model checkpoint
         if epoch % 2 == 0 || epoch == num_epochs - 1 {
-            let checkpoint_path = format!("{}.epoch{}", save_path.as_ref().unwrap_or(&"model.json".to_string()), epoch + 1);
+            // Ensure models directory exists
+            std::fs::create_dir_all("models").unwrap_or_else(|e| {
+                println!("Warning: Could not create models directory: {}", e);
+            });
+            
+            // Create checkpoint path with proper directory and extension
+            let mut base_path = save_path.as_ref().unwrap_or(&"models/model.walle".to_string()).to_string();
+            
+            // Ensure path has the correct directory
+            if !base_path.starts_with("models/") {
+                base_path = format!("models/{}", base_path);
+            }
+            
+            // Ensure path has the correct extension
+            if !base_path.ends_with(".walle") {
+                // Replace any existing extension with .walle
+                if let Some(dot_pos) = base_path.rfind('.') {
+                    base_path = format!("{}.walle", &base_path[..dot_pos]);
+                } else {
+                    base_path = format!("{}.walle", base_path);
+                }
+            }
+            
+            let checkpoint_path = format!("{}.epoch{}", base_path, epoch + 1);
+            
             println!("Saving checkpoint to {}", checkpoint_path);
             global_perf_logger.start(format!("save_checkpoint_{}", epoch + 1).as_str());
             match trainer.save_model(&checkpoint_path) {
@@ -791,7 +815,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Training completed in {:?}", total_duration);
     
     // Save final model
-    let final_save_path = save_path.unwrap_or_else(|| "model.json".to_string());
+    let mut final_save_path = save_path.unwrap_or_else(|| "models/model.walle".to_string());
+    
+    // Ensure directory exists
+    std::fs::create_dir_all("models").unwrap_or_else(|e| {
+        println!("Warning: Could not create models directory: {}", e);
+    });
+    
+    // Ensure the path has the correct directory and extension
+    if !final_save_path.starts_with("models/") {
+        final_save_path = format!("models/{}", final_save_path);
+    }
+    
+    if !final_save_path.ends_with(".walle") {
+        // Replace any existing extension with .walle
+        if let Some(dot_pos) = final_save_path.rfind('.') {
+            final_save_path = format!("{}.walle", &final_save_path[..dot_pos]);
+        } else {
+            final_save_path = format!("{}.walle", final_save_path);
+        }
+    }
+    
     println!("Saving final model to {}", final_save_path);
     global_perf_logger.start("save_final_model");
     trainer.save_model(&final_save_path)?;

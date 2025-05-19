@@ -10,6 +10,10 @@ NUM_STORIES=4000
 NUM_CPUS=0
 # Memory optimization flag
 MEMORY_OPT=""
+# Checkpoint strategy
+CHECKPOINT_STRATEGY="adaptive"
+# Thread optimization
+THREAD_OPT=""
 # Batch size (0 means auto-calculate)
 BATCH_SIZE=0
 # Default number of epochs
@@ -41,6 +45,14 @@ while [[ $# -gt 0 ]]; do
       MEMORY_OPT="true"
       shift 1
       ;;
+    --checkpoint-strategy)
+      CHECKPOINT_STRATEGY="$2"
+      shift 2
+      ;;
+    --thread-opt)
+      THREAD_OPT="$2"
+      shift 2
+      ;;
     --batch-size)
       BATCH_SIZE="$2"
       shift 2
@@ -55,7 +67,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>]"
+      echo "Usage: $0 [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>]"
       exit 1
       ;;
   esac
@@ -118,8 +130,18 @@ echo "Save path: models/high_accuracy_model.walle" | tee -a "$LOG_FILE"
 # Memory optimization settings
 if [ -n "$MEMORY_OPT" ]; then
   echo "Memory optimization: enabled" | tee -a "$LOG_FILE"
+  
+  # Show checkpoint strategy if memory optimization is enabled
+  echo "Checkpoint strategy: $CHECKPOINT_STRATEGY" | tee -a "$LOG_FILE"
 else
   echo "Memory optimization: disabled" | tee -a "$LOG_FILE"
+fi
+
+# Thread optimization settings
+if [ -n "$THREAD_OPT" ]; then
+  echo "Thread optimization: $THREAD_OPT" | tee -a "$LOG_FILE"
+else
+  echo "Thread optimization: auto" | tee -a "$LOG_FILE"
 fi
 
 # Batch size settings
@@ -154,6 +176,16 @@ TRAINING_CMD="cargo run --release --bin train_enhanced_model -- data/tiny_storie
 # Add memory optimization flags if enabled
 if [ -n "$MEMORY_OPT" ]; then
   TRAINING_CMD="$TRAINING_CMD --use-memory-opt"
+  
+  # Add checkpoint strategy if memory optimization is enabled
+  if [ -n "$CHECKPOINT_STRATEGY" ]; then
+    TRAINING_CMD="$TRAINING_CMD --checkpoint-strategy $CHECKPOINT_STRATEGY"
+  fi
+fi
+
+# Add thread optimization if specified
+if [ -n "$THREAD_OPT" ]; then
+  TRAINING_CMD="$TRAINING_CMD --thread-opt $THREAD_OPT"
 fi
 
 # Add manual batch size if specified
