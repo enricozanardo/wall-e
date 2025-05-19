@@ -781,6 +781,17 @@ impl EnhancedTrainer {
     
     /// Generate text with improved anti-repetition mechanisms
     pub fn generate_text(&self, prompt: &str, max_tokens: Option<usize>) -> String {
+        // Check if watchdog is disabled for text generation
+        let watchdog_disabled = match std::env::var("WALL_E_DISABLE_WATCHDOG") {
+            Ok(val) => val == "true" || val == "1",
+            Err(_) => false,
+        };
+        
+        // Log status for debugging
+        if watchdog_disabled {
+            println!("🛑 Watchdog disabled for text generation");
+        }
+        
         println!("Generating text with prompt: \"{}\" (max_tokens={})", 
                  prompt, max_tokens.unwrap_or(50)); // Use 50 as a default
         
@@ -2147,6 +2158,26 @@ impl EnhancedTrainer {
 
     /// Comprehensive evaluation of model performance
     pub fn evaluate_model(&self, eval_inputs: &[Vec<usize>], eval_targets: &[Vec<usize>], prompt_texts: &[&str]) -> HashMap<String, f32> {
+        // Disable any active watchdogs during evaluation
+        if let Ok(val) = std::env::var("WALL_E_DISABLE_WATCHDOG") {
+            if val == "0" || val.to_lowercase() == "false" {
+                // Keep watchdog enabled if explicitly requested
+            } else {
+                // Default to disabling watchdog during evaluation
+                unsafe {
+                    std::env::set_var("WALL_E_DISABLE_WATCHDOG", "true");
+                }
+                println!("🔄 Temporarily disabled watchdog for evaluation phase");
+            }
+        } else {
+            // Default to disabling watchdog during evaluation
+            unsafe {
+                std::env::set_var("WALL_E_DISABLE_WATCHDOG", "true");
+            }
+            println!("🔄 Temporarily disabled watchdog for evaluation phase");
+        }
+        
+        // Calculate metrics
         let mut metrics = HashMap::new();
         
         // Calculate perplexity
@@ -2216,6 +2247,11 @@ impl EnhancedTrainer {
                 metrics.get("fluency_score").copied().unwrap_or(0.0) * 0.1;
             
             metrics.insert("quality_score".to_string(), quality_score);
+        }
+        
+        // Restore watchdog state
+        unsafe {
+            std::env::remove_var("WALL_E_DISABLE_WATCHDOG");
         }
         
         metrics

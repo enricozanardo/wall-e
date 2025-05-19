@@ -2025,14 +2025,28 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         println!("  Ratio (train/prep):           {:.2}x", avg_train_time / avg_prep_time);
     }
     
-    // Cleanup watchdog thread
+    // Cleanup watchdog thread before any evaluation or text generation
     let watchdog_handle_copy = watchdog_handle.thread().clone();
     let watchdog_id = format!("{:?}", watchdog_handle_copy.id());
     
+    // Signal watchdog to terminate before we finish - critical to prevent interference with evaluation
+    println!("    🛑 Signaling watchdog to terminate before evaluation phase");
+    termination_requested.store(true, std::sync::atomic::Ordering::SeqCst);
+    
     // Try to join the watchdog with a short timeout
+    let watchdog_join_timeout = std::time::Duration::from_millis(500);
     match watchdog_handle.join() {
         Ok(_) => println!("    ✅ Watchdog thread joined successfully"),
-        Err(e) => println!("    ⚠️ Failed to join watchdog thread: {:?}", e),
+        Err(e) => {
+            println!("    ⚠️ Failed to join watchdog thread: {:?}", e);
+            println!("    ⚠️ Continuing without joining watchdog - it may continue to report stalled progress");
+            
+            // Set an environment variable to disable watchdog for evaluation
+            unsafe {
+                std::env::set_var("WALL_E_DISABLE_WATCHDOG", "true");
+            }
+            println!("    🔄 Set WALL_E_DISABLE_WATCHDOG=true to prevent watchdog interruptions during evaluation");
+        }
     }
     
     // Fix for last batch handling - set final message for progress bar
@@ -2049,9 +2063,6 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     } else {
         println!("\n⚠️ WARNING: No batches were fully processed!");
     }
-    
-    perf_logger.memory_snapshot("train_epoch_end");
-    perf_logger.end("train_epoch_full");
     
     // Print local performance metrics for this epoch
     perf_logger.log_summary();

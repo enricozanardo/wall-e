@@ -122,6 +122,12 @@ impl TextGenerator {
         prompt: &str,
         max_tokens: Option<usize>
     ) -> String {
+        // Check if watchdog is disabled for text generation
+        let watchdog_disabled = match std::env::var("WALL_E_DISABLE_WATCHDOG") {
+            Ok(val) => val == "true" || val == "1",
+            Err(_) => false,
+        };
+        
         // Set maximum tokens to generate
         let max_tokens = max_tokens.unwrap_or(self.default_max_tokens);
         
@@ -144,7 +150,7 @@ impl TextGenerator {
         // Track n-grams to detect repetition patterns
         let mut recent_ngrams: VecDeque<Vec<usize>> = VecDeque::new();
         
-        // Initialize n-grams from prompt
+        // Update n-grams from prompt
         if self.ngram_size > 0 && tokens.len() >= self.ngram_size {
             for i in 0..=tokens.len() - self.ngram_size {
                 let ngram = tokens[i..i + self.ngram_size].to_vec();
@@ -155,8 +161,26 @@ impl TextGenerator {
             }
         }
         
+        // Create progress reporting
+        let progress_interval = if watchdog_disabled {
+            // No need for frequent progress reporting if watchdog is disabled
+            max_tokens / 5
+        } else {
+            // More frequent reporting to keep watchdog happy
+            max_tokens.min(50).max(5) / 4
+        };
+        
+        // Initialize progress
+        let mut reported_progress = false;
+        
         // Generate tokens
-        for _ in 0..max_tokens {
+        for token_idx in 0..max_tokens {
+            // Report progress occasionally to keep watchdog happy
+            if !watchdog_disabled && (token_idx % progress_interval == 0) {
+                println!("🔄 Text generation in progress: {}/{} tokens", token_idx, max_tokens);
+                reported_progress = true;
+            }
+            
             let input = vec![tokens.clone()];
             
             // Get logits from model
