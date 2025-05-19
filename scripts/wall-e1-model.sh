@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile]  Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -22,6 +22,7 @@ show_usage() {
   echo "  --batch-size [number]              Manually set batch size (overrides automatic calculation)"
   echo "  --epochs [number]                  Number of training epochs (default: 10)"
   echo "  --curriculum-examples [number]     Number of examples to use for curriculum initialization (default: 500)"
+  echo "  --profile                          Enable detailed performance profiling"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
@@ -33,6 +34,7 @@ show_usage() {
   echo "  $0 train --size medium --stories 2000 --cpus 4 --memory-opt  Train a medium model with memory optimization"
   echo "  $0 train --size large --epochs 20  Train a large model with 20 epochs"
   echo "  $0 train --size large --curriculum-examples 5000  Train with 5000 examples for curriculum"
+  echo "  $0 train --size small --profile    Train a small model with performance profiling"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2"
 }
@@ -55,6 +57,7 @@ train_model() {
   local epochs_param=""
   local curriculum_examples=""
   local curriculum_examples_param=""
+  local profile=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
@@ -75,7 +78,7 @@ train_model() {
         ;;
       --memory-opt)
         memory_opt="true"
-        memory_opt_param="--memory-opt"
+        memory_opt_param="--use-memory-opt"
         shift 1
         ;;
       --batch-size)
@@ -93,6 +96,10 @@ train_model() {
         curriculum_examples_param="--curriculum-examples $curriculum_examples"
         shift 2
         ;;
+      --profile)
+        profile="true"
+        shift 1
+        ;;
       *)
         echo "Unknown option: $1"
         show_usage
@@ -100,6 +107,33 @@ train_model() {
         ;;
     esac
   done
+
+  # Set model dimensions based on size
+  local model_dim=""
+  local ff_dim=""
+  local layers=""
+  
+  case $size in
+    small)
+      model_dim="128"
+      ff_dim="512"
+      layers="2"
+      ;;
+    medium)
+      model_dim="256"
+      ff_dim="1024"
+      layers="4"
+      ;;
+    large)
+      model_dim="512"
+      ff_dim="2048"
+      layers="6"
+      ;;
+    *)
+      echo "Unknown model size: $size"
+      exit 1
+      ;;
+  esac
   
   # Call the training script
   echo "Training a $size model..."
@@ -121,8 +155,49 @@ train_model() {
   if [[ -n "$curriculum_examples" ]]; then
     echo "Using $curriculum_examples examples for curriculum initialization"
   fi
+  if [[ -n "$profile" ]]; then
+    echo "Performance profiling enabled"
+  fi
   
-  ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param $cpus_param $memory_opt_param $batch_size_param $epochs_param $curriculum_examples_param
+  # Check if data file exists
+  local data_file="./data/tinystories.json"
+  
+  # First check for the 10k version
+  if [[ -f "./data/tinystories-10k.json" ]]; then
+    data_file="./data/tinystories-10k.json"
+  elif [[ -f "./data/tinystories-1k.json" ]]; then
+    data_file="./data/tinystories-1k.json"
+  elif [[ ! -f "$data_file" ]]; then
+    echo "Error: Training data file not found. Expected $data_file"
+    echo "Please place the TinyStories JSON dataset in the data directory."
+    exit 1
+  fi
+
+  # Set up save path
+  local save_path="models/high_accuracy_model.walle"
+  
+  if [[ -n "$profile" ]]; then
+    # Use our profiling script
+    echo "Running with performance profiling..."
+    
+    # Create profiling directory if it doesn't exist
+    mkdir -p ./profiling_results
+    
+    ./scripts/profile_training.sh \
+      $stories_param \
+      --model-dim $model_dim \
+      --ff-dim $ff_dim \
+      --layers $layers \
+      $epochs_param \
+      $cpus_param \
+      $memory_opt_param \
+      $batch_size_param \
+      $curriculum_examples_param \
+      $data_file
+  else
+    # Use the regular training script
+    ./scripts/train_optimized_accuracy.sh --size "$size" $stories_param $cpus_param $memory_opt_param $batch_size_param $epochs_param $curriculum_examples_param
+  fi
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"
 }
