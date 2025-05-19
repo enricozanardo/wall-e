@@ -7,6 +7,8 @@ use crate::tokenizer::Tokenizer;
 use crate::embedding::TransformerEmbedding;
 use crate::attention::EncoderStack;
 use crate::nabla::tensor::Tensor;
+use rayon;
+use rayon::prelude::*;
 
 /// Possible errors during model usage
 #[derive(Error, Debug)]
@@ -634,10 +636,9 @@ impl Trainer {
         // Get the encoder output (the input to the output projection)
         let encoder_output = self.encoder.forward(&self.embedding.forward_batch(batch), None);
         
-        // Calculate the gradient of the output projection using the chain rule
-        // dL/dW = dL/dO * dO/dW = dL/dO * X^T where O = XW
-        // The gradient with respect to weights is the product between the gradient of logits
-        // and the transpose of the encoder output
+        // Calculate the gradient of the output projection using improved parallelism: [d_model, vocab_size]
+        // Optimize by parallelizing over model dimension instead of batch samples
+        // This provides better cache locality and reduces thread synchronization
         
         // Reshape logits_grad to match with encoder_output
         let mut grads = HashMap::new();
@@ -654,37 +655,53 @@ impl Trainer {
         // Reshape logits grad: [batch_size*seq_len, vocab_size]
         let logits_grad_flat = logits_grad.data.clone().into_shape((batch_size * seq_len, vocab_size)).unwrap();
         
-        // Calculate the gradient of the output projection: [d_model, vocab_size]
-        let mut output_proj_grad = Array::zeros((d_model, vocab_size));
-        
-        // Add bounds checking to prevent index out of bounds errors
-        for i in 0..(batch_size * seq_len) {
-            if i >= encoder_output_flat.shape()[0] || i >= logits_grad_flat.shape()[0] {
-                // Skip invalid indices
-                continue;
+        // Calculate the gradient of the output projection using improved parallelism: [d_model, vocab_size]
+        // Parallelize across model dimension rows (more coarse-grained)
+        let output_proj_grad = (0..d_model).into_par_iter()
+        .map(|j| {
+            // Process a complete row (all vocab dimensions for one model dimension)
+            // This improves memory locality as we read from continuous encoder outputs
+            let mut row_gradients = vec![0.0; vocab_size];
+            
+            // Iterate through all batch samples to aggregate gradients for this row
+            for i in 0..batch_size * seq_len {
+                if i < encoder_output_flat.shape()[0] && i < logits_grad_flat.shape()[0] && j < encoder_output_flat.shape()[1] {
+                    // Cache the encoder output value to avoid repeated memory access
+                    let x_val = encoder_output_flat[[i, j]];
+                    
+                    // Update all vocab dimensions for this row in one pass (better cache locality)
+                    for k in 0..vocab_size {
+                        if k < logits_grad_flat.shape()[1] {
+                            row_gradients[k] += x_val * logits_grad_flat[[i, k]];
+                        }
+                    }
+                }
             }
             
-            for j in 0..d_model {
-                if j >= encoder_output_flat.shape()[1] {
-                    // Skip invalid indices
-                    continue;
-                }
-                
-                for k in 0..vocab_size {
-                    if k >= logits_grad_flat.shape()[1] {
-                        // Skip invalid indices
-                        continue;
-                    }
-                    
-                    output_proj_grad[[j, k]] += encoder_output_flat[[i, j]] * logits_grad_flat[[i, k]];
+            // Return the complete row of gradients
+            (j, row_gradients)
+        })
+        .collect::<HashMap<_, _>>();
+        
+        // Combine results into final gradient matrix with minimal synchronization
+        let mut final_gradient = Array::zeros((d_model, vocab_size));
+        for (j, row) in output_proj_grad {
+            if j < d_model {
+                for k in 0..vocab_size.min(row.len()) {
+                    final_gradient[[j, k]] = row[k];
                 }
             }
         }
         
         // Normalize the gradient by batch size
-        output_proj_grad /= (batch_size * seq_len) as f32;
+        let total_samples = (batch_size * seq_len) as f32;
+        let normalized_gradient = if total_samples > 0.0 {
+            final_gradient / total_samples
+        } else {
+            final_gradient
+        };
         
-        grads.insert("output_projection".to_string(), Tensor::new_from_array(output_proj_grad.into_dyn()));
+        grads.insert("output_projection".to_string(), Tensor::new_from_array(normalized_gradient.into_dyn()));
         
         // 4. Update parameters with the optimizer
         self.optimizer.step(&mut self.params, &grads);

@@ -873,9 +873,6 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     indices.shuffle(&mut thread_rng());
     perf_logger.end("shuffling_indices");
     
-    let mut total_loss = 0.0;
-    let mut batch_counter = 0;
-    
     // Create batch chunks for parallel processing
     perf_logger.start("batch_creation");
     let batches: Vec<_> = indices.chunks(batch_size).collect();
@@ -889,50 +886,92 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         .unwrap()
         .progress_chars("#>-"));
     
-    // Statistics for batch timing
-    let mut batch_prep_times = Vec::with_capacity(batches.len());
-    let mut train_step_times = Vec::with_capacity(batches.len());
-    
-    // Process each batch
+    // Process batches in parallel
     perf_logger.start("batch_processing_loop");
-    for (batch_idx, batch_indices) in batches.iter().enumerate() {
+    
+    // Use a mutex to safely update shared variables
+    let total_loss_mutex = std::sync::Mutex::new(0.0f32);
+    let batch_counter_mutex = std::sync::Mutex::new(0usize);
+    let batch_prep_times_mutex = std::sync::Mutex::new(Vec::with_capacity(batches.len()));
+    let train_step_times_mutex = std::sync::Mutex::new(Vec::with_capacity(batches.len()));
+    
+    // Process batches in parallel
+    batches.par_iter().enumerate().for_each(|(batch_idx, batch_indices)| {
+        // Thread-local timing variables
+        let mut local_perf_logger = PerfLogger::new(true);
+        
         // Prepare this batch data in parallel
-        perf_logger.start("prepare_batch");
+        local_perf_logger.start("prepare_batch");
         let prep_start = Instant::now();
         let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(&inputs, &targets, batch_indices, max_sequence_length);
         let prep_time = prep_start.elapsed().as_secs_f64();
-        batch_prep_times.push(prep_time);
-        perf_logger.end("prepare_batch");
+        local_perf_logger.end("prepare_batch");
         
         // Skip empty batches
         if batch_inputs.is_empty() {
             pb.inc(1);
-            continue;
+            return;
         }
         
-        // Train on this batch
-        perf_logger.start("train_step");
-        let train_start = Instant::now();
-        let loss = trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
-        let train_time = train_start.elapsed().as_secs_f64();
-        train_step_times.push(train_time);
-        perf_logger.end("train_step");
+        // Clone the trainer for this thread (needed because train_step takes &mut self)
+        let mut thread_local_trainer = trainer.clone_for_parallel();
         
-        // Update tracking variables
-        total_loss += loss;
-        batch_counter += 1;
+        // Train on this batch
+        local_perf_logger.start("train_step");
+        let train_start = Instant::now();
+        let loss = thread_local_trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
+        let train_time = train_start.elapsed().as_secs_f64();
+        local_perf_logger.end("train_step");
+        
+        // Update tracking variables using mutexes
+        {
+            let mut total_loss = total_loss_mutex.lock().unwrap();
+            *total_loss += loss;
+        }
+        
+        {
+            let mut batch_counter = batch_counter_mutex.lock().unwrap();
+            *batch_counter += 1;
+        }
+        
+        {
+            let mut batch_prep_times = batch_prep_times_mutex.lock().unwrap();
+            batch_prep_times.push(prep_time);
+        }
+        
+        {
+            let mut train_step_times = train_step_times_mutex.lock().unwrap();
+            train_step_times.push(train_time);
+        }
         
         // Update progress bar
-        pb.set_message(format!("{:.6} (avg: {:.6})", loss, total_loss / batch_counter as f32));
+        let current_total_loss;
+        let current_batch_counter;
+        {
+            current_total_loss = *total_loss_mutex.lock().unwrap();
+            current_batch_counter = *batch_counter_mutex.lock().unwrap();
+        }
+        
+        pb.set_message(format!("{:.6} (avg: {:.6})", loss, current_total_loss / current_batch_counter as f32));
         pb.inc(1);
         
         // Still keep occasional console updates for log files
         if batch_idx % 50 == 0 || batch_idx == batches.len() - 1 {
             println!("Batch {}/{} - Loss: {:.6} - Avg: {:.6} - Prep: {:.3}s - Train: {:.3}s", 
-                batch_idx + 1, batches.len(), loss, total_loss / batch_counter as f32,
+                batch_idx + 1, batches.len(), loss, current_total_loss / current_batch_counter as f32,
                 prep_time, train_time);
         }
-    }
+    });
+    
+    // Get the final values from mutexes
+    let mut total_loss = *total_loss_mutex.lock().unwrap();
+    let mut batch_counter = *batch_counter_mutex.lock().unwrap();
+    let mut batch_prep_times = batch_prep_times_mutex.lock().unwrap().clone();
+    let mut train_step_times = train_step_times_mutex.lock().unwrap().clone();
+    
+    // Apply accumulated gradients from all parallel trainers (if trainer supports it)
+    trainer.apply_parallel_gradients();
+    
     perf_logger.end("batch_processing_loop");
     
     // Calculate preparation vs training time ratio

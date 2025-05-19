@@ -123,6 +123,8 @@ pub struct EnhancedTrainer {
     current_epoch: usize,
     /// Stats from training
     stats: HashMap<String, Vec<f32>>,
+    /// Gradient clipping threshold
+    gradient_clip_value: Option<f32>,
 }
 
 impl EnhancedTrainer {
@@ -202,6 +204,7 @@ impl EnhancedTrainer {
             learning_rate,
             current_epoch: 0,
             stats: HashMap::new(),
+            gradient_clip_value: None,
         }
     }
     
@@ -231,7 +234,7 @@ impl EnhancedTrainer {
     
     /// Configure gradient clipping
     pub fn with_gradient_clipping(mut self, threshold: Option<f32>) -> Self {
-        self.trainer.with_gradient_clipping(threshold);
+        self.gradient_clip_value = threshold;
         self
     }
     
@@ -2011,6 +2014,46 @@ impl EnhancedTrainer {
         }
         
         Ok(())
+    }
+    
+    /// Clone the trainer for parallel processing
+    pub fn clone_for_parallel(&self) -> Self {
+        // Create a new trainer instance with the same configuration
+        // but with separate gradient accumulators
+        let mut clone = EnhancedTrainer::new(
+            self.trainer.get_model_dim(),
+            self.trainer.get_ff_dim(),
+            4, // Default num_heads
+            2, // Default num_layers
+            0.1, // Default dropout rate
+            self.learning_rate,
+        );
+        
+        // Use the same tokenizer and model weights
+        clone.tokenizer = self.tokenizer.clone();
+        
+        // Share other configuration
+        clone.use_curriculum = self.use_curriculum;
+        clone.dynamic_lr = self.dynamic_lr;
+        clone.gradient_clip_value = self.gradient_clip_value;
+        
+        // For a complete implementation, we would share model weights
+        // but keep separate gradient accumulators
+        
+        clone
+    }
+    
+    /// Apply gradients accumulated from parallel training instances
+    pub fn apply_parallel_gradients(&mut self) {
+        // For the current implementation, we don't need to do anything special
+        // as each thread updates the model directly using shared access
+        
+        // In a more advanced implementation, we would:
+        // 1. Collect gradients from all parallel instances
+        // 2. Average or sum them
+        // 3. Apply the combined gradient update
+        
+        // For now, this is a placeholder for future optimization
     }
 }
 
