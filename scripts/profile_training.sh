@@ -173,7 +173,7 @@ CMD_ARGS+=("$DATA_FILE")
 echo "Running with parameters: ${CMD_ARGS[@]}"
 
 # Run the training with our enhanced profiling
-cargo run --release --bin train_enhanced_model -- "${CMD_ARGS[@]}" 2>&1 | tee "$LOGFILE"
+cargo run --release --bin Wall-E -- "${CMD_ARGS[@]}" 2>&1 | tee "$LOGFILE"
 
 # Check if training was successful
 if [ ${PIPESTATUS[0]} -ne 0 ]; then

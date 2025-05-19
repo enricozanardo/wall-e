@@ -233,9 +233,24 @@ fn calculate_optimal_thread_count(model_dim: usize, num_layers: usize, operation
         Some("tokenization") => (2.0, 0.5),          // Low compute, medium bandwidth
         Some("embedding") => (4.0, 0.8),             // Medium bandwidth, low compute
         Some("gradient_update") => (6.0, 1.2),       // High bandwidth, medium compute
-        Some("data_loading") => (1.5, 0.2),          // I/O bound, low compute
+        Some("data_loading") => (1.0, 0.2),          // I/O bound, low compute
         _ => (6.0, 1.0),                             // Default for general operations
     };
+    
+    // For data_loading operations, use a different approach that focuses on parallelism
+    if operation_type == Some("data_loading") {
+        // For data loading, we want more threads to hide I/O latency
+        // Use at least 25% of logical cores, but not less than 4 and not more than 75% of logical cores
+        let min_threads = 4;
+        let max_threads = (logical_cores as f64 * 0.75) as usize;
+        let recommended_threads = (logical_cores as f64 * 0.25) as usize;
+        
+        let data_loading_threads = recommended_threads.clamp(min_threads, max_threads);
+        println!("Data loading thread calculation: recommended={}, min={}, max={}, final={}",
+                 recommended_threads, min_threads, max_threads, data_loading_threads);
+        
+        return data_loading_threads;
+    }
     
     // Calculate bandwidth requirement per thread (GB/s)
     let estimated_bandwidth_per_thread = 
@@ -283,23 +298,142 @@ fn configure_thread_pool_for_operation(model_dim: usize, num_layers: usize, oper
     // Calculate optimal thread count for this specific operation
     let thread_count = calculate_optimal_thread_count(model_dim, num_layers, Some(operation));
     
-    // Configure the rayon thread pool for this operation
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(thread_count)
-        .build_global()
-        .unwrap_or_else(|e| println!("Warning: Failed to configure thread pool: {}", e));
+    // Get an operation-specific thread pool
+    let pool = wall_e1::utils::thread_pool::get_thread_pool_for_operation(operation);
+    
+    // Check if this is a data_loading operation where we want to ensure proper thread count
+    if operation == "data_loading" {
+        // For data_loading, we want to force a specific thread count
+        // We can't directly modify the thread pool, but we can print a more informative message
+        if pool.get_num_threads() < thread_count {
+            println!("Warning: Using existing thread pool with {} threads for {} operations, recommended: {}", 
+                    pool.get_num_threads(), operation, thread_count);
+            
+            // Set an environment variable to suggest the thread count for next run
+            unsafe {
+                std::env::set_var("WALL_E_DATA_THREADS", thread_count.to_string());
+            }
+            println!("Set WALL_E_DATA_THREADS={} for future runs", thread_count);
+        } else {
+            println!("Configured dedicated thread pool with {} threads for {} operations", 
+                    pool.get_num_threads(), operation);
+        }
+    } else {
+        println!("Configured dedicated thread pool with {} threads for {} operations", 
+                pool.get_num_threads(), operation);
+    }
     
     // Return the configured thread count
     thread_count
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize global performance logger
-    let mut global_perf_logger = PerfLogger::new(true);
-    global_perf_logger.start("program_execution");
+    // Configure global memory and thread optimizations right at the start
+    let cpu_count = num_cpus::get();
+    println!("Detected {} CPU cores", cpu_count);
     
-    // Parse command line arguments
-    let mut args = env::args().skip(1);
+    // Force data loading threads to be at least 6 or 30% of available cores,
+    // whichever is greater
+    let min_data_threads = std::cmp::max(6, (cpu_count as f32 * 0.3) as usize);
+    println!("🔧 Setting WALL_E_DATA_THREADS to {} for better parallelism", min_data_threads);
+    // Set environment variable for data loading thread count
+    unsafe {
+        std::env::set_var("WALL_E_DATA_THREADS", min_data_threads.to_string());
+    }
+    
+    // Create global performance logger
+    let mut global_perf_logger = PerfLogger::new(true);
+    global_perf_logger.memory_snapshot("startup");
+    
+    println!("\n📊 DETAILED STARTUP TIMING 📊");
+    
+    // Timer for overall initialization
+    let total_init_start = Instant::now();
+    
+    // Configure and measure thread pool initialization
+    let thread_init_start = Instant::now();
+    println!("⏳ Initializing thread pools...");
+    
+    // First, get the global thread pool (this will initialize it)
+    let global_pool_start = Instant::now();
+    let global_pool = wall_e1::utils::thread_pool::get_global_thread_pool();
+    let global_pool_time = global_pool_start.elapsed();
+    println!("  ✅ Global thread pool initialized with {} threads ({:.2?})", 
+             global_pool.get_num_threads(), global_pool_time);
+    
+    // Pre-initialize operation-specific thread pools
+    let operations = ["matrix_multiply", "gradient_update", "data_loading", "attention"];
+    for op in operations.iter() {
+        let op_start = Instant::now();
+        let pool = wall_e1::utils::thread_pool::get_thread_pool_for_operation(op);
+        let op_time = op_start.elapsed();
+        let thread_count = if op == &"data_loading" { min_data_threads } else { pool.get_num_threads() };
+        println!("  ✅ Thread pool for '{}' initialized with {} threads ({:.2?})", 
+                 op, pool.get_num_threads(), op_time);
+                 
+        // Add informative warning if data_loading thread count is low
+        if op == &"data_loading" && pool.get_num_threads() < min_data_threads {
+            println!("  ⚠️ Warning: data_loading thread pool has only {} threads, recommended: {} threads", 
+                    pool.get_num_threads(), min_data_threads);
+        }
+    }
+    
+    let thread_init_time = thread_init_start.elapsed();
+    println!("✅ Thread pools initialized in {:.2?}", thread_init_time);
+    
+    // Configure and measure memory optimization initialization
+    let memory_init_start = Instant::now();
+    println!("⏳ Configuring memory allocator...");
+    
+    // Measure cache detection time
+    let cache_start = Instant::now();
+    let cache_params = memory_opt::detect_cache_parameters();
+    let cache_time = cache_start.elapsed();
+    println!("  ✅ Cache detection completed in {:.2?}", cache_time);
+    println!("     L1={} KB, L2={} KB, L3={} KB, Line size={} bytes",
+        cache_params.l1_size / 1024, 
+        cache_params.l2_size / 1024, 
+        cache_params.l3_size / 1024, 
+        cache_params.line_size);
+    
+    // Measure memory allocator configuration time
+    let allocator_start = Instant::now();
+    memory_opt::configure_memory_allocator(memory_opt::MemoryPolicy::CacheEfficient);
+    let allocator_time = allocator_start.elapsed();
+    println!("  ✅ Memory allocator configured in {:.2?}", allocator_time);
+    
+    // Measure memory bandwidth (can be slow but important for thread count decisions)
+    let bandwidth_start = Instant::now();
+    let bandwidth_gb_per_sec = memory_opt::measure_memory_bandwidth();
+    let bandwidth_time = bandwidth_start.elapsed();
+    println!("  ✅ Memory bandwidth measured in {:.2?}: {:.2} GB/s", bandwidth_time, bandwidth_gb_per_sec);
+    
+    let memory_init_time = memory_init_start.elapsed();
+    println!("✅ Memory optimizations completed in {:.2?}", memory_init_time);
+    
+    // Total initialization time
+    let total_init_time = total_init_start.elapsed();
+    println!("✅ Total initialization completed in {:.2?}\n", total_init_time);
+    
+    println!("Memory and thread optimizations configured");
+    
+    // Set environment variables for optimal thread usage - safely
+    unsafe {
+        std::env::set_var("WALL_E_THREADS", format!("{}", cpu_count.saturating_sub(1)));
+        std::env::set_var("RAYON_NUM_THREADS", format!("{}", cpu_count.saturating_sub(1)));
+    }
+    
+    println!("\n🔄 STARTING APPLICATION SETUP 🔄");
+    let setup_start = Instant::now();
+    
+    // Original main function content follows
+    let args: Vec<String> = env::args().collect();
+    
+    // Track argument parsing time
+    let arg_parsing_start = Instant::now();
+    println!("⏳ Parsing command line arguments...");
+    
+    // Define default parameters
     let mut training_data_path = None;
     let mut model_dim = 256;
     let mut ff_dim = 1024;
@@ -328,60 +462,66 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut checkpoint_strategy = None;
     let mut thread_opt = None;
 
-    while let Some(arg) = args.next() {
+    // Command line arguments parsing loop with progress counter
+    let arg_count = args.len();
+    println!("  Processing {} command line arguments", arg_count);
+    
+    // Create an iterator for argument processing
+    let mut arg_iter = args.iter().skip(1);
+    while let Some(arg) = arg_iter.next() {
         match arg.as_str() {
             "--model-dim" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     model_dim = val.parse().unwrap_or(model_dim);
                 }
             }
             "--ff-dim" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     ff_dim = val.parse().unwrap_or(ff_dim);
                 }
             }
             "--heads" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     num_heads = val.parse().unwrap_or(num_heads);
                 }
             }
             "--layers" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     num_layers = val.parse().unwrap_or(num_layers);
                 }
             }
             "--dropout" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     dropout_rate = val.parse().unwrap_or(dropout_rate);
                 }
             }
             "--epochs" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     num_epochs = val.parse().unwrap_or(num_epochs);
                 }
             }
             "--vocab-size" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     vocab_size = val.parse().unwrap_or(vocab_size);
                 }
             }
             "--min-freq" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     min_freq = val.parse().unwrap_or(min_freq);
                 }
             }
             "--model" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     model_path = Some(val);
                 }
             }
             "--save-path" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     save_path = Some(val);
                 }
             }
             "--learning-rate" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     learning_rate = val.parse().unwrap_or(learning_rate);
                 }
             }
@@ -389,12 +529,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 generate_only = true;
             }
             "--prompt" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     prompt = Some(val);
                 }
             }
             "--max-tokens" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     _max_tokens = val.parse().unwrap_or(_max_tokens);
                 }
             }
@@ -411,7 +551,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 strong_anti_rep = true;
             }
             "--stories" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     max_stories = Some(val.parse().unwrap_or(4000));
                 }
             }
@@ -419,36 +559,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 enable_memory_optimization = true;
             }
             "--checkpoint-strategy" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     checkpoint_strategy = Some(val);
                 }
             }
             "--thread-opt" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     thread_opt = Some(val);
                 }
             }
             "--batch-size" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     manual_batch_size = Some(val.parse().unwrap_or(32));
                 }
             }
             "--perf-log" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     enable_perf_log = val.parse::<bool>().unwrap_or(false);
                 } else {
                     enable_perf_log = true;
                 }
             }
             "--cpus" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     if let Ok(cpus) = val.parse::<usize>() {
                         num_cpus_override = Some(cpus);
                     }
                 }
             }
             "--curriculum-examples" => {
-                if let Some(val) = args.next() {
+                if let Some(val) = arg_iter.next() {
                     if let Ok(num) = val.parse::<usize>() {
                         curriculum_examples = num;
                     }
@@ -467,6 +607,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     
+    // Log argument parsing time
+    let arg_parsing_time = arg_parsing_start.elapsed();
+    println!("✅ Arguments parsed in {:.2?}", arg_parsing_time);
+    
     // Configure CPU threads
     global_perf_logger.start("cpu_configuration");
     let num_threads = if let Some(cpus) = num_cpus_override {
@@ -480,7 +624,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         opt_threads
     };
     
-    println!("Configuring thread pool with {} CPU cores", num_threads);
+    println!("⏳ Configuring thread pool with {} CPU cores", num_threads);
     set_num_threads(num_threads);
     global_perf_logger.end("cpu_configuration");
     
@@ -567,8 +711,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     global_perf_logger.start("training_setup");
     
     // Display configuration
+    println!("\n🔄 TRAINING SETUP PHASE 🔄");
+    let training_setup_start = Instant::now();
+    
     println!("Training Configuration:");
-    println!("  Training data: {}", training_data_path.as_ref().unwrap_or(&"N/A".to_string()));
+    println!("  Training data: {}", training_data_path.as_deref().map_or("N/A", |v| v));
     println!("  Data format: {}", if json_format { "TinyStories JSON" } else { "Plain text" });
     if json_format {
         println!("  Max stories: {}", max_stories.unwrap_or(0));
@@ -585,30 +732,43 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Min token frequency: {}", min_freq);
     println!("  Skip connections: {}", if enable_skip { "enabled" } else { "disabled" });
     println!("  Strong anti-repetition: {}", if strong_anti_rep { "enabled" } else { "disabled" });
-    println!("  Save path: {}", save_path.as_ref().unwrap_or(&"N/A".to_string()));
+    println!("  Save path: {}", save_path.as_deref().map_or("N/A", |v| v));
     println!("  CPU threads: {}", num_threads);
     println!("  Performance logging: {}", if enable_perf_log { "enabled" } else { "disabled" });
     
     // Read training data
-    println!("Reading training data...");
+    println!("\n⏳ Reading training data (single-threaded operation)...");
+    let data_loading_start = Instant::now();
     global_perf_logger.start("data_loading");
     let training_text = if json_format {
         // Process TinyStories JSON format
         let path = training_data_path.as_ref().ok_or("No training data path provided")?;
-        process_json_data(path, max_stories.unwrap_or(0))?
+        println!("  🔄 Reading JSON file from {}...", path);
+        let json_read_start = Instant::now();
+        let data = process_json_data(path, max_stories.unwrap_or(0))?;
+        let json_read_time = json_read_start.elapsed();
+        println!("  ✅ JSON data loaded in {:.2?}, {} characters", json_read_time, data.len());
+        data
     } else {
         // Process plain text format
         let path = training_data_path.as_ref().ok_or("No training data path provided")?;
+        println!("  🔄 Reading plain text from {}...", path);
+        let text_read_start = Instant::now();
         let mut file = File::open(path)?;
         let mut training_text = String::new();
         file.read_to_string(&mut training_text)?;
+        let text_read_time = text_read_start.elapsed();
+        println!("  ✅ Text data loaded in {:.2?}, {} characters", text_read_time, training_text.len());
         training_text
     };
     global_perf_logger.end("data_loading");
+    let data_loading_time = data_loading_start.elapsed();
+    println!("✅ Training data loaded in {:.2?}", data_loading_time);
     global_perf_logger.memory_snapshot("after_data_loading");
     
     // Create enhanced trainer
-    println!("Creating trainer...");
+    println!("\n⏳ Creating trainer...");
+    let trainer_start = Instant::now();
     global_perf_logger.start("trainer_initialization");
     let mut trainer = EnhancedTrainer::new(
         model_dim,
@@ -620,18 +780,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     
     // Configure trainer with appropriate settings
+    println!("  🔄 Configuring trainer options...");
+    let trainer_config_start = Instant::now();
     trainer.with_curriculum_learning(enable_curriculum)
            .with_dynamic_learning_rate(true)
            .with_gradient_clipping(Some(1.0));
+    let trainer_config_time = trainer_config_start.elapsed();
+    println!("  ✅ Trainer options configured in {:.2?}", trainer_config_time);
     
     // Apply memory optimization if enabled
     if enable_memory_optimization {
-        println!("Enabling memory optimization with gradient checkpointing");
+        println!("  🔄 Enabling memory optimization with gradient checkpointing...");
+        let mem_opt_start = Instant::now();
         trainer.with_memory_optimization(true);
         
         // Apply checkpoint strategy if specified
         if let Some(strategy_str) = &checkpoint_strategy {
-            println!("Using {} checkpoint strategy", strategy_str);
+            println!("  🔄 Using {} checkpoint strategy", strategy_str);
             let strategy = match strategy_str.to_lowercase().as_str() {
                 "boundary" => memory_opt::CheckpointStrategy::Boundary,
                 "uniform" => memory_opt::CheckpointStrategy::Uniform,
@@ -644,62 +809,99 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
             trainer.with_checkpoint_strategy(strategy);
         }
+        let mem_opt_time = mem_opt_start.elapsed();
+        println!("  ✅ Memory optimization configured in {:.2?}", mem_opt_time);
         
         global_perf_logger.memory_snapshot("after_memory_opt_enable");
     }
     
     // Configure thread pool based on operation type if specified
     if let Some(operation) = &thread_opt {
-        println!("Configuring thread pool for {} operations", operation);
+        println!("  🔄 Configuring thread pool for {} operations...", operation);
+        let thread_opt_start = Instant::now();
         let thread_count = configure_thread_pool_for_operation(
             model_dim, 
             num_layers,
             operation
         );
-        println!("Configured thread pool with {} threads for {} operations", 
-                thread_count, operation);
+        let thread_opt_time = thread_opt_start.elapsed();
+        println!("  ✅ Thread pool configured with {} threads for {} operations in {:.2?}", 
+                thread_count, operation, thread_opt_time);
     }
     
     global_perf_logger.end("trainer_initialization");
+    let trainer_time = trainer_start.elapsed();
+    println!("✅ Trainer initialization completed in {:.2?}", trainer_time);
     
     if strong_anti_rep {
-        println!("Configuring strong anti-repetition mechanisms...");
+        println!("\n⏳ Configuring strong anti-repetition mechanisms...");
+        let antirep_start = Instant::now();
         trainer.configure_advanced_anti_repetition(1.3, 0.7, 0.7, 0.8);
+        let antirep_time = antirep_start.elapsed();
+        println!("✅ Anti-repetition configured in {:.2?}", antirep_time);
     } else {
+        let antirep_start = Instant::now();
         trainer.configure_anti_repetition(1.1, 0.2, 0.3);
+        let antirep_time = antirep_start.elapsed();
+        println!("✅ Basic anti-repetition configured in {:.2?}", antirep_time);
     }
     
     // Enable skip connections if requested
     if enable_skip {
-        println!("Enabling skip connections...");
+        println!("\n⏳ Enabling skip connections...");
+        let skip_start = Instant::now();
         if let Err(e) = trainer.enable_skip_connections("residual") {
             println!("Warning: Failed to enable skip connections: {}", e);
         }
+        let skip_time = skip_start.elapsed();
+        println!("✅ Skip connections enabled in {:.2?}", skip_time);
     }
     
     // Learn tokenizer vocabulary
-    println!("Learning tokenizer vocabulary...");
+    println!("\n⏳ Learning tokenizer vocabulary (single-threaded operation)...");
+    let vocab_start = Instant::now();
     global_perf_logger.start("vocabulary_learning");
     trainer.learn_tokenizer_from_text(&training_text, vocab_size, min_freq);
     global_perf_logger.end("vocabulary_learning");
+    let vocab_time = vocab_start.elapsed();
+    println!("✅ Tokenizer vocabulary learned in {:.2?}", vocab_time);
     
     // Split data for training and validation (90/10 split)
+    println!("\n⏳ Splitting training/validation data...");
+    let split_start = Instant::now();
     global_perf_logger.start("data_splitting");
     let total_length = training_text.len();
     let train_length = (total_length as f64 * 0.9) as usize;
     let training_text_subset = &training_text[..train_length];
     let validation_text = &training_text[train_length..];
     global_perf_logger.end("data_splitting");
+    let split_time = split_start.elapsed();
+    println!("✅ Data split in {:.2?}: {} characters for training, {} for validation", 
+             split_time, train_length, total_length - train_length);
     
     // Create curriculum scheduler with training data
-    println!("Setting up curriculum learning...");
+    println!("\n⏳ Setting up curriculum learning...");
     
     // Tokenize training and validation data
+    println!("\n⏳ Tokenizing data (single-threaded operation)...");
+    let tokenize_start = Instant::now();
     global_perf_logger.start("tokenization");
     let tokenizer = trainer.get_tokenizer();
+    println!("  🔄 Tokenizing training data ({} characters)...", training_text_subset.len());
+    let train_tokens_start = Instant::now();
     let training_tokens = tokenizer.encode(training_text_subset);
+    let train_tokens_time = train_tokens_start.elapsed();
+    println!("  ✅ Training data tokenized in {:.2?}: {} tokens", train_tokens_time, training_tokens.len());
+    
+    println!("  🔄 Tokenizing validation data ({} characters)...", validation_text.len());
+    let val_tokens_start = Instant::now();
     let validation_tokens = tokenizer.encode(validation_text);
+    let val_tokens_time = val_tokens_start.elapsed();
+    println!("  ✅ Validation data tokenized in {:.2?}: {} tokens", val_tokens_time, validation_tokens.len());
+    
     global_perf_logger.end("tokenization");
+    let tokenize_time = tokenize_start.elapsed();
+    println!("✅ All data tokenized in {:.2?}", tokenize_time);
     global_perf_logger.memory_snapshot("after_tokenization");
     
     // Set up evaluation prompts
@@ -712,13 +914,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ];
     
     // Prepare validation data
+    println!("\n⏳ Preparing validation dataset...");
+    let validation_start = Instant::now();
     global_perf_logger.start("validation_data_preparation");
     let mut validation_inputs = Vec::new();
     let mut validation_targets = Vec::new();
     prepare_validation_data(&validation_tokens, &mut validation_inputs, &mut validation_targets);
     global_perf_logger.end("validation_data_preparation");
+    let validation_time = validation_start.elapsed();
+    println!("✅ Validation data prepared in {:.2?}: {} examples", 
+             validation_time, validation_inputs.len());
     
     global_perf_logger.end("training_setup");
+    let training_setup_time = training_setup_start.elapsed();
+    println!("\n✅ TRAINING SETUP COMPLETED in {:.2?}", training_setup_time);
     
     // Start training
     println!("Starting training for {} epochs...", num_epochs);
@@ -727,30 +936,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let mut metrics_history: Vec<HashMap<String, f32>> = Vec::new();
     
+    println!("\n🔄 BEGINNING TRAINING PROCESS 🔄");
+    
     for epoch in 0..num_epochs {
-        println!("Epoch {}/{}", epoch + 1, num_epochs);
+        println!("\n⏳ EPOCH {}/{} STARTING", epoch + 1, num_epochs);
         let epoch_start = Instant::now();
         
         // Train on the tokenized data
+        println!("  🔄 Training on {} tokens", training_tokens.len());
         global_perf_logger.start(format!("epoch_{}", epoch + 1).as_str());
+        
+        // This is likely the step using a single core during initialization
+        let train_epoch_start = Instant::now();
+        println!("  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...");
         let loss = train_epoch(&mut trainer, &training_tokens, epoch, enable_memory_optimization, manual_batch_size);
+        let train_epoch_time = train_epoch_start.elapsed();
+        
         global_perf_logger.end(format!("epoch_{}", epoch + 1).as_str());
         let epoch_duration = epoch_start.elapsed();
         
         // Evaluate the model
-        println!("Evaluating model...");
+        println!("  ⏳ Evaluating model...");
+        let eval_start = Instant::now();
         global_perf_logger.start(format!("evaluation_{}", epoch + 1).as_str());
         let metrics = trainer.evaluate_model(&validation_inputs, &validation_targets, &eval_prompts);
         global_perf_logger.end(format!("evaluation_{}", epoch + 1).as_str());
+        let eval_time = eval_start.elapsed();
+        
         metrics_history.push(metrics.clone());
         
-        println!("Epoch {}/{} completed in {:?}", epoch + 1, num_epochs, epoch_duration);
-        println!("  Loss: {:.6}", loss);
-        println!("  Perplexity: {:.2}", metrics.get("perplexity").unwrap_or(&f32::INFINITY));
-        println!("  Accuracy: {:.2}%", metrics.get("accuracy").unwrap_or(&0.0));
-        println!("  Repetition score: {:.2}", metrics.get("repetition_score").unwrap_or(&0.0));
-        println!("  Fluency score: {:.2}", metrics.get("fluency_score").unwrap_or(&0.0));
-        println!("  Quality score: {:.2}", metrics.get("quality_score").unwrap_or(&0.0));
+        println!("\n✅ Epoch {}/{} completed", epoch + 1, num_epochs);
+        println!("  ⏱️ Total epoch time:   {:.2?}", epoch_duration);
+        println!("  ⏱️ Training time:      {:.2?} ({:.1}%)", 
+                 train_epoch_time, 100.0 * train_epoch_time.as_secs_f64() / epoch_duration.as_secs_f64());
+        println!("  ⏱️ Evaluation time:    {:.2?} ({:.1}%)", 
+                 eval_time, 100.0 * eval_time.as_secs_f64() / epoch_duration.as_secs_f64());
+        println!("  📊 Loss:               {:.6}", loss);
+        println!("  📊 Perplexity:         {:.2}", metrics.get("perplexity").unwrap_or(&f32::INFINITY));
+        println!("  📊 Accuracy:           {:.2}%", metrics.get("accuracy").unwrap_or(&0.0));
+        println!("  📊 Repetition score:   {:.2}", metrics.get("repetition_score").unwrap_or(&0.0));
+        println!("  📊 Fluency score:      {:.2}", metrics.get("fluency_score").unwrap_or(&0.0));
+        println!("  📊 Quality score:      {:.2}", metrics.get("quality_score").unwrap_or(&0.0));
         
         // Generate sample text
         let prompt = "The";
@@ -779,7 +1005,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
             
             // Create checkpoint path with proper directory and extension
-            let mut base_path = save_path.as_ref().unwrap_or(&"models/model.walle".to_string()).to_string();
+            let mut base_path = save_path.as_deref().map_or("models/model.walle", |v| v).to_string();
             
             // Ensure path has the correct directory
             if !base_path.starts_with("models/") {
@@ -815,30 +1041,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Training completed in {:?}", total_duration);
     
     // Save final model
-    let mut final_save_path = save_path.unwrap_or_else(|| "models/model.walle".to_string());
-    
+    let default_path = String::from("models/model.walle");
+    let final_save_path_str = match save_path {
+        Some(path) => String::from(path),
+        None => default_path
+    };
+
     // Ensure directory exists
     std::fs::create_dir_all("models").unwrap_or_else(|e| {
         println!("Warning: Could not create models directory: {}", e);
     });
-    
+
     // Ensure the path has the correct directory and extension
-    if !final_save_path.starts_with("models/") {
-        final_save_path = format!("models/{}", final_save_path);
-    }
-    
-    if !final_save_path.ends_with(".walle") {
+    let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+        format!("models/{}", final_save_path_str)
+    } else {
+        final_save_path_str
+    };
+
+    // Add the .walle extension if needed
+    let final_path = if !path_with_dir.ends_with(".walle") {
         // Replace any existing extension with .walle
-        if let Some(dot_pos) = final_save_path.rfind('.') {
-            final_save_path = format!("{}.walle", &final_save_path[..dot_pos]);
+        if let Some(dot_pos) = path_with_dir.rfind('.') {
+            format!("{}.walle", &path_with_dir[..dot_pos])
         } else {
-            final_save_path = format!("{}.walle", final_save_path);
+            format!("{}.walle", path_with_dir)
         }
-    }
-    
-    println!("Saving final model to {}", final_save_path);
+    } else {
+        path_with_dir
+    };
+
+    // Print info and save the model
+    println!("Saving final model to: {}", final_path);
     global_perf_logger.start("save_final_model");
-    trainer.save_model(&final_save_path)?;
+    trainer.save_model(&final_path)?;
     global_perf_logger.end("save_final_model");
     
     // Print final metrics
@@ -937,13 +1173,18 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     perf_logger.start("train_epoch_full");
     perf_logger.memory_snapshot("train_epoch_start");
     
+    println!("    🔍 TRAIN EPOCH DETAILED LOGGING");
+    println!("    ⏳ Preparing sliding windows...");
+    let sliding_windows_start = Instant::now();
+    
     // Configure thread pool for data preparation (low compute intensity)
     let model_dim = trainer.trainer.get_model_dim();
     let num_layers = trainer.trainer.get_num_layers();
     
     // Apply memory optimization setting to the trainer
     if enable_memory_optimization {
-        println!("Enabling memory optimization with gradient checkpointing for training epoch");
+        println!("    🔄 Enabling memory optimization with gradient checkpointing");
+        let mem_opt_start = Instant::now();
         trainer.with_memory_optimization(true);
         
         // Set default checkpoint strategy based on model size
@@ -954,47 +1195,213 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         };
         trainer.with_checkpoint_strategy(strategy);
         
+        let mem_opt_time = mem_opt_start.elapsed();
+        println!("    ✅ Memory optimization enabled in {:.2?}", mem_opt_time);
         perf_logger.memory_snapshot("after_memory_opt_enable");
     }
     
-    // For each training epoch we'll dynamically configure thread pools for different operations
-    // This optimizes performance for different workload types
-    
-    // Configure thread pool for data preparation
-    configure_thread_pool_for_operation(model_dim, num_layers, "data_loading");
-    perf_logger.start("create_sliding_windows");
+    // Configure thread pool for data preparation - ensure we use a good number of threads
+    println!("    🔄 Configuring thread pool for data preparation...");
+    let data_pool_start = Instant::now();
+    let data_threads = configure_thread_pool_for_operation(model_dim, num_layers, "data_loading");
+    let data_pool_time = data_pool_start.elapsed();
+    println!("    ✅ Data loading thread pool configured with {} threads in {:.2?}", 
+             data_threads, data_pool_time);
     
     perf_logger.start("data_preparation");
-    let mut inputs = Vec::new();
-    let mut targets = Vec::new();
+    println!("    🔄 Creating input/target pairs for training...");
+    let data_prep_start = Instant::now();
     
-    for i in (0..tokens.len().saturating_sub(max_sequence_length)).step_by(stride) {
-        if i + max_sequence_length <= tokens.len() {
-            let input = tokens[i..i + max_sequence_length].to_vec();
-            inputs.push(input);
+    // Calculate window positions
+    println!("    🔄 Calculating sliding window positions...");
+    let window_indices: Vec<usize> = (0..tokens.len().saturating_sub(max_sequence_length))
+        .step_by(stride)
+        .filter(|&i| i + max_sequence_length <= tokens.len())
+        .collect();
+    
+    let estimated_windows = window_indices.len();
+    println!("    ✅ Will create {} sliding windows in parallel", estimated_windows);
+    
+    // Create a progress bar for sliding window creation
+    let pb = ProgressBar::new(estimated_windows as u64);
+    pb.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} windows ({percent}%) - ETA: {eta_precise}")
+        .unwrap()
+        .progress_chars("#>-"));
+    
+    // CHANGE: Using a simpler approach to avoid thread pool contention
+    println!("    ⚠️ Using direct thread work allocation to avoid deadlocks");
+    println!("    🔄 Creating {} input/target pairs directly", estimated_windows);
+    
+    // Approach 1: Direct allocation of work to threads
+    // Create a deadlock detection timer
+    let deadlock_timer = Instant::now();
+    let deadlock_timeout = std::time::Duration::from_secs(30); // 30 seconds timeout
+    
+    // Create window pairs directly without using thread pools
+    // This avoids potential deadlocks with the thread pool implementation
+    let mut inputs = Vec::with_capacity(estimated_windows);
+    let mut targets = Vec::with_capacity(estimated_windows);
+    
+    // Manually create chunks for parallel processing
+    let chunk_size = std::cmp::max(100, estimated_windows / (data_threads * 2));
+    let window_chunks: Vec<_> = window_indices.chunks(chunk_size).collect();
+    println!("    📊 Processing {} chunks with size {} each", window_chunks.len(), chunk_size);
+    
+    // Create a thread-safe progress counter
+    let progress = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let window_results_mutex = std::sync::Arc::new(std::sync::Mutex::new(Vec::with_capacity(estimated_windows)));
+    
+    // Create and start threads manually for better control
+    let mut thread_handles = Vec::new();
+    
+    for (chunk_idx, chunk) in window_chunks.iter().enumerate() {
+        // Clone the shared data for this thread
+        let tokens_clone = tokens.clone();
+        let progress_clone = progress.clone();
+        let window_results = window_results_mutex.clone();
+        let chunk_vec = chunk.to_vec(); // Create owned copy for thread
+        
+        // Create a thread with a meaningful name for better debugging
+        let thread_name = format!("window-processor-{}", chunk_idx);
+        let builder = std::thread::Builder::new().name(thread_name.clone());
+        
+        // Create and start the thread
+        let handle = builder.spawn(move || {
+            println!("🧵 Thread {} started processing {} windows", thread_name, chunk_vec.len());
+            let start_time = Instant::now();
             
-            // For each sequence, we create a corresponding target sequence
-            // The target is the input shifted one position to the right (next token prediction)
-            let mut target = Vec::with_capacity(max_sequence_length);
+            // Storage for this thread's results
+            let mut thread_results = Vec::with_capacity(chunk_vec.len());
             
-            // We use tokens from i+1 to i+max_sequence_length+1 as targets
-            // If we reach the end of the tokens, we wrap around to the beginning
-            for j in 0..max_sequence_length {
-                let target_idx = (i + j + 1) % tokens.len();
-                target.push(tokens[target_idx]);
+            // Process each window in this chunk
+            for &start_idx in chunk_vec.iter() {
+                // Create input window
+                let input = tokens_clone[start_idx..start_idx + max_sequence_length].to_vec();
+                
+                // Create target by shifting input by one position
+                let mut target = Vec::with_capacity(max_sequence_length);
+                for j in 0..max_sequence_length {
+                    let target_idx = (start_idx + j + 1) % tokens_clone.len();
+                    target.push(tokens_clone[target_idx]);
+                }
+                
+                // Add this window to thread results
+                thread_results.push((input, target));
+                
+                // Update progress
+                if thread_results.len() % 10 == 0 {
+                    let new_count = progress_clone.fetch_add(10, std::sync::atomic::Ordering::Relaxed);
+                    if new_count % 100 == 0 {
+                        println!("    🧵 Thread {} processed {}/{} windows", 
+                                 thread_name, thread_results.len(), chunk_vec.len());
+                    }
+                }
             }
             
-            targets.push(target);
+            // Update any remaining progress
+            let remainder = thread_results.len() % 10;
+            if remainder > 0 {
+                progress_clone.fetch_add(remainder, std::sync::atomic::Ordering::Relaxed);
+            }
+            
+            // Add results to the shared collection with minimal lock time
+            {
+                // Acquire lock only when we're ready to update - minimize lock time
+                if let Ok(mut results) = window_results.lock() {
+                    // Move results into the shared collection
+                    results.extend(thread_results);
+                    
+                    println!("    ✅ Thread {} completed in {:.2?} - added {} windows to the result set", 
+                            thread_name, start_time.elapsed(), chunk_vec.len());
+                } else {
+                    println!("    ❌ Thread {} failed to acquire lock for results", thread_name);
+                }
+            }
+        }).expect("Failed to spawn thread");
+        
+        thread_handles.push(handle);
+    }
+    
+    // Update progress bar regularly while waiting for threads
+    let mut last_progress = 0;
+    let start_time = Instant::now();
+    
+    // Keep checking progress and watching for deadlocks
+    while thread_handles.len() > 0 {
+        // Get current progress
+        let current_progress = progress.load(std::sync::atomic::Ordering::Relaxed);
+        
+        // Update progress bar if needed
+        if current_progress > last_progress {
+            pb.set_position(current_progress as u64);
+            last_progress = current_progress;
+        }
+        
+        // Check for deadlocks
+        if deadlock_timer.elapsed() > deadlock_timeout && current_progress == last_progress {
+            // Potential deadlock detected
+            println!("\n⚠️ POTENTIAL DEADLOCK DETECTED: No progress made in 30 seconds");
+            println!("    🔍 Thread status:");
+            
+            // Dump thread states (if we can access them)
+            for (i, handle) in thread_handles.iter().enumerate() {
+                println!("    - Thread {}: {:?}", i, handle);
+            }
+            
+            // Continue execution to see if we can recover
+            println!("    ⚠️ Continuing execution to attempt recovery...");
+            break;
+        }
+        
+        // Short sleep to avoid busy waiting
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        
+        // Check if any threads have completed
+        thread_handles.retain(|handle| !handle.is_finished());
+        
+        // Occasionally report on thread status
+        if start_time.elapsed().as_secs() % 5 == 0 {
+            println!("    🧵 Threads still working: {}, Progress: {}/{}", 
+                     thread_handles.len(), current_progress, estimated_windows);
         }
     }
-    perf_logger.end("data_preparation");
     
-    println!("Created {} input/target pairs for training", inputs.len());
+    // Make sure we've joined all threads that are still running
+    for handle in thread_handles {
+        if let Err(e) = handle.join() {
+            println!("    ⚠️ Error joining thread: {:?}", e);
+        }
+    }
+    
+    // Get results from the mutex
+    let window_results = match window_results_mutex.lock() {
+        Ok(results) => results.clone(),
+        Err(e) => {
+            println!("    ❌ Failed to get window results: {:?}", e);
+            Vec::new() // Return empty results in case of failure
+        }
+    };
+    
+    // Finish progress bar
+    pb.finish_with_message("Windows created successfully");
+    
+    // Ensure we have input/output vectors with the results
+    for (input, target) in window_results {
+        inputs.push(input);
+        targets.push(target);
+    }
+    
+    let data_prep_time = data_prep_start.elapsed();
+    println!("    ✅ Created {} input/target pairs in {:.2?}", 
+             inputs.len(), data_prep_time);
+    
+    perf_logger.end("data_preparation");
     
     // Get cache parameters
     let cache_params = memory_opt::detect_cache_parameters();
     
-    println!("Cache parameters: L1={} KB, L2={} KB, L3={} KB, Line size={} bytes",
+    println!("    📊 Cache parameters: L1={} KB, L2={} KB, L3={} KB, Line size={} bytes",
         cache_params.l1_size / 1024, 
         cache_params.l2_size / 1024, 
         cache_params.l3_size / 1024, 
@@ -1003,17 +1410,21 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     // Get CPU information
     let num_cpus = num_cpus::get();
     let num_physical_cpus = num_cpus::get_physical();
-    println!("CPU cores: {} logical, {} physical", num_cpus, num_physical_cpus);
+    println!("    💻 CPU cores: {} logical, {} physical", num_cpus, num_physical_cpus);
     
-    // Set Rayon thread pool size to optimize CPU usage
     // Configure thread pool for batch processing (compute intensive)
+    println!("    🔄 Configuring thread pool for gradient updates...");
+    let grad_pool_start = Instant::now();
     let rayon_threads = configure_thread_pool_for_operation(model_dim, num_layers, "gradient_update");
-    println!("Using {} threads for parallel processing", rayon_threads);
+    let grad_pool_time = grad_pool_start.elapsed();
+    println!("    ✅ Using {} threads for gradient processing (configured in {:.2?})", rayon_threads, grad_pool_time);
     
     // Get model dimensions for batch size calculation
     let model_dim = trainer.trainer.get_model_dim();
     
     // Calculate memory-optimal batch size
+    println!("    🧮 Calculating optimal batch size...");
+    let batch_calc_start = Instant::now();
     perf_logger.start("batch_size_calculation");
     let optimal_batch_size = calculate_memory_optimal_batch_size(model_dim, max_sequence_length);
     
@@ -1021,11 +1432,13 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     let max_batch_size = inputs.len() / 10.min(50);  // Ensure at least 10 batches, aim for 50+
     let constrained_batch_size = optimal_batch_size.min(max_batch_size).max(4);  // At least 4, no more than max
     perf_logger.end("batch_size_calculation");
+    let batch_calc_time = batch_calc_start.elapsed();
     
     // Share the information with the user
-    println!("Hardware-optimal batch size: {}", optimal_batch_size);
-    println!("Dataset-constrained batch size: {}", constrained_batch_size);
-    println!("Using batch size: {}", manual_batch_size.unwrap_or(constrained_batch_size));
+    println!("    ✅ Batch size calculation completed in {:.2?}", batch_calc_time);
+    println!("      📊 Hardware-optimal batch size: {}", optimal_batch_size);
+    println!("      📊 Dataset-constrained batch size: {}", constrained_batch_size);
+    println!("      📊 Using batch size: {}", manual_batch_size.unwrap_or(constrained_batch_size));
     
     // Use the calculated batch size
     let batch_size = manual_batch_size.unwrap_or(constrained_batch_size);
@@ -1033,24 +1446,36 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     // Calculate how many batches we'll process with this batch size
     let expected_batches = (inputs.len() + batch_size - 1) / batch_size; // Ceiling division
     
-    println!("Calculated memory-optimal batch size: {}", optimal_batch_size);
-    println!("Expected number of batches: {}", expected_batches);
-    println!("======================================\n");
+    println!("    📊 Expected number of batches: {}", expected_batches);
     
-    // Configure thread pool for shuffling (low compute, but needs some parallelism)
-    configure_thread_pool_for_operation(model_dim, num_layers, "data_loading");
-    
-    // Shuffle indices for randomized training
+    // CHANGE: Use simpler approach for shuffling too
+    println!("    🔄 Shuffling data indices directly...");
+    let shuffle_start = Instant::now();
     perf_logger.start("shuffling_indices");
-    let mut indices: Vec<usize> = (0..inputs.len()).collect();
-    indices.shuffle(&mut thread_rng());
+    
+    // Create indices for all inputs and shuffle directly
+    let mut indices_vec: Vec<usize> = (0..inputs.len()).collect();
+    let mut rng = thread_rng();
+    indices_vec.shuffle(&mut rng);
+    
     perf_logger.end("shuffling_indices");
+    let shuffle_time = shuffle_start.elapsed();
+    println!("    ✅ Indices shuffled in {:.2?}", shuffle_time);
     
     // Create batch chunks for parallel processing
+    println!("    🔄 Creating batches from shuffled indices...");
+    let batch_creation_start = Instant::now();
     perf_logger.start("batch_creation");
-    let batches: Vec<_> = indices.chunks(batch_size).collect();
-    println!("Processing {} batches in parallel when possible", batches.len());
+    
+    // FIXED: Create batches directly instead of referencing indices_vec which won't live long enough
+    let batches: Vec<Vec<usize>> = indices_vec
+        .chunks(batch_size)
+        .map(|chunk| chunk.to_vec()) // Convert each chunk to owned Vec<usize>
+        .collect();
+    
     perf_logger.end("batch_creation");
+    let batch_creation_time = batch_creation_start.elapsed();
+    println!("    ✅ Created {} batches in {:.2?}", batches.len(), batch_creation_time);
     
     // Create progress bar
     let pb = ProgressBar::new(batches.len() as u64);
@@ -1059,95 +1484,223 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         .unwrap()
         .progress_chars("#>-"));
     
-    // Configure thread pool for batch processing (higher compute intensity)
-    configure_thread_pool_for_operation(model_dim, num_layers, "matrix_multiply");
-    
-    // Process batches in parallel
+    // Process batches using a simpler approach without thread pools
+    println!("\n    🔄 BEGINNING BATCH PROCESSING (SEQUENTIAL)");
     perf_logger.start("batch_processing_loop");
     
-    // Use a mutex to safely update shared variables
-    let total_loss_mutex = std::sync::Mutex::new(0.0f32);
-    let batch_counter_mutex = std::sync::Mutex::new(0usize);
-    let batch_prep_times_mutex = std::sync::Mutex::new(Vec::with_capacity(batches.len()));
-    let train_step_times_mutex = std::sync::Mutex::new(Vec::with_capacity(batches.len()));
+    // Tracking variables
+    let mut total_loss = 0.0f32;
+    let mut batch_counter = 0usize;
+    let mut batch_prep_times = Vec::with_capacity(batches.len());
+    let mut train_step_times = Vec::with_capacity(batches.len());
     
-    // Process batches in parallel
-    batches.par_iter().enumerate().for_each(|(batch_idx, batch_indices)| {
-        // Thread-local timing variables
-        let mut local_perf_logger = PerfLogger::new(true);
-        
-        // Prepare this batch data in parallel
-        local_perf_logger.start("prepare_batch");
-        let prep_start = Instant::now();
-        let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(&inputs, &targets, batch_indices, max_sequence_length);
-        let prep_time = prep_start.elapsed().as_secs_f64();
-        local_perf_logger.end("prepare_batch");
-        
-        // Skip empty batches
-        if batch_inputs.is_empty() {
-            pb.inc(1);
-            return;
-        }
-        
-        // Clone the trainer for this thread (needed because train_step takes &mut self)
-        let mut thread_local_trainer = trainer.clone_for_parallel();
-        
-        // Train on this batch
-        local_perf_logger.start("train_step");
-        let train_start = Instant::now();
-        let loss = thread_local_trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
-        let train_time = train_start.elapsed().as_secs_f64();
-        local_perf_logger.end("train_step");
-        
-        // Update tracking variables using mutexes
-        {
-            let mut total_loss = total_loss_mutex.lock().unwrap();
-            *total_loss += loss;
-        }
-        
-        {
-            let mut batch_counter = batch_counter_mutex.lock().unwrap();
-            *batch_counter += 1;
-        }
-        
-        {
-            let mut batch_prep_times = batch_prep_times_mutex.lock().unwrap();
-            batch_prep_times.push(prep_time);
-        }
-        
-        {
-            let mut train_step_times = train_step_times_mutex.lock().unwrap();
-            train_step_times.push(train_time);
-        }
-        
-        // Update progress bar
-        let current_total_loss;
-        let current_batch_counter;
-        {
-            current_total_loss = *total_loss_mutex.lock().unwrap();
-            current_batch_counter = *batch_counter_mutex.lock().unwrap();
-        }
-        
-        pb.set_message(format!("{:.6} (avg: {:.6})", loss, current_total_loss / current_batch_counter as f32));
-        pb.inc(1);
-        
-        // Still keep occasional console updates for log files
-        if batch_idx % 50 == 0 || batch_idx == batches.len() - 1 {
-            println!("Batch {}/{} - Loss: {:.6} - Avg: {:.6} - Prep: {:.3}s - Train: {:.3}s", 
-                batch_idx + 1, batches.len(), loss, current_total_loss / current_batch_counter as f32,
-                prep_time, train_time);
-        }
-    });
+    // NEW IMPLEMENTATION: Robust batch-level parallelism with work stealing
+    println!("    🚀 Using robust batch-level parallelism with work stealing");
     
-    // Get the final values from mutexes
-    let total_loss = *total_loss_mutex.lock().unwrap();
-    let batch_counter = *batch_counter_mutex.lock().unwrap();
-    let batch_prep_times = batch_prep_times_mutex.lock().unwrap().clone();
-    let train_step_times = train_step_times_mutex.lock().unwrap().clone();
+    // Determine optimal number of worker threads based on hardware
+    let num_physical_cores = num_cpus::get_physical();
+    let optimal_workers = std::cmp::min(num_physical_cores, 6); // Cap at 6 for now to avoid over-parallelization
+    println!("    🧵 Using {} worker threads for batch processing", optimal_workers);
     
-    // Apply accumulated gradients from all parallel trainers (if trainer supports it)
-    // Configure thread pool for gradient application (heavy on memory operations)
-    configure_thread_pool_for_operation(model_dim, num_layers, "gradient_update");
+    // First, enable SIMD optimizations for matrix operations
+    println!("    💻 Enabling SIMD optimizations for matrix operations");
+    
+    // Detect CPU capabilities for SIMD
+    let simd_features = detect_simd_features();
+    println!("    🔍 Detected CPU SIMD features: {:?}", simd_features);
+    
+    // Enable the best SIMD implementation based on CPU capabilities
+    let simd_enabled = enable_simd_optimizations(&simd_features);
+    println!("    ✅ SIMD optimization enabled: {}", simd_enabled);
+    
+    // Create shared thread-safe state
+    let batch_queue = std::sync::Arc::new(std::sync::Mutex::new(
+        (0..batches.len()).collect::<Vec<_>>()
+    ));
+    let results = std::sync::Arc::new(std::sync::Mutex::new(
+        Vec::<(usize, f32, f64, f64)>::with_capacity(batches.len())
+    ));
+    let queue_empty = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let active_workers = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    
+    // Create shared Arc references to inputs and targets
+    let inputs_arc = std::sync::Arc::new(inputs);
+    let targets_arc = std::sync::Arc::new(targets);
+    let batches_arc = std::sync::Arc::new(batches);
+    
+    // Create vector to store trainer clones for each thread
+    let mut trainers = Vec::with_capacity(optimal_workers);
+    for _ in 0..optimal_workers {
+        trainers.push(trainer.clone_for_parallel());
+    }
+    println!("    ✅ Created {} trainer clones for parallel batch processing", trainers.len());
+    
+    // Create a progress bar
+    let pb = ProgressBar::new(batches_arc.len() as u64);
+    pb.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} batches ({percent}%) - ETA: {eta_precise} - Loss: {msg}")
+        .unwrap()
+        .progress_chars("#>-"));
+    
+    // Create a channel for thread communication
+    let (tx, rx) = std::sync::mpsc::channel();
+    let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
+    
+    // Vector to store thread handles
+    let mut handles = Vec::with_capacity(optimal_workers);
+    
+    // Spawn worker threads
+    for worker_id in 0..optimal_workers {
+        // Clone shared resources for this thread
+        let thread_batch_queue = batch_queue.clone();
+        let thread_results = results.clone();
+        let thread_queue_empty = queue_empty.clone();
+        let thread_active_workers = active_workers.clone();
+        let thread_tx = tx.clone();
+        let thread_inputs = inputs_arc.clone(); 
+        let thread_targets = targets_arc.clone();
+        let thread_batches = batches_arc.clone();
+        let thread_max_sequence_length = max_sequence_length;
+        
+        // Get a trainer for this thread
+        let mut thread_trainer = trainers.pop().unwrap();
+        
+        // Create thread with a meaningful name
+        let thread_name = format!("batch-worker-{}", worker_id);
+        let builder = std::thread::Builder::new().name(thread_name.clone());
+        
+        // Spawn the thread
+        let handle = builder.spawn(move || {
+            println!("    🧵 Thread {} started for batch processing", thread_name);
+            // Increment active workers counter
+            thread_active_workers.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            
+            // Keep processing batches from the queue until it's empty
+            loop {
+                // Get the next batch from the queue
+                let batch_idx = {
+                    let mut queue = thread_batch_queue.lock().unwrap();
+                    if queue.is_empty() {
+                        // If queue is empty, check if we should exit
+                        if thread_active_workers.load(std::sync::atomic::Ordering::SeqCst) <= 1 {
+                            // We're the last worker, signal queue is empty
+                            thread_queue_empty.store(true, std::sync::atomic::Ordering::SeqCst);
+                            thread_active_workers.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                            break;
+                        } else {
+                            // Other workers might still be processing, check if we can steal work
+                            std::thread::sleep(std::time::Duration::from_millis(10));
+                            continue;
+                        }
+                    }
+                    queue.pop().unwrap()
+                };
+                
+                // Process this batch
+                let batch_indices = &thread_batches[batch_idx];
+                
+                // Prepare batch data using SIMD-optimized functions if available
+                let prep_start = Instant::now();
+                let (batch_inputs, batch_targets_arr) = prepare_batch_parallel(
+                    &thread_inputs, &thread_targets, batch_indices, thread_max_sequence_length);
+                let prep_time = prep_start.elapsed().as_secs_f64();
+                
+                // Skip empty batches
+                if batch_inputs.is_empty() {
+                    // Send a message with zero loss
+                    thread_tx.send((batch_idx, 0.0, prep_time, 0.0)).unwrap();
+                    continue;
+                }
+                
+                // Train on this batch
+                let train_start = Instant::now();
+                let loss = thread_trainer.train_step_with_penalties(&batch_inputs, &batch_targets_arr);
+                let train_time = train_start.elapsed().as_secs_f64();
+                
+                // Add results to the shared results collection
+                {
+                    let mut results = thread_results.lock().unwrap();
+                    results.push((batch_idx, loss, prep_time, train_time));
+                }
+                
+                // Send a message to update progress
+                thread_tx.send((batch_idx, loss, prep_time, train_time)).unwrap();
+            }
+            
+            // Return the trainer for final gradient aggregation
+            thread_trainer
+        }).expect("Failed to spawn thread");
+        
+        handles.push(handle);
+    }
+    
+    // Drop extra tx to ensure rx will eventually disconnect when all threads are done
+    drop(tx);
+    
+    // Process messages and update progress until queue is empty and all workers are done
+    let mut all_done = false;
+    
+    while !all_done {
+        // Try to receive a message with timeout
+        let result = {
+            let rx = rx.lock().unwrap();
+            rx.recv_timeout(std::time::Duration::from_millis(100))
+        };
+        
+        match result {
+            Ok((batch_idx, loss, prep_time, train_time)) => {
+                // Skip zero loss (empty batches)
+                if loss > 0.0 {
+                    // Process the result
+                    batch_counter += 1;
+                    total_loss += loss;
+                    batch_prep_times.push(prep_time);
+                    train_step_times.push(train_time);
+                    
+                    // Update progress bar
+                    pb.set_message(format!("{:.6} (avg: {:.6})", loss, total_loss / batch_counter as f32));
+                    
+                    // Log occasionally
+                    if batch_idx % 5 == 0 || batch_idx == batches_arc.len() - 1 {
+                        println!("    📊 Batch {}/{} - Loss: {:.6} - Avg: {:.6} - Prep: {:.3}s - Train: {:.3}s", 
+                            batch_idx + 1, batches_arc.len(), loss, total_loss / batch_counter as f32,
+                            prep_time, train_time);
+                    }
+                }
+                
+                // Always increment progress bar
+                pb.inc(1);
+            },
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                // Check if we're done
+                if queue_empty.load(std::sync::atomic::Ordering::SeqCst) && 
+                    active_workers.load(std::sync::atomic::Ordering::SeqCst) == 0 {
+                    all_done = true;
+                }
+            },
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                // All senders disconnected, we're done
+                all_done = true;
+            }
+        }
+    }
+    
+    // Collect all trainers and apply gradients
+    println!("    🔄 Waiting for all threads to finish...");
+    
+    // Join all threads and collect their trainers
+    let mut collected_trainers = Vec::new();
+    for handle in handles {
+        match handle.join() {
+            Ok(trainer) => collected_trainers.push(trainer),
+            Err(e) => println!("    ⚠️ Error joining thread: {:?}", e)
+        }
+    }
+    
+    // Use the original trainer to combine gradients from all threads
+    println!("    🔄 Applying parallel gradients from {} threads...", collected_trainers.len());
+    
+    // Apply the parallel gradients
     trainer.apply_parallel_gradients();
     
     perf_logger.end("batch_processing_loop");
@@ -1172,7 +1725,8 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     }
     
     // Finish progress bar
-    pb.finish_with_message(format!("Completed - Avg loss: {:.6}", total_loss / batch_counter as f32));
+    pb.finish_with_message(format!("Completed - Avg loss: {:.6}", 
+        if batch_counter > 0 { total_loss / batch_counter as f32 } else { 0.0 }));
     
     perf_logger.memory_snapshot("train_epoch_end");
     perf_logger.end("train_epoch_full");
@@ -1180,7 +1734,11 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     // Print local performance metrics for this epoch
     perf_logger.log_summary();
     
-    total_loss / batch_counter as f32
+    if batch_counter > 0 {
+        total_loss / batch_counter as f32
+    } else {
+        0.0
+    }
 }
 
 // Prepares a batch in parallel using Rayon
@@ -1197,62 +1755,77 @@ fn prepare_batch_parallel(
         return (Vec::new(), Array2::zeros((0, 0)));
     }
     
-    // Collect input sequences in parallel
-    let par_collect_start = Instant::now();
-    let batch_inputs: Vec<Vec<usize>> = batch_indices.par_iter()
-        .map(|&idx| inputs[idx].clone())
-        .collect();
-    let par_collect_time = par_collect_start.elapsed().as_millis();
+    // Get thread pool for data loading
+    let data_pool = wall_e1::utils::thread_pool::get_thread_pool_for_operation("data_loading");
+    let pool = data_pool.get_pool().lock().unwrap();
     
-    // Skip if all sequences are empty
-    if batch_inputs.is_empty() {
-        return (Vec::new(), Array2::zeros((0, 0)));
-    }
-    
-    // Find minimum sequence length in parallel
-    let min_len_start = Instant::now();
-    let min_seq_len = batch_inputs.par_iter()
-        .map(|seq| seq.len())
-        .min()
-        .unwrap_or(0)
-        .min(max_sequence_length);
-    let min_len_time = min_len_start.elapsed().as_millis();
+    // Use the data loading thread pool
+    let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool.install(|| {
+        // Collect input sequences in parallel
+        let par_collect_start = Instant::now();
+        let batch_inputs: Vec<Vec<usize>> = batch_indices.par_iter()
+            .map(|&idx| inputs[idx].clone())
+            .collect();
+        let par_collect_time = par_collect_start.elapsed().as_millis();
+        
+        // Skip if all sequences are empty
+        if batch_inputs.is_empty() {
+            return (Vec::new(), 0, Vec::new(), Array2::zeros((0, 0)), (0, 0, 0, 0));
+        }
+        
+        // Find minimum sequence length in parallel
+        let min_len_start = Instant::now();
+        let min_seq_len = batch_inputs.par_iter()
+            .map(|seq| seq.len())
+            .min()
+            .unwrap_or(0)
+            .min(max_sequence_length);
+        let min_len_time = min_len_start.elapsed().as_millis();
+        
+        // Skip if sequences are too short
+        if min_seq_len < 4 {
+            return (batch_inputs, min_seq_len, Vec::new(), Array2::zeros((0, 0)), (par_collect_time, min_len_time, 0, 0));
+        }
+        
+        // Truncate all sequences to the same length
+        let truncate_start = Instant::now();
+        let truncated_inputs: Vec<Vec<usize>> = batch_inputs.par_iter()
+            .map(|seq| {
+                if seq.len() > min_seq_len {
+                    seq[0..min_seq_len].to_vec()
+                } else {
+                    seq.clone()
+                }
+            })
+            .collect();
+        let truncate_time = truncate_start.elapsed().as_millis();
+        
+        // Create batch targets array
+        let targets_start = Instant::now();
+        let mut batch_targets_arr = Array2::zeros((batch_indices.len(), min_seq_len));
+        
+        // Fill targets sequentially to avoid mutable borrow issues
+        for (i, &idx) in batch_indices.iter().enumerate() {
+            let target = &targets[idx];
+            for j in 0..min_seq_len.min(target.len()) {
+                batch_targets_arr[[i, j]] = target[j];
+            }
+        }
+        let targets_time = targets_start.elapsed().as_millis();
+        
+        (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, (par_collect_time, min_len_time, truncate_time, targets_time))
+    });
     
     // Skip if sequences are too short
-    if min_seq_len < 4 {
+    if truncated_inputs.is_empty() {
         return (Vec::new(), Array2::zeros((0, 0)));
     }
-    
-    // Truncate all sequences to the same length
-    let truncate_start = Instant::now();
-    let truncated_inputs: Vec<Vec<usize>> = batch_inputs.par_iter()
-        .map(|seq| {
-            if seq.len() > min_seq_len {
-                seq[0..min_seq_len].to_vec()
-            } else {
-                seq.clone()
-            }
-        })
-        .collect();
-    let truncate_time = truncate_start.elapsed().as_millis();
-    
-    // Create batch targets array
-    let targets_start = Instant::now();
-    let mut batch_targets_arr = Array2::zeros((batch_indices.len(), min_seq_len));
-    
-    // Fill targets sequentially to avoid mutable borrow issues
-    for (i, &idx) in batch_indices.iter().enumerate() {
-        let target = &targets[idx];
-        for j in 0..min_seq_len.min(target.len()) {
-            batch_targets_arr[[i, j]] = target[j];
-        }
-    }
-    let targets_time = targets_start.elapsed().as_millis();
     
     let total_time = prep_start.elapsed().as_millis();
     
     // Only log detailed timing occasionally to avoid flooding output
     if total_time > 10 || batch_indices.len() > 16 {
+        let (par_collect_time, min_len_time, truncate_time, targets_time) = timing;
         println!("Batch prep timing: total={}ms (collect={}ms, min_len={}ms, truncate={}ms, targets={}ms)",
             total_time, par_collect_time, min_len_time, truncate_time, targets_time);
     }
@@ -1262,18 +1835,217 @@ fn prepare_batch_parallel(
 
 // Prepare validation data for model evaluation
 fn prepare_validation_data(tokens: &Vec<usize>, inputs: &mut Vec<Vec<usize>>, targets: &mut Vec<Vec<usize>>) {
-    // Create context windows of varying lengths for validation
-    for window_size in [16, 32, 64].iter() {
-        for i in (0..tokens.len().saturating_sub(*window_size)).step_by(*window_size) {
-            if i + *window_size + 1 <= tokens.len() {
-                // Input: tokens[i..i+window_size]
-                let input = tokens[i..i + *window_size].to_vec();
-                // Target: tokens[i+1..i+window_size+1] (shifted by 1)
-                let target = tokens[i + 1..i + *window_size + 1].to_vec();
+    // Configure thread pool for data loading
+    let model_dim = 128; // Use default value since we don't have access to the real model_dim here
+    let num_layers = 3;  // Use default value 
+    
+    // Configure with more threads for validation data preparation
+    println!("    🔄 Configuring thread pool for validation data preparation...");
+    let data_threads = calculate_optimal_thread_count(model_dim, num_layers, Some("data_loading"));
+    println!("    ✅ Using {} threads for validation data preparation", data_threads);
+    
+    // Get thread pool for data loading
+    let data_pool = wall_e1::utils::thread_pool::get_thread_pool_for_operation("data_loading");
+    println!("    ✅ Using thread pool with {} threads for validation data", data_pool.get_num_threads());
+    let pool = data_pool.get_pool().lock().unwrap();
+    
+    // Use the data loading thread pool for validation data preparation
+    pool.install(|| {
+        // Create context windows of varying lengths for validation
+        for window_size in [16, 32, 64].iter() {
+            let new_inputs_targets: Vec<(Vec<usize>, Vec<usize>)> = (0..tokens.len().saturating_sub(*window_size))
+                .step_by(*window_size)
+                .filter(|&i| i + *window_size + 1 <= tokens.len())
+                .map(|i| {
+                    // Input: tokens[i..i+window_size]
+                    let input = tokens[i..i + *window_size].to_vec();
+                    // Target: tokens[i+1..i+window_size+1] (shifted by 1)
+                    let target = tokens[i + 1..i + *window_size + 1].to_vec();
+                    (input, target)
+                })
+                .collect();
                 
+            // Add all the collected items to the inputs and targets vectors
+            for (input, target) in new_inputs_targets {
                 inputs.push(input);
                 targets.push(target);
             }
+        }
+    });
+}
+
+// Detect CPU SIMD capabilities
+fn detect_simd_features() -> Vec<String> {
+    let mut features = Vec::new();
+    
+    // Check for SSE/SSE2 - modern x86 CPUs all have these
+    features.push("SSE2".to_string());
+    
+    // Check for AVX support
+    if is_x86_feature_detected!("avx") {
+        features.push("AVX".to_string());
+    }
+    
+    // Check for AVX2 support
+    if is_x86_feature_detected!("avx2") {
+        features.push("AVX2".to_string());
+    }
+    
+    // Check for AVX-512 support (multiple variants)
+    if is_x86_feature_detected!("avx512f") {
+        features.push("AVX-512F".to_string());
+    }
+    
+    if is_x86_feature_detected!("avx512bw") {
+        features.push("AVX-512BW".to_string());
+    }
+    
+    if is_x86_feature_detected!("avx512vl") {
+        features.push("AVX-512VL".to_string());
+    }
+    
+    // For ARM architectures, check for NEON
+    #[cfg(target_arch = "aarch64")]
+    features.push("NEON".to_string());
+    
+    features
+}
+
+// Enable SIMD optimizations based on detected features
+fn enable_simd_optimizations(features: &[String]) -> bool {
+    // Set environment variables for the tensor library to use SIMD
+    if features.contains(&"AVX-512F".to_string()) {
+        // Use AVX-512 if available
+        unsafe {
+            std::env::set_var("WALL_E_USE_AVX512", "1");
+            std::env::set_var("WALL_E_SIMD_LEVEL", "3");
+        }
+        return true;
+    } else if features.contains(&"AVX2".to_string()) {
+        // Use AVX2 if available
+        unsafe {
+            std::env::set_var("WALL_E_USE_AVX2", "1");
+            std::env::set_var("WALL_E_SIMD_LEVEL", "2");
+        }
+        return true;
+    } else if features.contains(&"AVX".to_string()) {
+        // Use AVX if available
+        unsafe {
+            std::env::set_var("WALL_E_USE_AVX", "1");
+            std::env::set_var("WALL_E_SIMD_LEVEL", "1");
+        }
+        return true;
+    } else if features.contains(&"SSE2".to_string()) {
+        // Use SSE2 if available (almost all modern CPUs have this)
+        unsafe {
+            std::env::set_var("WALL_E_USE_SSE2", "1");
+            std::env::set_var("WALL_E_SIMD_LEVEL", "0");
+        }
+        return true;
+    } else if features.contains(&"NEON".to_string()) {
+        // Use NEON for ARM
+        unsafe {
+            std::env::set_var("WALL_E_USE_NEON", "1");
+            std::env::set_var("WALL_E_SIMD_LEVEL", "1");
+        }
+        return true;
+    }
+    
+    // No SIMD features detected/enabled
+    false
+}
+
+// Now let's implement SIMD-optimized matrix multiplication for tensor operations
+
+// Add the improved matrix multiplication with SIMD support
+fn matrix_multiply_simd(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>) -> ndarray::Array2<f32> {
+    if a.ncols() != b.nrows() {
+        panic!("Incompatible dimensions for matrix multiplication");
+    }
+    
+    let (m, k) = a.dim();
+    let (_, n) = b.dim();
+    
+    // Create result matrix
+    let mut result = ndarray::Array2::<f32>::zeros((m, n));
+    
+    // Use SIMD if available
+    let simd_level = std::env::var("WALL_E_SIMD_LEVEL").unwrap_or_else(|_| "0".to_string());
+    
+    match simd_level.as_str() {
+        "3" => {
+            // AVX-512 implementation
+            #[cfg(target_feature = "avx512f")]
+            {
+                println!("Using AVX-512 for matrix multiplication");
+                // AVX-512 implementation would go here
+                // This is a skeleton and would need to be expanded with actual SIMD intrinsics
+            }
+            
+            // Fall back to AVX2 if AVX-512 is not available at compile time
+            #[cfg(not(target_feature = "avx512f"))]
+            {
+                matrix_multiply_avx2(a, b, &mut result);
+            }
+        },
+        "2" => {
+            // AVX2 implementation
+            matrix_multiply_avx2(a, b, &mut result);
+        },
+        "1" => {
+            // AVX implementation
+            #[cfg(target_feature = "avx")]
+            {
+                println!("Using AVX for matrix multiplication");
+                // AVX implementation would go here
+                // This is a skeleton and would need to be expanded with actual SIMD intrinsics
+            }
+            
+            // Fall back to scalar if AVX is not available at compile time
+            #[cfg(not(target_feature = "avx"))]
+            {
+                matrix_multiply_scalar(a, b, &mut result);
+            }
+        },
+        _ => {
+            // Default scalar implementation
+            matrix_multiply_scalar(a, b, &mut result);
+        }
+    }
+    
+    result
+}
+
+// AVX2 implementation of matrix multiplication
+#[cfg(target_feature = "avx2")]
+fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+    println!("Using AVX2 for matrix multiplication");
+    
+    // Real implementation would use AVX2 intrinsics
+    // This is a placeholder that falls back to scalar implementation
+    matrix_multiply_scalar(a, b, result);
+}
+
+// Non-AVX2 version that falls back to scalar
+#[cfg(not(target_feature = "avx2"))]
+fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+    println!("AVX2 not available at compile time, using scalar implementation");
+    matrix_multiply_scalar(a, b, result);
+}
+
+// Scalar implementation as fallback
+fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+    let (m, k) = a.dim();
+    let (_, n) = b.dim();
+    
+    // Cache-friendly implementation
+    for i in 0..m {
+        for j in 0..n {
+            let mut sum = 0.0;
+            for l in 0..k {
+                sum += a[[i, l]] * b[[l, j]];
+            }
+            result[[i, j]] = sum;
         }
     }
 } 

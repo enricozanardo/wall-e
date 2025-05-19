@@ -56,7 +56,7 @@ fi
 cargo build --release
 
 # Run the text generation with logging
-cargo run --release --bin train_enhanced_model -- \
+cargo run --release --bin Wall-E -- \
     --generate-only \
     --model "$MODEL" \
     --prompt "$PROMPT" \

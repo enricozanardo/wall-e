@@ -39,7 +39,7 @@ run_benchmark() {
     
     # Track memory usage with top in the background
     memory_log="${OUTPUT_DIR}/memory_${name}_${cores}.log"
-    (while true; do top -b -n 1 | grep train_enhanced_model >> "$memory_log"; sleep 0.5; done) &
+    (while true; do top -b -n 1 | grep Wall-E >> "$memory_log"; sleep 0.5; done) &
     MEMORY_PID=$!
     
     # Run the actual benchmark with perf

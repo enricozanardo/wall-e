@@ -28,6 +28,7 @@ clap = { version = "4.3.19", features = ["derive"] }
 indicatif = "0.17.5"
 url = "2.4.0"
 bytemuck = "1.14.0"
+lazy_static = "1.4.0"
 
 [[bin]]
 name = "batch_size_test"
@@ -36,6 +37,14 @@ path = "src/bin/batch_size_test.rs"
 [[bin]]
 name = "train_model_test"
 path = "src/bin/train_model_test.rs"
+
+[[bin]]
+name = "Wall-E"
+path = "src/bin/train_enhanced_model.rs"
+
+[[bin]]
+name = "memory_test"
+path = "src/bin/memory_test.rs"
 
 [[example]]
 name = "model_test"

@@ -30,7 +30,7 @@ def generate_text(model_path, prompt, max_tokens=50, verbose=False):
     # Run the command with error handling
     try:
         cmd = [
-            "cargo", "run", "--release", "--bin", "train_enhanced_model", "--",
+            "cargo", "run", "--release", "--bin", "Wall-E", "--",
             "--generate-only",
             "--model", model_path,
             "--prompt", prompt,
