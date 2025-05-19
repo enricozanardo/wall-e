@@ -493,6 +493,45 @@ impl WordPieceBPETokenizer {
                  start.elapsed(), self.vocab.len());
         println!("Learned {} merge operations", merges_learned);
     }
+
+    /// Resize vocabulary to a new size
+    pub fn resize_vocabulary(&mut self, new_size: usize) {
+        // Get current vocabulary size
+        let current_size = self.vocab.len();
+        println!("Resizing tokenizer vocabulary from {} to {}", current_size, new_size);
+        
+        if current_size == new_size {
+            println!("No vocabulary size adjustment needed");
+            return;
+        }
+        
+        if current_size < new_size {
+            // Need to add placeholder tokens to reach the required size
+            let tokens_to_add = new_size - current_size;
+            println!("Adding {} placeholder tokens to reach new vocabulary size", tokens_to_add);
+            
+            for i in 0..tokens_to_add {
+                // Add placeholder tokens with a special prefix to distinguish them
+                let token = format!("[PLACEHOLDER_{}]", i);
+                self.vocab.add_token(&token);
+            }
+        } else {
+            // Need to reduce vocabulary size - this is more complex
+            println!("WARNING: Requested smaller vocabulary ({}) than tokenizer currently has ({})", 
+                   new_size, current_size);
+            println!("Currently only vocabulary expansion is fully supported");
+        }
+        
+        // Verify the new size
+        let final_size = self.vocab.len();
+        println!("Final vocabulary size: {}", final_size);
+        
+        // Ensure we actually reached the target size
+        if final_size != new_size {
+            println!("⚠️ Warning: Could not resize vocabulary exactly to {}. New size is {}", 
+                     new_size, final_size);
+        }
+    }
 }
 
 impl Tokenizer for WordPieceBPETokenizer {

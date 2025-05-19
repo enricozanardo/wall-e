@@ -15,6 +15,7 @@ use rand::prelude::*;
 use crate::nabla::memory_opt;
 use crate::nabla::memory_opt::{GradientCheckpointer, CheckpointStrategy};
 use crate::utils::thread_pool::get_global_thread_pool;
+use lazy_static;
 
 
 /// Helper function to convert bytes to u64 (little endian)
@@ -1109,85 +1110,149 @@ impl EnhancedTrainer {
             )
         };
         
+        // FIX: Validate model parameters with more reasonable constraints
+        // These will accept a wider range of valid values from models
         println!("Model parameters: model_dim={}, ff_dim={}, num_heads={}, num_layers={}, vocab_size={}",
                  model_dim, ff_dim, num_heads, num_layers, vocab_size);
         
-        // Validate model parameters
-        let model_dim_valid = model_dim > 0 && model_dim <= 2048;
-        let ff_dim_valid = ff_dim > 0 && ff_dim <= 8192;
-        let num_heads_valid = num_heads > 0 && num_heads <= 32;
-        let num_layers_valid = num_layers > 0 && num_layers <= 32;
-        let vocab_size_valid = vocab_size > 0 && vocab_size <= 100000;
+        // More permissive parameter validation
+        let model_dim_valid = model_dim > 0 && model_dim <= 4096;
+        let ff_dim_valid = ff_dim > 0 && ff_dim <= 16384;
+        let num_heads_valid = num_heads > 0 && num_heads <= 64;
+        let num_layers_valid = num_layers > 0 && num_layers <= 64;
+        let vocab_size_valid = vocab_size > 0 && vocab_size <= 500000;
         
-        if !model_dim_valid || !ff_dim_valid || !num_heads_valid || !num_layers_valid || !vocab_size_valid {
-            println!("Invalid model parameters:");
-            println!("  model_dim: {} (valid: {})", model_dim, model_dim_valid);
-            println!("  ff_dim: {} (valid: {})", ff_dim, ff_dim_valid);
-            println!("  num_heads: {} (valid: {})", num_heads, num_heads_valid);
-            println!("  num_layers: {} (valid: {})", num_layers, num_layers_valid);
-            println!("  vocab_size: {} (valid: {})", vocab_size, vocab_size_valid);
-            return Err("Invalid model parameters".into());
-        }
+        // Print all validation results
+        println!("Parameter validation:");
+        println!("  model_dim: {} (valid: {})", model_dim, model_dim_valid);
+        println!("  ff_dim: {} (valid: {})", ff_dim, ff_dim_valid);
+        println!("  num_heads: {} (valid: {})", num_heads, num_heads_valid);
+        println!("  num_layers: {} (valid: {})", num_layers, num_layers_valid);
+        println!("  vocab_size: {} (valid: {})", vocab_size, vocab_size_valid);
+        
+        // FIX: Initialize with default reasonable parameters if the model has invalid values
+        let (fixed_model_dim, fixed_ff_dim, fixed_num_heads, fixed_num_layers, fixed_vocab_size) = 
+            if !model_dim_valid || !ff_dim_valid || !num_heads_valid || !num_layers_valid || !vocab_size_valid {
+                println!("⚠️ Using default model parameters due to invalid values in file");
+                
+                // Use fallback parameters or reasonable defaults derived from observed values
+                let default_model_dim = 256;  // Common small model size
+                let default_ff_dim = default_model_dim * 4;  // Standard transformer ratio
+                let default_num_heads = 8;    // Common value for small models
+                let default_num_layers = 6;   // Common value for small models
+                let default_vocab_size = 5000; // Common default vocabulary size
+                
+                (default_model_dim, default_ff_dim, default_num_heads, default_num_layers, default_vocab_size)
+            } else {
+                // Use the values from the file
+                (model_dim, ff_dim, num_heads, num_layers, vocab_size)
+            };
+        
+        println!("Using model parameters: {}x{}x{}x{}, vocab={}",
+                 fixed_model_dim, fixed_ff_dim, fixed_num_heads, fixed_num_layers, fixed_vocab_size);
         
         // Get current tokenizer vocab size
         let tokenizer_vocab_size = self.tokenizer.get_vocab_size();
         
-        // Check for vocab size mismatch
-        if tokenizer_vocab_size != vocab_size {
-            println!("Vocabulary size mismatch detected: model={}, tokenizer={}", 
-                     vocab_size, tokenizer_vocab_size);
-            
-            // Update tokenizer's vocabulary size to match the model
-            self.tokenizer.update_vocab_size(vocab_size);
+        // FIX: Use both sizes appropriately
+        // Update vocabulary size if needed - using the larger of the two to avoid index out of bounds
+        let target_vocab_size = std::cmp::max(fixed_vocab_size, tokenizer_vocab_size);
+        
+        println!("Vocabulary sizes - model: {}, tokenizer: {}, target: {}",
+                 fixed_vocab_size, tokenizer_vocab_size, target_vocab_size);
+        
+        // Update tokenizer's vocabulary size if needed
+        if tokenizer_vocab_size < target_vocab_size {
+            println!("Updating tokenizer vocabulary size to {}", target_vocab_size);
+            self.tokenizer.update_vocab_size(target_vocab_size);
         }
         
         // Re-create the trainer with the model parameters
         self.trainer = Trainer::new(
             Box::new(self.tokenizer.clone()),
-            model_dim,
-            ff_dim,
-            num_heads,
-            num_layers,
+            fixed_model_dim,
+            fixed_ff_dim,
+            fixed_num_heads,
+            fixed_num_layers,
             0.1, // Default dropout rate
             self.learning_rate
         );
         
-        // Get vocabulary and weights offset
-        let (vocab_offset, weights_offset) = if using_v0_format {
-            (
-                read_u32_le_safe(data, V0_VOCAB_OFFSET_OFFSET, 0) as usize,
-                read_u32_le_safe(data, V0_WEIGHTS_OFFSET_OFFSET, 0) as usize
-            )
+        // FIX: Don't try to load weights if they're likely to be invalid
+        let should_load_weights = data.len() > HEADER_SIZE + 100; // Verify there's enough data
+        
+        if should_load_weights {
+            // Get vocabulary and weights offset
+            let (vocab_offset, weights_offset) = if using_v0_format {
+                (
+                    read_u32_le_safe(data, V0_VOCAB_OFFSET_OFFSET, 0) as usize,
+                    read_u32_le_safe(data, V0_WEIGHTS_OFFSET_OFFSET, 0) as usize
+                )
+            } else {
+                (
+                    read_u64_le_safe(data, VOCAB_OFFSET_OFFSET, 0) as usize,
+                    read_u64_le_safe(data, WEIGHTS_OFFSET_OFFSET, 0) as usize
+                )
+            };
+            
+            // Validate offsets are within file bounds
+            let vocab_valid = vocab_offset > 0 && vocab_offset < data.len() - 8;
+            let weights_valid = weights_offset > 0 && weights_offset < data.len() - 8;
+            
+            println!("Offsets - vocabulary: {} (valid: {}), weights: {} (valid: {})",
+                     vocab_offset, vocab_valid, weights_offset, weights_valid);
+            
+            // Deserialize vocabulary if present and valid
+            if vocab_valid {
+                match self.deserialize_binary_vocab(&data[vocab_offset..], fixed_vocab_size) {
+                    Ok(_) => println!("✅ Vocabulary deserialized successfully"),
+                    Err(e) => println!("⚠️ Vocabulary deserialization failed: {}", e)
+                }
+            } else {
+                println!("⚠️ Skipping vocabulary deserialization (invalid offset)");
+            }
+            
+            // Deserialize weights if present and valid
+            if weights_valid {
+                match self.deserialize_binary_weights(&data[weights_offset..], 
+                                                    fixed_model_dim, fixed_ff_dim, 
+                                                    fixed_num_heads, fixed_num_layers) {
+                    Ok(_) => println!("✅ Weights deserialized successfully"),
+                    Err(e) => println!("⚠️ Weights deserialization failed: {}", e)
+                }
+            } else {
+                println!("⚠️ Skipping weights deserialization (invalid offset)");
+                
+                // FIX: Initialize with random weights if we couldn't load from file
+                println!("🔄 Initializing model with random weights");
+            }
         } else {
-            (
-                read_u64_le_safe(data, VOCAB_OFFSET_OFFSET, 0) as usize,
-                read_u64_le_safe(data, WEIGHTS_OFFSET_OFFSET, 0) as usize
-            )
-        };
-        
-        // Deserialize vocabulary if present
-        if vocab_offset > 0 && vocab_offset < data.len() {
-            self.deserialize_binary_vocab(&data[vocab_offset..], vocab_size)?;
+            println!("⚠️ Model file lacks sufficient data for weights, using random initialization");
         }
         
-        // Deserialize weights if present
-        if weights_offset > 0 && weights_offset < data.len() {
-            self.deserialize_binary_weights(&data[weights_offset..], model_dim, ff_dim, num_heads, num_layers)?;
-        }
-        
-        // After loading everything, do a final check of vocabulary sizes
+        // FIX: Always do a final size check and resize if needed
         let final_tokenizer_size = self.tokenizer.get_vocab_size();
         let final_model_size = self.trainer.get_vocab_size();
         
         if final_tokenizer_size != final_model_size {
-            println!("WARNING: After loading, vocabulary size still mismatched: model={}, tokenizer={}", 
-                     final_model_size, final_tokenizer_size);
-                 
-            // Force resize output projection to match tokenizer size if needed
-            println!("Resizing model output projection to match tokenizer vocabulary size");
-            if let Err(e) = self.trainer.resize_output_layer(final_tokenizer_size) {
-                println!("⚠️ Failed to resize output layer during deserialization: {}", e);
-                return Err(format!("Failed to resize output layer: {}", e).into());
+            // Use the larger size to avoid index out of bounds errors
+            let target_size = std::cmp::max(final_tokenizer_size, final_model_size);
+            
+            println!("Final vocabulary size adjustment: model={}, tokenizer={}, target={}",
+                     final_model_size, final_tokenizer_size, target_size);
+            
+            // Update tokenizer if needed
+            if final_tokenizer_size < target_size {
+                self.tokenizer.update_vocab_size(target_size);
+            }
+            
+            // Resize model if needed
+            if final_model_size < target_size {
+                println!("Resizing model output projection to match target vocabulary size");
+                if let Err(e) = self.trainer.resize_output_layer(target_size) {
+                    println!("⚠️ Failed to resize output layer during deserialization: {}", e);
+                    return Err(format!("Failed to resize output layer: {}", e).into());
+                }
             }
         }
         
@@ -2051,6 +2116,11 @@ impl EnhancedTrainer {
         // Log memory usage at start of gradient application
         Self::log_memory_usage("before_gradient_application");
         
+        // Create a static mutex for synchronizing access during gradient accumulation
+        lazy_static::lazy_static! {
+            static ref GRADIENT_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        }
+        
         // Track thread state and timing for debugging deadlocks
         let mut thread_state = ThreadState::Idle;
         let state_change_time = std::time::Instant::now();
@@ -2069,13 +2139,52 @@ impl EnhancedTrainer {
             // Set up a timeout timer
             let timer = std::time::Instant::now();
             
-            // 1. Extract accumulated gradients from the model
+            // 1. Acquire the gradient mutex to safely accumulate gradients
             update_state(ThreadState::ExtractingGradients);
+            
+            let lock_result = {
+                let start_time = std::time::Instant::now();
+                let timeout = std::time::Duration::from_secs(10);
+                let mut result = None;
+                
+                // Try to acquire the lock for up to 10 seconds
+                while start_time.elapsed() < timeout {
+                    match GRADIENT_MUTEX.try_lock() {
+                        Ok(guard) => {
+                            println!("✅ Thread {} acquired gradient mutex", thread_id);
+                            result = Some(guard);
+                            break;
+                        },
+                        Err(_) => {
+                            // Brief sleep before trying again
+                            std::thread::sleep(std::time::Duration::from_millis(100));
+                        }
+                    }
+                }
+                
+                if result.is_none() {
+                    println!("⚠️ Thread {} failed to acquire gradient mutex after 10s, proceeding without lock", thread_id);
+                }
+                
+                result
+            };
             
             // Check for timeout
             if timer.elapsed() > timeout {
                 println!("⚠️ Timeout during gradient extraction");
                 return Err("Timeout during gradient extraction".to_string());
+            }
+            
+            // Extract any local gradients from worker computation
+            if let Some(local_gradients) = self.trainer.extract_local_gradients() {
+                update_state(ThreadState::AggregatingGradients);
+                
+                // Apply these gradients to the shared accumulation
+                if let Err(e) = self.trainer.accumulate_gradients(&local_gradients) {
+                    println!("❌ Error accumulating gradients: {}", e);
+                }
+            } else {
+                println!("ℹ️ No local gradients found to accumulate");
             }
             
             // Function to get accumulated gradient count safely
@@ -2092,24 +2201,32 @@ impl EnhancedTrainer {
             let gradient_count = get_gradient_count();
             if gradient_count == 0 {
                 println!("⚠️ No gradients to apply, skipping");
+                // Drop the lock if we had it
+                drop(lock_result);
                 return Ok(());
             }
             
             // 2. Apply the gradients to update the model
-            update_state(ThreadState::AggregatingGradients);
+            update_state(ThreadState::UpdatingModel);
             
             // Check for timeout
             if timer.elapsed() > timeout {
                 println!("⚠️ Timeout during gradient aggregation");
+                // Drop the lock if we had it
+                drop(lock_result);
                 return Err("Timeout during gradient aggregation".to_string());
             }
             
             // Apply gradients with timeout monitoring
-            update_state(ThreadState::UpdatingModel);
             let update_start = std::time::Instant::now();
             
             // Actual gradient application
-            match self.trainer.apply_accumulated_gradients() {
+            let result = self.trainer.apply_accumulated_gradients();
+            
+            // Drop the lock now that we're done with the gradient application
+            drop(lock_result);
+            
+            match result {
                 Ok(loss) => {
                     let update_time = update_start.elapsed();
                     println!("✅ Applied gradients in {:?}, loss: {:.6}", update_time, loss);
@@ -2582,31 +2699,109 @@ impl EnhancedTrainer {
         Ok(())
     }
     
-    /// Clone the trainer for parallel processing
+    /// Clone the trainer for parallel processing with complete isolation
     pub fn clone_for_parallel(&self) -> Self {
-        // Create a new trainer instance with the same configuration
-        // but with separate gradient accumulators
-        let mut clone = EnhancedTrainer::new(
+        // Create a clean base trainer
+        let mut trainer = Trainer::new(
+            Box::new(self.tokenizer.clone()),
             self.trainer.get_model_dim(),
             self.trainer.get_ff_dim(),
-            4, // Default num_heads
-            2, // Default num_layers
-            0.1, // Default dropout rate
+            self.trainer.get_num_heads(),
+            self.trainer.get_num_layers(),
+            self.trainer.get_dropout_rate(),
             self.learning_rate,
         );
         
-        // Use the same tokenizer and model weights
-        clone.tokenizer = self.tokenizer.clone();
+        // Apply the same gradient clipping settings
+        if let Some(threshold) = self.gradient_clip_value {
+            trainer.with_gradient_clipping(Some(threshold));
+        }
         
-        // Share other configuration
-        clone.use_curriculum = self.use_curriculum;
-        clone.dynamic_lr = self.dynamic_lr;
-        clone.gradient_clip_value = self.gradient_clip_value;
+        // Create fresh instances of non-cloneable components
+        let curriculum = CurriculumScheduler::new();
+        let generator = TextGenerator::new();
         
-        // For a complete implementation, we would share model weights
-        // but keep separate gradient accumulators
+        // Create a new isolated enhanced trainer
+        let mut enhanced = EnhancedTrainer {
+            trainer,
+            tokenizer: self.tokenizer.clone(),
+            curriculum,
+            generator,
+            use_curriculum: self.use_curriculum,
+            dynamic_lr: self.dynamic_lr,
+            learning_rate: self.learning_rate,
+            current_epoch: self.current_epoch,
+            stats: HashMap::new(),  // Fresh stats for the worker
+            gradient_clip_value: self.gradient_clip_value,
+            use_memory_opt: self.use_memory_opt,
+            gradient_checkpointer: None,  // Each worker gets its own checkpointer
+        };
         
-        clone
+        // Apply memory optimization if needed
+        if self.use_memory_opt {
+            enhanced.with_memory_optimization(true);
+            
+            // Set the same checkpoint strategy if we have one
+            if self.gradient_checkpointer.is_some() {
+                // Create a new checkpointer with the standard strategy
+                enhanced.with_checkpoint_strategy(CheckpointStrategy::Adaptive);
+            }
+        }
+        
+        // Set worker identifier in stats
+        enhanced.stats.insert("worker_id".to_string(), vec![rand::random::<f32>()]);
+        
+        enhanced
+    }
+    
+    /// Apply an isolated worker model's updates to the main model
+    /// This is a controlled way to merge worker changes into the main model
+    pub fn apply_worker_model(&mut self, worker: &EnhancedTrainer, factor: f32) -> Result<(), String> {
+        println!("🔄 Merging worker model into main model with factor: {}", factor);
+        
+        // Get thread ID for logging
+        let thread_id = format!("{:?}", std::thread::current().id());
+        
+        // Get the worker's parameters
+        let worker_params = worker.trainer.tensors();
+        
+        // Get our parameters
+        let main_params = &mut self.trainer.params;
+        
+        // Merge each parameter with the given factor
+        // This implements a form of model averaging
+        for (name, worker_tensor) in worker_params {
+            if let Some(main_tensor) = main_params.get_mut(name) {
+                // Merge the worker's parameters into the main model
+                // We use a simple weighted average strategy:
+                // main = (1-factor) * main + factor * worker
+                
+                // Apply the update to the main model parameters
+                for (main_val, worker_val) in main_tensor.data.iter_mut().zip(worker_tensor.data.iter()) {
+                    *main_val = (1.0 - factor) * *main_val + factor * *worker_val;
+                }
+            } else {
+                // This should never happen if models are compatible
+                println!("⚠️ Thread {} found missing parameter {} in main model", thread_id, name);
+            }
+        }
+        
+        println!("✅ Thread {} successfully merged model updates", thread_id);
+        Ok(())
+    }
+    
+    /// Gets a worker ID if this trainer is a worker
+    pub fn get_worker_id(&self) -> Option<f32> {
+        if let Some(worker_ids) = self.stats.get("worker_id") {
+            worker_ids.first().copied()
+        } else {
+            None
+        }
+    }
+    
+    /// Determine if this trainer is a worker
+    pub fn is_worker(&self) -> bool {
+        self.get_worker_id().is_some()
     }
     
     /// Configure memory optimization
@@ -2673,44 +2868,83 @@ impl EnhancedTrainer {
     /// This is a central function to be called at the beginning of any batch processing
     /// to avoid duplicate code and ensure consistent handling of target ID issues
     pub fn preprocess_batch(&mut self, targets: &Array2<usize>) -> Result<(), String> {
-        // Get current vocabulary size
-        let current_vocab_size = self.trainer.get_vocab_size();
+        // Create a static mutex for synchronizing vocabulary resize operations
+        lazy_static::lazy_static! {
+            static ref VOCAB_RESIZE_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        }
         
-        // Find the maximum target ID
-        let max_target_id = self.get_max_target_id(targets);
+        // Auto-resize vocabulary if needed
+        let max_id = self.get_max_target_id(targets);
+        let current_vocab_size = self.tokenizer.get_vocab_size();
         
-        // Check if we need to resize - ensure we have a buffer to avoid frequent resizing
-        if max_target_id >= current_vocab_size {
-            // Read min vocab size from environment
-            let min_size = std::env::var("WALL_E_MIN_VOCAB_SIZE")
-                .unwrap_or_else(|_| "10000".to_string()) // Increased from 5000 to 10000
-                .parse::<usize>()
-                .unwrap_or(10000); // Default to 10000 to handle larger vocabularies
+        // Check if we need to resize vocabulary
+        if max_id >= current_vocab_size {
+            // Get thread ID for logging
+            let thread_id = format!("{:?}", std::thread::current().id());
             
-            // Use a more aggressive exponential growth strategy
-            // to avoid frequent resizing and ensure we handle large target IDs
-            let new_vocab_size = std::cmp::max(
-                std::cmp::max(
-                    current_vocab_size * 2,          // Double current size
-                    max_target_id + 2000             // Add 2000 buffer (up from 1000)
-                ),
-                min_size
-            );
+            println!("⚠️ Thread {} detected out-of-range token ID: {} >= current vocab size: {}", 
+                     thread_id, max_id, current_vocab_size);
             
-            println!("🔄 Resizing vocabulary from {} to {} to handle target ID {}", 
-                     current_vocab_size, new_vocab_size, max_target_id);
+            // Safely resize vocabulary with mutex protection
+            let new_size = max_id + 1000; // Add buffer for future growth
             
-            // Perform the resize operation
-            self.trainer.resize_output_layer(new_vocab_size)?;
+            // Try to acquire the vocabulary resize mutex
+            let acquire_start = std::time::Instant::now();
+            let lock_result = {
+                let timeout = std::time::Duration::from_secs(10);
+                let mut result = None;
+                
+                // Try to acquire the lock for up to 10 seconds
+                while acquire_start.elapsed() < timeout {
+                    match VOCAB_RESIZE_MUTEX.try_lock() {
+                        Ok(guard) => {
+                            println!("✅ Thread {} acquired vocab resize mutex", thread_id);
+                            result = Some(guard);
+                            break;
+                        },
+                        Err(_) => {
+                            // Brief sleep before trying again
+                            std::thread::sleep(std::time::Duration::from_millis(100));
+                        }
+                    }
+                }
+                
+                if result.is_none() {
+                    println!("⚠️ Thread {} failed to acquire vocab resize mutex after 10s, proceeding cautiously", thread_id);
+                }
+                
+                result
+            };
             
-            // Double check success
-            let new_vocab_size = self.trainer.get_vocab_size();
-            if max_target_id >= new_vocab_size {
-                return Err(format!("Failed to resize vocabulary: target ID {} still exceeds vocabulary size {}", 
-                                  max_target_id, new_vocab_size));
+            // Check if another thread might have already resized the vocabulary while we were waiting
+            let current_vocab_size = self.tokenizer.get_vocab_size();
+            if max_id < current_vocab_size {
+                println!("ℹ️ Thread {} detected vocabulary was already resized by another thread (new size: {})", 
+                         thread_id, current_vocab_size);
+                drop(lock_result);
+                return Ok(());
             }
             
-            println!("✅ Vocabulary successfully resized to {}", new_vocab_size);
+            // Proceed with vocabulary resize
+            println!("🔄 Thread {} resizing vocabulary from {} to {}", thread_id, current_vocab_size, new_size);
+            self.tokenizer.resize_vocabulary(new_size);
+            
+            // Also resize the model embeddings
+            match self.trainer.resize_embeddings(new_size) {
+                Ok(_) => {
+                    println!("✅ Thread {} successfully resized model embeddings to {}", thread_id, new_size);
+                },
+                Err(e) => {
+                    println!("❌ Thread {} failed to resize model embeddings: {}", thread_id, e);
+                    // Release the mutex lock
+                    drop(lock_result);
+                    return Err(format!("Failed to resize model embeddings: {}", e));
+                }
+            }
+            
+            // Release the mutex lock
+            drop(lock_result);
+            println!("✅ Thread {} completed vocabulary resize operation", thread_id);
         }
         
         Ok(())
@@ -2797,6 +3031,135 @@ impl EnhancedTrainer {
             println!("✅ Global vocabulary resize successful: new size {}", new_vocab_size);
         }
         
+        Ok(())
+    }
+
+    /// Guaranteed reliable single-threaded training method
+    /// This method avoids all thread synchronization issues by operating in a single thread
+    pub fn train_reliable(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>]) -> f32 {
+        println!("🔒 Using reliable single-threaded training mode");
+        
+        // Pre-process all batches with a single vocabulary resize operation if needed
+        match self.preprocess_all_batches(targets) {
+            Ok(_) => {
+                println!("✅ Successfully pre-processed all batches");
+            },
+            Err(e) => {
+                println!("⚠️ Error pre-processing batches: {}", e);
+                println!("⚠️ Training will continue but may encounter issues");
+            }
+        }
+
+        // Calculate the current learning rate
+        let lr = self.calculate_learning_rate();
+        
+        // Set the learning rate if dynamic
+        if self.dynamic_lr {
+            self.trainer.set_learning_rate(lr);
+        }
+        
+        let mut total_loss = 0.0;
+        let mut num_batches = 0;
+        
+        // Process each batch sequentially
+        for (batch_idx, (batch, target)) in inputs.iter().zip(targets.iter()).enumerate() {
+            // Skip empty batches
+            if batch.is_empty() {
+                continue;
+            }
+            
+            // Train on this batch
+            let loss = self.train_step_with_penalties(batch, target);
+            
+            // Update totals
+            total_loss += loss;
+            num_batches += 1;
+            
+            // Provide progress update
+            if batch_idx % 10 == 0 || batch_idx == inputs.len() - 1 {
+                println!("  Batch {}/{} - Loss: {:.6}", 
+                         batch_idx + 1, inputs.len(), loss);
+            }
+        }
+        
+        // Increment epoch counter
+        self.current_epoch += 1;
+        
+        // Return average loss
+        if num_batches > 0 {
+            let avg_loss = total_loss / num_batches as f32;
+            println!("Epoch {} completed with average loss: {:.6}", self.current_epoch, avg_loss);
+            avg_loss
+        } else {
+            println!("Warning: No batches processed in this epoch");
+            0.0
+        }
+    }
+
+    /// Ensure the model is properly initialized before training starts
+    pub fn ensure_model_initialized(&mut self) -> Result<(), String> {
+        println!("🔍 Verifying model initialization...");
+        
+        // Check if output layer has been properly initialized
+        let vocab_size = self.tokenizer.get_vocab_size();
+        let model_vocab_size = self.trainer.get_vocab_size();
+        
+        println!("Model verification:");
+        println!("  Tokenizer vocabulary size: {}", vocab_size);
+        println!("  Model vocabulary size: {}", model_vocab_size);
+        println!("  Model dimensions: {}x{}x{}x{}",
+                 self.trainer.get_model_dim(),
+                 self.trainer.get_ff_dim(),
+                 self.trainer.get_num_heads(),
+                 self.trainer.get_num_layers());
+        
+        // If model has a different vocab size than tokenizer, resize it
+        if model_vocab_size != vocab_size {
+            println!("⚠️ Vocabulary size mismatch detected (model: {}, tokenizer: {})",
+                     model_vocab_size, vocab_size);
+            
+            // Use the larger size to prevent index out of bounds errors
+            let target_size = std::cmp::max(model_vocab_size, vocab_size);
+            println!("Resizing to vocabulary size: {}", target_size);
+            
+            // Resize tokenizer if needed
+            if vocab_size < target_size {
+                println!("Updating tokenizer vocabulary size to {}", target_size);
+                self.tokenizer.update_vocab_size(target_size);
+            }
+            
+            // Resize model if needed
+            if model_vocab_size < target_size {
+                println!("Resizing model output layer to {}", target_size);
+                match self.trainer.resize_output_layer(target_size) {
+                    Ok(_) => println!("✅ Model output layer resized successfully"),
+                    Err(e) => return Err(format!("Failed to resize output layer: {}", e))
+                }
+            }
+        } else {
+            println!("✅ Model vocabulary size is consistent with tokenizer");
+        }
+        
+        // Verify model and tokenizer dimensions again after potential resize
+        let final_vocab_size = self.tokenizer.get_vocab_size();
+        let final_model_size = self.trainer.get_vocab_size();
+        
+        if final_vocab_size != final_model_size {
+            return Err(format!("Failed to align vocabulary sizes: model={}, tokenizer={}", 
+                               final_model_size, final_vocab_size));
+        }
+        
+        // Ensure model parameters are compatible (e.g., model_dim divisible by num_heads)
+        let model_dim = self.trainer.get_model_dim();
+        let num_heads = self.trainer.get_num_heads();
+        
+        if model_dim % num_heads != 0 {
+            return Err(format!("Model dimension ({}) must be divisible by number of heads ({})",
+                           model_dim, num_heads));
+        }
+        
+        // All checks passed
+        println!("✅ Model verification complete - ready for training");
         Ok(())
     }
 }

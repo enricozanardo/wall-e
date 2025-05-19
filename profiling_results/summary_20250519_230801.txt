@@ -1,0 +1,48 @@
+===== WALL-E1 TRAINING PROFILE SUMMARY =====
+Date: Mon May 19 23:16:14 CEST 2025
+
+CONFIGURATION:
+  Model size: 512d (6 layers)
+  Stories: 15000
+  Epochs: 5
+  Memory optimization: enabled
+
+TIMING SUMMARY:
+  Total batch preparation time: 0.017s (0.2%)
+  Total batch preparation time: 0.015s (0.2%)
+  Total batch preparation time: 0.009s (0.1%)
+  Total batch preparation time: 0.016s (0.2%)
+  Total batch preparation time: 0.014s (0.2%)
+  Total training step time:     7.331s (99.8%)
+  Total training step time:     7.711s (99.8%)
+  Total training step time:     6.593s (99.9%)
+  Total training step time:     6.382s (99.8%)
+  Total training step time:     7.807s (99.8%)
+Training completed in 467.071758452s
+
+TOP 5 TIME-CONSUMING OPERATIONS:
+#1: train_epoch_full/data_preparation - Total: 0.0204s, Avg: 0.0204s, Count: 1
+#2: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#3: train_epoch_full/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/data_preparation - Total: 0.0203s, Avg: 0.0203s, Count: 1
+#2: train_epoch_full/batch_size_calculation - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#3: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/data_preparation - Total: 0.0203s, Avg: 0.0203s, Count: 1
+#2: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#3: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/data_preparation - Total: 0.0205s, Avg: 0.0205s, Count: 1
+#2: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#3: train_epoch_full/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: train_epoch_full/data_preparation - Total: 0.0204s, Avg: 0.0204s, Count: 1
+#2: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#3: train_epoch_full/shuffling_indices - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#1: training_process - Total: 467.0718s, Avg: 467.0718s, Count: 1
+#2: training_process/evaluation_4 - Total: 74.9249s, Avg: 74.9249s, Count: 1
+#3: training_process/evaluation_5 - Total: 74.4435s, Avg: 74.4435s, Count: 1
+#4: training_process/evaluation_3 - Total: 74.0151s, Avg: 74.0151s, Count: 1
+#5: training_process/evaluation_1 - Total: 73.9472s, Avg: 73.9472s, Count: 1

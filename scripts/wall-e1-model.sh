@@ -304,7 +304,7 @@ train_model() {
   fi
   
   # Check if data file exists
-  local data_file="./data/tinystories.json"
+  local data_file="./data/tiny_stories_sample.json"
   
   # First check for the 10k version
   if [[ -f "./data/tinystories-10k.json" ]]; then

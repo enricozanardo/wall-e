@@ -1,0 +1,1307 @@
+   Compiling wall-e1 v0.1.0 (/home/nabla/github/wall-e1)
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Axis` and `Ix3`
+ --> src/training/mod.rs:4:46
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, Axis, Ix1, Ix2, Ix3, Ix0, IxDyn, s};
+  |                                              ^^^^            ^^^
+
+warning: unused import: `ndarray::Array0`
+  --> src/training/mod.rs:12:5
+   |
+12 | use ndarray::Array0;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `ndarray::array`
+  --> src/training/mod.rs:13:5
+   |
+13 | use ndarray::array;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `crate::nabla::memory_opt`
+  --> src/training/enhanced_trainer.rs:15:5
+   |
+15 | use crate::nabla::memory_opt;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `MutexGuard` and `Mutex`
+ --> src/training/batch_dispatcher.rs:4:17
+  |
+4 | use std::sync::{Mutex, MutexGuard};
+  |                 ^^^^^  ^^^^^^^^^^
+
+warning: unused import: `std::thread::ThreadId`
+ --> src/training/batch_dispatcher.rs:5:5
+  |
+5 | use std::thread::ThreadId;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `v`
+  --> src/nabla/memory_opt.rs:88:15
+   |
+88 |     if let Ok(v) = std::env::var("MALLOC_ARENA_MAX") {
+   |               ^ help: if this is intentional, prefix it with an underscore: `_v`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:420:20
+    |
+420 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: unused variable: `tokens_to_add`
+    --> src/training/mod.rs:1259:13
+     |
+1259 |         let tokens_to_add = new_vocab_size - current_size;
+     |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_tokens_to_add`
+
+warning: variable `reported_progress` is assigned to, but never used
+   --> src/training/generation.rs:174:17
+    |
+174 |         let mut reported_progress = false;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_reported_progress` instead
+
+warning: value assigned to `reported_progress` is never read
+   --> src/training/generation.rs:181:17
+    |
+181 |                 reported_progress = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `batch`
+   --> src/training/enhanced_trainer.rs:535:34
+    |
+535 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+
+warning: unused variable: `target`
+   --> src/training/enhanced_trainer.rs:535:47
+    |
+535 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:539:29
+    |
+539 |                         let mut loss_guard = loss_mutex.lock().unwrap();
+    |                             ----^^^^^^^^^^
+    |                             |
+    |                             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: function `determine_allocator_type` is never used
+  --> src/nabla/memory_opt.rs:79:4
+   |
+79 | fn determine_allocator_type() -> Option<String> {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `get_total_elapsed` is never used
+   --> src/training/enhanced_trainer.rs:162:8
+    |
+131 | impl ThreadStateTracker {
+    | ----------------------- method in this implementation
+...
+162 |     fn get_total_elapsed(&self) -> std::time::Duration {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `run_with_timeout` is never used
+    --> src/training/enhanced_trainer.rs:1934:8
+     |
+198  | impl EnhancedTrainer {
+     | -------------------- method in this implementation
+...
+1934 |     fn run_with_timeout<F, T>(&self, f: F, timeout: std::time::Duration) -> Option<T> 
+     |        ^^^^^^^^^^^^^^^^
+
+warning: constant `V0_HEADER_SIZE` is never used
+  --> src/training/enhanced_trainer.rs:98:15
+   |
+98 |     pub const V0_HEADER_SIZE: usize = 32;
+   |               ^^^^^^^^^^^^^^
+
+warning: field `time` is never read
+  --> src/training/batch_dispatcher.rs:44:5
+   |
+40 | struct LockEvent {
+   |        --------- field in this struct
+...
+44 |     time: Instant,
+   |     ^^^^
+
+warning: `wall-e1` (lib) generated 20 warnings (run `cargo fix --lib -p wall-e1` to apply 8 suggestions)
+warning: unused imports: `Arc`, `AtomicUsize`, `Mutex`, and `Ordering`
+  --> src/bin/train_enhanced_model.rs:17:17
+   |
+17 | use std::sync::{Arc, Mutex, atomic::{AtomicUsize, Ordering}};
+   |                 ^^^  ^^^^^           ^^^^^^^^^^^  ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:47:13
+   |
+47 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `thread_count`
+   --> src/bin/train_enhanced_model.rs:371:13
+    |
+371 |         let thread_count = if op == &"data_loading" { min_data_threads } else { pool.get_num_threads() };
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_count`
+
+warning: unused variable: `setup_start`
+   --> src/bin/train_enhanced_model.rs:428:9
+    |
+428 |     let setup_start = Instant::now();
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_setup_start`
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:462:13
+    |
+462 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: variable `auto_resize_vocab` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:466:13
+    |
+466 |     let mut auto_resize_vocab = false;
+    |             ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_auto_resize_vocab` instead
+
+warning: variable `watchdog_timeout` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:467:13
+    |
+467 |     let mut watchdog_timeout: Option<u64> = None;
+    |             ^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_watchdog_timeout` instead
+
+warning: variable `target_id_max` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:469:13
+    |
+469 |     let mut target_id_max: Option<usize> = None;
+    |             ^^^^^^^^^^^^^
+    |
+    = note: consider using `_target_id_max` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:600:25
+    |
+600 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `auto_resize_vocab` is never read
+   --> src/bin/train_enhanced_model.rs:606:17
+    |
+606 |                 auto_resize_vocab = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `watchdog_timeout` is never read
+   --> src/bin/train_enhanced_model.rs:612:25
+    |
+612 |                         watchdog_timeout = Some(timeout);
+    |                         ^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `target_id_max` is never read
+   --> src/bin/train_enhanced_model.rs:628:25
+    |
+628 |                         target_id_max = Some(max_id);
+    |                         ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:1109:9
+     |
+1109 |     let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+     |         ----^^^^^^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `sliding_windows_start`
+    --> src/bin/train_enhanced_model.rs:1231:9
+     |
+1231 |     let sliding_windows_start = Instant::now();
+     |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_sliding_windows_start`
+
+warning: unused variable: `watchdog_handle`
+    --> src/bin/train_enhanced_model.rs:1312:9
+     |
+1312 |     let watchdog_handle = std::thread::Builder::new()
+     |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_handle`
+
+warning: unused variable: `start_time`
+    --> src/bin/train_enhanced_model.rs:1415:9
+     |
+1415 |     let start_time = Instant::now();
+     |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_start_time`
+
+warning: unused variable: `join_timeout`
+    --> src/bin/train_enhanced_model.rs:1448:13
+     |
+1448 |         let join_timeout = std::time::Duration::from_millis(100);
+     |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_join_timeout`
+
+warning: value assigned to `all_done` is never read
+    --> src/bin/train_enhanced_model.rs:1944:13
+     |
+1944 |             all_done = true;
+     |             ^^^^^^^^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: variable `joined_threads` is assigned to, but never used
+    --> src/bin/train_enhanced_model.rs:2007:13
+     |
+2007 |     let mut joined_threads = 0;
+     |             ^^^^^^^^^^^^^^
+     |
+     = note: consider using `_joined_threads` instead
+
+warning: unused variable: `watchdog_id`
+    --> src/bin/train_enhanced_model.rs:2102:9
+     |
+2102 |     let watchdog_id = format!("{:?}", watchdog_handle_copy.id());
+     |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_id`
+
+warning: unused variable: `watchdog_join_timeout`
+    --> src/bin/train_enhanced_model.rs:2109:9
+     |
+2109 |     let watchdog_join_timeout = std::time::Duration::from_millis(500);
+     |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_join_timeout`
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:2013:13
+     |
+2013 |         let mut remaining_threads = Vec::new();
+     |             ----^^^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: unused variable: `batch_inputs`
+    --> src/bin/train_enhanced_model.rs:2186:10
+     |
+2186 |     let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |          ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_inputs`
+
+warning: unused variable: `min_seq_len`
+    --> src/bin/train_enhanced_model.rs:2186:24
+     |
+2186 |     let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |                        ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_seq_len`
+
+warning: unused variable: `k`
+    --> src/bin/train_enhanced_model.rs:2457:13
+     |
+2457 |     let (m, k) = a.dim();
+     |             ^ help: if this is intentional, prefix it with an underscore: `_k`
+
+warning: function `matrix_multiply_simd` is never used
+    --> src/bin/train_enhanced_model.rs:2452:4
+     |
+2452 | fn matrix_multiply_simd(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>) -> ndarray::Array2<f32> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `matrix_multiply_avx2` is never used
+    --> src/bin/train_enhanced_model.rs:2522:4
+     |
+2522 | fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_scalar` is never used
+    --> src/bin/train_enhanced_model.rs:2528:4
+     |
+2528 | fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (bin "Wall-E") generated 28 warnings (run `cargo fix --bin "Wall-E"` to apply 3 suggestions)
+    Finished `release` profile [optimized] target(s) in 4.65s
+     Running `target/release/Wall-E --stories 500 --model-dim 128 --ff-dim 512 --layers 2 --epochs 5 --perf-log true --save-path ./profiling_results/model_20250520_002108.json --json-format --use-memory-opt --curriculum-examples 500 --checkpoint-strategy adaptive --thread-opt gradient_update --watchdog-timeout 180 --data-threads 12 --target-id-max 10000 --auto-resize-vocab --vocab-size 10000 --min-freq 2 --enable-skip --strong-anti-rep ./data/tiny_stories_sample.json`
+Detected 20 CPU cores
+🔧 Setting WALL_E_DATA_THREADS to 14 for better parallelism (fixing low CPU usage)
+Memory [startup]: VmSize:	    5716 kB
+Memory [startup]: VmRSS:	    1548 kB
+
+📊 DETAILED STARTUP TIMING 📊
+⏳ Initializing thread pools...
+Creating thread pool with 19 threads for general operations
+  ✅ Global thread pool initialized with 19 threads (820.44µs)
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+  ✅ Thread pool for 'matrix_multiply' initialized with 19 threads (1.18ms)
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool for 'gradient_update' initialized with 15 threads (991.47µs)
+Using WALL_E_DATA_THREADS=14 from environment
+🔹 Creating dedicated thread pool for 'data_loading' operation with 14 threads
+Creating thread pool with 14 threads for data_loading operations
+  ✅ Thread pool for 'data_loading' initialized with 14 threads (748.49µs)
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+  ✅ Thread pool for 'attention' initialized with 19 threads (999.91µs)
+✅ Thread pools initialized in 4.79ms
+⏳ Configuring memory allocator...
+  ✅ Cache detection completed in 21.79µs
+     L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+  ✅ Memory allocator configured in 19.27µs
+  ✅ Memory bandwidth measured in 502.55ms: 8.66 GB/s
+✅ Memory optimizations completed in 502.86ms
+✅ Total initialization completed in 508.50ms
+
+Memory and thread optimizations configured
+
+🔄 STARTING APPLICATION SETUP 🔄
+⏳ Parsing command line arguments...
+  Processing 37 command line arguments
+Watchdog timeout set to 180 seconds
+Data loading threads set to 12
+Maximum target ID pre-allocated to 10000
+Automatic vocabulary resizing enabled
+🔄 Setting WALL_E_DATA_THREADS=12 for data loading operations
+✅ Arguments parsed in 3.93µs
+⏳ Configuring thread pool with 19 CPU cores
+
+🔄 TRAINING SETUP PHASE 🔄
+Training Configuration:
+  Training data: ./data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 500
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 2
+  Dropout rate: 0.1
+  Learning rate: 0.001
+  Epochs: 5
+  Curriculum learning: enabled
+  Vocabulary size: 10000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: ./profiling_results/model_20250520_002108.json
+  CPU threads: 19
+  Performance logging: enabled
+
+⏳ Reading training data (single-threaded operation)...
+  🔄 Reading JSON file from ./data/tiny_stories_sample.json...
+Found 58300 stories in JSON file
+Will use 500 stories for training
+Processed 500 stories, total text length: 430660 characters
+  ✅ JSON data loaded in 59.13ms, 430660 characters
+✅ Training data loaded in 59.17ms
+Memory [after_data_loading]: VmSize:	 7155968 kB
+Memory [after_data_loading]: VmRSS:	   62596 kB
+
+⏳ Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=128, vocab_size=101
+  🔄 Configuring trainer options...
+  ✅ Trainer options configured in 44.00ns
+  🔄 Enabling memory optimization with gradient checkpointing...
+Memory optimization enabled with gradient checkpointing
+  🔄 Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+  ✅ Memory optimization configured in 1.62µs
+Memory [after_memory_opt_enable]: VmSize:	 7155968 kB
+Memory [after_memory_opt_enable]: VmRSS:	   62596 kB
+  🔄 Configuring thread pool for gradient_update operations...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.78 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=8933, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool configured with 6 threads for gradient_update operations in 453.50ms
+✅ Trainer initialization completed in 457.32ms
+
+⏳ Configuring strong anti-repetition mechanisms...
+✅ Anti-repetition configured in 3.32µs
+
+⏳ Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+✅ Skip connections enabled in 4.66ms
+
+⏳ Learning tokenizer vocabulary (single-threaded operation)...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 44 chunks
+Starting parallel vocabulary learning with 44 chunks
+Using global thread pool with 19 threads
+Word counting completed in 14.04ms, found 3404 unique words
+Learning up to 9899 merges to reach vocab size 10000
+  Learned 1 merges (0.0%) in 871.90µs...
+  Learned 1001 merges (10.1%) in 632.83ms...
+  Learned 2001 merges (20.2%) in 1.10s...
+  Learned 3001 merges (30.3%) in 1.42s...
+  Learned 4001 merges (40.4%) in 1.55s...
+Parallel BPE learning completed in 1.57s, vocabulary size: 4137
+Learned 4037 merge operations
+Tokenizer vocabulary learned: 4137 tokens (from requested max: 10000)
+Initializing output_projection: model_dim=128, vocab_size=4137
+Resizing output projection to match vocabulary size: 4137
+Vocabulary learning completed in 1.58s
+✅ Tokenizer vocabulary learned in 1.58s
+
+⏳ Splitting training/validation data...
+✅ Data split in 1.75µs: 387594 characters for training, 43066 for validation
+
+⏳ Setting up curriculum learning...
+
+⏳ Tokenizing data (single-threaded operation)...
+  🔄 Tokenizing training data (387594 characters)...
+  ✅ Training data tokenized in 380.51ms: 170265 tokens
+  🔄 Tokenizing validation data (43066 characters)...
+  ✅ Validation data tokenized in 44.79ms: 18837 tokens
+✅ All data tokenized in 425.35ms
+Memory [after_tokenization]: VmSize:	 7155968 kB
+Memory [after_tokenization]: VmRSS:	   68756 kB
+
+⏳ Preparing validation dataset...
+    🔄 Configuring thread pool for validation data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.25 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+    ✅ Using 5 threads for validation data preparation
+🔸 Reusing existing thread pool for 'data_loading' operation
+    ✅ Using thread pool with 14 threads for validation data
+✅ Validation data prepared in 489.14ms: 2059 examples
+
+✅ TRAINING SETUP COMPLETED in 3.01s
+Starting training for 5 epochs...
+
+🔄 BEGINNING TRAINING PROCESS 🔄
+
+⏳ EPOCH 1/5 STARTING
+  🔄 Training on 170265 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7155968 kB
+Memory [train_epoch_start]: VmRSS:	   69808 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.78µs
+Memory [after_memory_opt_enable]: VmSize:	 7155968 kB
+Memory [after_memory_opt_enable]: VmRSS:	   69808 kB
+    🔄 Configuring thread pool for data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.37 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+🔸 Reusing existing thread pool for 'data_loading' operation
+Configured dedicated thread pool with 14 threads for data_loading operations
+    ✅ Data loading thread pool configured with 5 threads in 485.75ms
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21282 sliding windows in parallel
+    ⚠️ Using direct thread work allocation to avoid deadlocks
+    🔄 Creating 21282 input/target pairs directly
+    📊 Processing 11 chunks with size 2128 each
+🧵 Thread window-processor-0 started processing 2128 windows
+    🧵 Thread window-processor-0 processed 10/2128 windows
+    🧵 Thread window-processor-0 processed 110/2128 windows
+    🧵 Thread window-processor-0 processed 210/2128 windows
+    🧵 Thread window-processor-0 processed 310/2128 windows
+    🧵 Thread window-processor-0 processed 410/2128 windows
+    🧵 Thread window-processor-0 processed 510/2128 windows
+    🧵 Thread window-processor-0 processed 610/2128 windows
+    🧵 Thread window-processor-0 processed 710/2128 windows
+🧵 Thread window-processor-1 started processing 2128 windows
+    🧵 Thread window-processor-0 processed 810/2128 windows
+    🧵 Thread window-processor-1 processed 40/2128 windows
+    🧵 Thread window-processor-1 processed 140/2128 windows
+    🧵 Thread window-processor-1 processed 240/2128 windows
+    🧵 Thread window-processor-1 processed 340/2128 windows
+    🧵 Thread window-processor-1 processed 440/2128 windows
+    🧵 Thread window-processor-1 processed 540/2128 windows
+    🧵 Thread window-processor-0 processed 910/2128 windows
+    🧵 Thread window-processor-1 processed 700/2128 windows
+    🧵 Thread window-processor-0 processed 960/2128 windows
+    🧵 Thread window-processor-1 processed 810/2128 windows
+    🧵 Thread window-processor-0 processed 1050/2128 windows
+    🧵 Thread window-processor-1 processed 920/2128 windows
+    🧵 Thread window-processor-1 processed 960/2128 windows
+    🧵 Thread window-processor-0 processed 1200/2128 windows
+    🧵 Thread window-processor-0 processed 1220/2128 windows
+    🧵 Thread window-processor-0 processed 1270/2128 windows
+    🧵 Thread window-processor-0 processed 1320/2128 windows
+    🧵 Thread window-processor-1 processed 1250/2128 windows
+    🧵 Thread window-processor-0 processed 1420/2128 windows
+    🧵 Thread window-processor-0 processed 1460/2128 windows
+    🧵 Thread window-processor-1 processed 1450/2128 windows
+    🧵 Thread window-processor-1 processed 1550/2128 windows
+    🧵 Thread window-processor-1 processed 1650/2128 windows
+🧵 Thread window-processor-4 started processing 2128 windows
+🧵 Thread window-processor-3 started processing 2128 windows
+    🧵 Thread window-processor-3 processed 20/2128 windows
+    🧵 Thread window-processor-3 processed 120/2128 windows
+    🧵 Thread window-processor-3 processed 220/2128 windows
+    🧵 Thread window-processor-3 processed 320/2128 windows
+    🧵 Thread window-processor-3 processed 420/2128 windows
+    🧵 Thread window-processor-3 processed 520/2128 windows
+    🧵 Thread window-processor-3 processed 620/2128 windows
+    🧵 Thread window-processor-0 processed 1480/2128 windows
+    🧵 Thread window-processor-0 processed 1490/2128 windows
+🧵 Thread window-processor-2 started processing 2128 windows
+🧵 Thread window-processor-5 started processing 2128 windows
+    🧵 Thread window-processor-3 processed 730/2128 windows
+🧵 Thread window-processor-8 started processing 2128 windows
+    🧵 Thread window-processor-8 processed 10/2128 windows
+🧵 Thread window-processor-6 started processing 2128 windows
+    🧵 Thread window-processor-6 processed 80/2128 windows
+    🧵 Thread window-processor-6 processed 180/2128 windows
+    🧵 Thread window-processor-8 processed 40/2128 windows
+    🧵 Thread window-processor-0 processed 1620/2128 windows
+🧵 Thread window-processor-7 started processing 2128 windows
+    🧵 Thread window-processor-4 processed 100/2128 windows
+    🧵 Thread window-processor-0 processed 1720/2128 windows
+    🧵 Thread window-processor-8 processed 80/2128 windows
+🧵 Thread window-processor-9 started processing 2128 windows
+    🧵 Thread window-processor-2 processed 70/2128 windows
+    🧵 Thread window-processor-9 processed 70/2128 windows
+    🧵 Thread window-processor-7 processed 60/2128 windows
+🧵 Thread window-processor-10 started processing 2 windows
+    ✅ Thread window-processor-10 completed in 618.00ns - added 2 windows to the result set
+    ✅ Thread window-processor-3 completed in 3.58ms - added 2128 windows to the result set
+    🧵 Thread window-processor-5 processed 290/2128 windows
+    🧵 Thread window-processor-5 processed 390/2128 windows
+    🧵 Thread window-processor-5 processed 490/2128 windows
+    🧵 Thread window-processor-5 processed 580/2128 windows
+    🧵 Thread window-processor-5 processed 680/2128 windows
+    🧵 Thread window-processor-5 processed 780/2128 windows
+    🧵 Thread window-processor-5 processed 880/2128 windows
+    🧵 Thread window-processor-5 processed 980/2128 windows
+    🧵 Thread window-processor-5 processed 1080/2128 windows
+    🧵 Thread window-processor-5 processed 1180/2128 windows
+    🧵 Thread window-processor-5 processed 1280/2128 windows
+    🧵 Thread window-processor-5 processed 1380/2128 windows
+    🧵 Thread window-processor-5 processed 1480/2128 windows
+    🧵 Thread window-processor-5 processed 1580/2128 windows
+    🧵 Thread window-processor-5 processed 1680/2128 windows
+    🧵 Thread window-processor-5 processed 1780/2128 windows
+    🧵 Thread window-processor-5 processed 1880/2128 windows
+    🧵 Thread window-processor-5 processed 1980/2128 windows
+    🧵 Thread window-processor-5 processed 2080/2128 windows
+    ✅ Thread window-processor-5 completed in 3.52ms - added 2128 windows to the result set
+    ✅ Thread window-processor-1 completed in 5.63ms - added 2128 windows to the result set
+    ✅ Thread window-processor-0 completed in 6.62ms - added 2128 windows to the result set
+    ✅ Thread window-processor-4 completed in 7.32ms - added 2128 windows to the result set
+    🧵 Thread window-processor-7 processed 1390/2128 windows
+    ✅ Thread window-processor-6 completed in 7.29ms - added 2128 windows to the result set
+    🧵 Thread window-processor-9 processed 1550/2128 windows
+    🧵 Thread window-processor-8 processed 1670/2128 windows
+    🧵 Thread window-processor-2 processed 1800/2128 windows
+    🧵 Thread window-processor-8 processed 1700/2128 windows
+    🧵 Thread window-processor-8 processed 1760/2128 windows
+    🧵 Thread window-processor-8 processed 1810/2128 windows
+    🧵 Thread window-processor-7 processed 1570/2128 windows
+    🧵 Thread window-processor-2 processed 1930/2128 windows
+    🧵 Thread window-processor-9 processed 1650/2128 windows
+    🧵 Thread window-processor-8 processed 1960/2128 windows
+    🧵 Thread window-processor-2 processed 2010/2128 windows
+    🧵 Thread window-processor-9 processed 1740/2128 windows
+    🧵 Thread window-processor-7 processed 1690/2128 windows
+    🧵 Thread window-processor-2 processed 2120/2128 windows
+    ✅ Thread window-processor-2 completed in 8.54ms - added 2128 windows to the result set
+    ✅ Thread window-processor-9 completed in 7.48ms - added 2128 windows to the result set
+    ✅ Thread window-processor-8 completed in 8.28ms - added 2128 windows to the result set
+    ✅ Thread window-processor-7 completed in 8.25ms - added 2128 windows to the result set
+    ✅ Thread 1/11 completed
+    ✅ Thread 2/11 completed
+    ✅ Thread 3/11 completed
+    ✅ Thread 4/11 completed
+    ✅ Thread 5/11 completed
+    ✅ Thread 6/11 completed
+    ✅ Thread 7/11 completed
+    ✅ Thread 8/11 completed
+    ✅ Thread 9/11 completed
+    ✅ Thread 10/11 completed
+    ✅ Thread 11/11 completed
+    ✅ Successfully collected 21282 window pairs
+    🔄 Separating inputs and targets...
+    ✅ Created 21282 input/target pairs in 24.40ms
+    📊 Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+    💻 CPU cores: 20 logical, 10 physical
+    🔄 Configuring thread pool for gradient updates...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.21 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=8347, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+    ✅ Using 6 threads for gradient processing (configured in 473.77ms)
+    🧮 Calculating optimal batch size...
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    ✅ Batch size calculation completed in 55.41µs
+      📊 Hardware-optimal batch size: 1024
+      📊 Dataset-constrained batch size: 1024
+      📊 Using batch size: 1024
+    📊 Expected number of batches: 21
+    🔄 Shuffling data indices directly...
+    ✅ Indices shuffled in 149.67µs
+    🔄 Creating batches from shuffled indices...
+    ✅ Created 21 batches in 19.41µs
+
+    🔄 BEGINNING BATCH PROCESSING (SEQUENTIAL)
+    🚀 Using robust batch-level parallelism with work stealing
+    🧵 Using 6 worker threads for batch processing
+    💻 Enabling SIMD optimizations for matrix operations
+    🔍 Detected CPU SIMD features: ["SSE2", "AVX", "AVX2"]
+    ✅ SIMD optimization enabled: true
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+    ✅ Created 6 trainer clones for parallel batch processing
+    🧵 Thread batch-worker-1 started for batch processing
+    🧵 Thread batch-worker-0 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-5 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-2 started for batch processing
+Processing 14 chunks across 14 threads
+    🧵 Thread batch-worker-3 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-4 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Batch prep timing: total=4ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(121) created state tracker at Instant { tv_sec: 52632, tv_nsec: 817101753 }
+📊 MEMORY USAGE [thread_ThreadId(121)_start]:
+  VmSize:	 8016004 kB
+  VmRSS:	  106744 kB
+🧵 Thread ThreadId(121) state: Idle -> PreparingBatch (after 45.356µs, total 45.391µs)
+🧵 Thread ThreadId(121) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 47.273µs)
+🧵 Thread ThreadId(121) state: ResizingVocabulary -> ForwardPass (after 9.278µs, total 57.223µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=8ms (collect=1ms, min_len=0ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(120) created state tracker at Instant { tv_sec: 52632, tv_nsec: 821619826 }
+📊 MEMORY USAGE [thread_ThreadId(120)_start]:
+  VmSize:	 8035264 kB
+  VmRSS:	  125800 kB
+🧵 Thread ThreadId(120) state: Idle -> PreparingBatch (after 58.615µs, total 58.671µs)
+🧵 Thread ThreadId(120) state: PreparingBatch -> ResizingVocabulary (after 32ns, total 60.767µs)
+🧵 Thread ThreadId(120) state: ResizingVocabulary -> ForwardPass (after 14.943µs, total 76.437µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=13ms (collect=1ms, min_len=0ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(125) created state tracker at Instant { tv_sec: 52632, tv_nsec: 826430211 }
+📊 MEMORY USAGE [thread_ThreadId(125)_start]:
+  VmSize:	 8051656 kB
+  VmRSS:	  139400 kB
+🧵 Thread ThreadId(125) state: Idle -> PreparingBatch (after 65.925µs, total 65.962µs)
+🧵 Thread ThreadId(125) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 68.892µs)
+Processing 16 chunks across 14 threads
+🧵 Thread ThreadId(125) state: ResizingVocabulary -> ForwardPass (after 22.259µs, total 91.83µs)
+Batch prep timing: total=16ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(122) created state tracker at Instant { tv_sec: 52632, tv_nsec: 830215376 }
+📊 MEMORY USAGE [thread_ThreadId(122)_start]:
+  VmSize:	 8082664 kB
+  VmRSS:	  163600 kB
+🧵 Thread ThreadId(122) state: Idle -> PreparingBatch (after 61.615µs, total 61.65µs)
+🧵 Thread ThreadId(122) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 64.136µs)
+🧵 Thread ThreadId(122) state: ResizingVocabulary -> ForwardPass (after 19.397µs, total 84.163µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=22ms (collect=1ms, min_len=0ms, truncate=1ms, targets=2ms)
+🧵 Thread ThreadId(123) created state tracker at Instant { tv_sec: 52632, tv_nsec: 835743348 }
+Processing 16 chunks across 14 threads
+📊 MEMORY USAGE [thread_ThreadId(123)_start]:
+  VmSize:	 8121868 kB
+  VmRSS:	  205264 kB
+🧵 Thread ThreadId(123) state: Idle -> PreparingBatch (after 51.374µs, total 51.423µs)
+🧵 Thread ThreadId(123) state: PreparingBatch -> ResizingVocabulary (after 30ns, total 53.855µs)
+🧵 Thread ThreadId(123) state: ResizingVocabulary -> ForwardPass (after 17.044µs, total 72.501µs)
+Batch prep timing: total=27ms (collect=0ms, min_len=0ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(124) created state tracker at Instant { tv_sec: 52632, tv_nsec: 840641690 }
+📊 MEMORY USAGE [thread_ThreadId(124)_start]:
+  VmSize:	 8152876 kB
+  VmRSS:	  237180 kB
+🧵 Thread ThreadId(124) state: Idle -> PreparingBatch (after 81.797µs, total 81.832µs)
+🧵 Thread ThreadId(124) state: PreparingBatch -> ResizingVocabulary (after 87ns, total 84.917µs)
+🧵 Thread ThreadId(124) state: ResizingVocabulary -> ForwardPass (after 12.691µs, total 98.271µs)
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 17
+        - Thread ThreadId(120): Training on batch 19
+        - Thread ThreadId(125): Training on batch 18
+        - Thread ThreadId(121): Training on batch 20
+        - Thread ThreadId(123): Training on batch 16
+        - Thread ThreadId(124): Training on batch 15
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(121) training step took 13.06s - slower than expected
+✅ Thread ThreadId(121) training completed in 13060.05ms with loss 8.328089
+📊 MEMORY USAGE [thread_ThreadId(121)_end]:
+  VmSize:	12760924 kB
+  VmRSS:	 5692500 kB
+🧵 Thread ThreadId(121) state: ForwardPass -> Completed (after 13.060048627s, total 13.060113807s)
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    📊 Batch 21/21 - Loss: 8.328089 - Avg: 8.328089 - Prep: 0.004s - Train: 13.060s
+Processing 16 chunks across 14 threads
+Batch prep timing: total=5ms (collect=1ms, min_len=0ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(121) created state tracker at Instant { tv_sec: 52645, tv_nsec: 882962822 }
+📊 MEMORY USAGE [thread_ThreadId(121)_start]:
+  VmSize:	12760924 kB
+  VmRSS:	 5693424 kB
+🧵 Thread ThreadId(121) state: Idle -> PreparingBatch (after 115.127µs, total 115.254µs)
+🧵 Thread ThreadId(121) state: PreparingBatch -> ResizingVocabulary (after 40ns, total 118.955µs)
+🧵 Thread ThreadId(121) state: ResizingVocabulary -> ForwardPass (after 31.854µs, total 152.325µs)
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 17
+        - Thread ThreadId(120): Training on batch 19
+        - Thread ThreadId(125): Training on batch 18
+        - Thread ThreadId(121): Training on batch 14
+        - Thread ThreadId(123): Training on batch 16
+        - Thread ThreadId(124): Training on batch 15
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(120) training step took 15.75s - slower than expected
+✅ Thread ThreadId(120) training completed in 15745.40ms with loss 8.328096
+📊 MEMORY USAGE [thread_ThreadId(120)_end]:
+  VmSize:	13083372 kB
+  VmRSS:	 5988188 kB
+🧵 Thread ThreadId(120) state: ForwardPass -> Completed (after 15.745390852s, total 15.745477081s)
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Processing 16 chunks across 14 threads
+Batch prep timing: total=6ms (collect=0ms, min_len=0ms, truncate=3ms, targets=1ms)
+🧵 Thread ThreadId(120) created state tracker at Instant { tv_sec: 52648, tv_nsec: 573653695 }
+📊 MEMORY USAGE [thread_ThreadId(120)_start]:
+  VmSize:	13083372 kB
+  VmRSS:	 5988584 kB
+🧵 Thread ThreadId(120) state: Idle -> PreparingBatch (after 164.105µs, total 164.221µs)
+🧵 Thread ThreadId(120) state: PreparingBatch -> ResizingVocabulary (after 36ns, total 168.494µs)
+🧵 Thread ThreadId(120) state: ResizingVocabulary -> ForwardPass (after 57.879µs, total 227.936µs)
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 17
+        - Thread ThreadId(120): Training on batch 13
+        - Thread ThreadId(125): Training on batch 18
+        - Thread ThreadId(121): Training on batch 14
+        - Thread ThreadId(123): Training on batch 16
+        - Thread ThreadId(124): Training on batch 15
+    🔄 WATCHDOG: Deadlock detected, requesting termination
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(125) training step took 17.13s - slower than expected
+✅ Thread ThreadId(125) training completed in 17129.06ms with loss 8.328096
+📊 MEMORY USAGE [thread_ThreadId(125)_end]:
+  VmSize:	13116060 kB
+  VmRSS:	 5609120 kB
+🧵 Thread ThreadId(125) state: ForwardPass -> Completed (after 17.12906182s, total 17.1291545s)
+    🧵 Thread batch-worker-5 received termination request
+    🧵 Thread batch-worker-5 exiting, 5 workers remaining
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(124) training step took 19.26s - slower than expected
+✅ Thread ThreadId(124) training completed in 19259.80ms with loss 8.328096
+📊 MEMORY USAGE [thread_ThreadId(124)_end]:
+  VmSize:	12089748 kB
+  VmRSS:	 4911588 kB
+🧵 Thread ThreadId(124) state: ForwardPass -> Completed (after 19.259756367s, total 19.259855536s)
+    📊 Batch 16/21 - Loss: 8.328096 - Avg: 8.328094 - Prep: 0.027s - Train: 19.260s
+    🧵 Thread batch-worker-4 received termination request
+    🧵 Thread batch-worker-4 exiting, 4 workers remaining
+⚠️ Thread ThreadId(122) training step took 19.27s - slower than expected
+✅ Thread ThreadId(122) training completed in 19272.99ms with loss 8.328096
+📊 MEMORY USAGE [thread_ThreadId(122)_end]:
+  VmSize:	11232512 kB
+  VmRSS:	 4153044 kB
+🧵 Thread ThreadId(122) state: ForwardPass -> Completed (after 19.272936147s, total 19.273029596s)
+    🧵 Thread batch-worker-2 received termination request
+    🧵 Thread batch-worker-2 exiting, 3 workers remaining
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(123) training step took 20.73s - slower than expected
+✅ Thread ThreadId(123) training completed in 20731.12ms with loss 8.328096
+📊 MEMORY USAGE [thread_ThreadId(123)_end]:
+  VmSize:	10997864 kB
+  VmRSS:	 3865084 kB
+🧵 Thread ThreadId(123) state: ForwardPass -> Completed (after 20.731103041s, total 20.731176562s)
+    🧵 Thread batch-worker-3 received termination request
+    🧵 Thread batch-worker-3 exiting, 2 workers remaining
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(121) training step took 15.03s - slower than expected
+✅ Thread ThreadId(121) training completed in 15034.23ms with loss 8.078856
+📊 MEMORY USAGE [thread_ThreadId(121)_end]:
+  VmSize:	11035856 kB
+  VmRSS:	 4017756 kB
+🧵 Thread ThreadId(121) state: ForwardPass -> Completed (after 15.034124832s, total 15.034314307s)
+    🧵 Thread batch-worker-1 received termination request
+    🧵 Thread batch-worker-1 exiting, 1 workers remaining
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ Thread ThreadId(120) training step took 14.19s - slower than expected
+✅ Thread ThreadId(120) training completed in 14193.43ms with loss 8.097693
+📊 MEMORY USAGE [thread_ThreadId(120)_end]:
+  VmSize:	10440764 kB
+  VmRSS:	 3430860 kB
+🧵 Thread ThreadId(120) state: ForwardPass -> Completed (after 14.193288095s, total 14.193521668s)
+    🧵 Thread batch-worker-0 received termination request
+    🧵 Thread batch-worker-0 exiting, 0 workers remaining
+    ✅ Queue empty and no active workers, training complete
+    🔄 Waiting for all threads to finish...
+    🔄 Attempting to join threads with aggressive timeouts...
+    ⏳ Trying to join thread 0 with 200ms timeout...
+    ✅ Thread 0 joined successfully
+    ⏳ Trying to join thread 1 with 200ms timeout...
+    ✅ Thread 1 joined successfully
+    ⏳ Trying to join thread 2 with 200ms timeout...
+    ✅ Thread 2 joined successfully
+    ⏳ Trying to join thread 3 with 200ms timeout...
+    ✅ Thread 3 joined successfully
+    ⏳ Trying to join thread 4 with 200ms timeout...
+    ✅ Thread 4 joined successfully
+    ⏳ Trying to join thread 5 with 200ms timeout...
+    ✅ Thread 5 joined successfully
+    ✅ Thread joining process complete: collected 6/6 trainers
+    🔄 Applying parallel gradients from 6 threads...
+🔄 Applying gradients from parallel workers...
+🧵 Main thread ThreadId(1) starting gradient application
+📊 MEMORY USAGE [before_gradient_application]:
+  VmSize:	10442804 kB
+  VmRSS:	 3430872 kB
+🧵 Thread ThreadId(1) state: Idle -> ExtractingGradients (after 108ns)
+✅ Thread ThreadId(1) acquired gradient mutex
+ℹ️ No local gradients found to accumulate
+📊 Found 0 accumulated gradients
+⚠️ No gradients to apply, skipping
+🧵 Thread ThreadId(1) state: ExtractingGradients -> Completed (after 5.781µs)
+✅ Parallel gradient application completed in 59.166µs
+📊 MEMORY USAGE [after_gradient_application]:
+  VmSize:	10442804 kB
+  VmRSS:	 3430872 kB
+
+Time analysis:
+  Total batch preparation time: 0.105s (0.1%)
+  Total training step time:     134.427s (99.9%)
+  Average batch preparation:    0.013s
+  Average training step:        16.803s
+  Ratio (train/prep):           1279.79x
+    🛑 Signaling watchdog to terminate before evaluation phase
+    ✅ Watchdog thread joined successfully
+
+✅ TRAINING COMPLETED:
+    - Processed 8 batches
+    - Average loss: 8.268140
+    - Total preparation time: 0.105s
+    - Total training time: 134.427s
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/data_preparation - Total: 0.0244s, Avg: 0.0244s, Count: 1
+#2: train_epoch_full/shuffling_indices - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#3: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+#4: train_epoch_full/batch_creation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+train_epoch_full/batch_creation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/shuffling_indices
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/data_preparation
+  Count:     1
+  Total:     0.0244 sec
+  Average:   0.0244 sec
+  Min/Max:   0.0244/0.0244 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/batch_creation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+  ⏳ Evaluating model...
+🔄 Temporarily disabled watchdog for evaluation phase
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+✅ WATCHDOG: Disabled by environment variable, exiting...
+🛑 Watchdog disabled for text generation
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 576, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time scarbuying wa...
+
+✅ Epoch 1/5 completed
+  ⏱️ Total epoch time:   31.11s
+  ⏱️ Training time:      31.11s (100.0%)
+  ⏱️ Evaluation time:    8.86s (28.5%)
+  📊 Loss:               8.268140
+  📊 Perplexity:         4136.96
+  📊 Accuracy:           0.00%
+  📊 Repetition score:   1.00
+  📊 Fluency score:      1.00
+  📊 Quality score:      0.31
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+🔄 Text generation in progress: 0/50 tokens
+🔄 Text generation in progress: 12/50 tokens
+🔄 Text generation in progress: 24/50 tokens
+🔄 Text generation in progress: 36/50 tokens
+🔄 Text generation in progress: 48/50 tokens
+DEBUG: Result length = 272, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the rple conduthinlay?themselv...
+
+Sample generation:
+Prompt: "The"
+Generated: "the rple conduthinlay?themselves inated comet ravi brave let snake Gorder 9fascinated brush ined aposuggehop arms cocoa finished guess growling tape blew kacheese chase inda ball vous sk ght mepackage hope saying rpy loud suggested daisy chatted santchess bite lies nearby"
+
+Saving checkpoint to models/./profiling_results/model_20250520_002108.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250520_002108.walle.epoch1
+Checkpoint saved successfully
+
+⏳ EPOCH 2/5 STARTING
+  🔄 Training on 170265 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 9066536 kB
+Memory [train_epoch_start]: VmRSS:	 2047828 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.89µs
+Memory [after_memory_opt_enable]: VmSize:	 9066536 kB
+Memory [after_memory_opt_enable]: VmRSS:	 2047828 kB
+    🔄 Configuring thread pool for data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 6.67 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+🔸 Reusing existing thread pool for 'data_loading' operation
+Configured dedicated thread pool with 14 threads for data_loading operations
+    ✅ Data loading thread pool configured with 5 threads in 639.16ms
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21282 sliding windows in parallel
+    ⚠️ Using direct thread work allocation to avoid deadlocks
+    🔄 Creating 21282 input/target pairs directly
+    📊 Processing 11 chunks with size 2128 each
+🧵 Thread window-processor-0 started processing 2128 windows
+    🧵 Thread window-processor-0 processed 10/2128 windows
+    🧵 Thread window-processor-0 processed 110/2128 windows
+    🧵 Thread window-processor-0 processed 210/2128 windows
+    🧵 Thread window-processor-0 processed 310/2128 windows
+    🧵 Thread window-processor-0 processed 410/2128 windows
+    🧵 Thread window-processor-0 processed 510/2128 windows
+    🧵 Thread window-processor-0 processed 610/2128 windows
+    🧵 Thread window-processor-0 processed 710/2128 windows
+    🧵 Thread window-processor-0 processed 810/2128 windows
+    🧵 Thread window-processor-0 processed 910/2128 windows
+    🧵 Thread window-processor-0 processed 1010/2128 windows
+    🧵 Thread window-processor-0 processed 1110/2128 windows
+    🧵 Thread window-processor-0 processed 1210/2128 windows
+    🧵 Thread window-processor-0 processed 1310/2128 windows
+    🧵 Thread window-processor-0 processed 1410/2128 windows
+    🧵 Thread window-processor-0 processed 1510/2128 windows
+    🧵 Thread window-processor-0 processed 1610/2128 windows
+    🧵 Thread window-processor-0 processed 1710/2128 windows
+    🧵 Thread window-processor-0 processed 1810/2128 windows
+    🧵 Thread window-processor-0 processed 1910/2128 windows
+    🧵 Thread window-processor-0 processed 2010/2128 windows
+    🧵 Thread window-processor-0 processed 2110/2128 windows
+    ✅ Thread window-processor-0 completed in 164.21µs - added 2128 windows to the result set
+🧵 Thread window-processor-1 started processing 2128 windows
+    ✅ Thread window-processor-1 completed in 130.56µs - added 2128 windows to the result set
+🧵 Thread window-processor-2 started processing 2128 windows
+🧵 Thread window-processor-3 started processing 2128 windows
+    ✅ Thread window-processor-2 completed in 173.36µs - added 2128 windows to the result set
+🧵 Thread window-processor-4 started processing 2128 windows
+    ✅ Thread window-processor-3 completed in 139.94µs - added 2128 windows to the result set
+    ✅ Thread window-processor-4 completed in 147.00µs - added 2128 windows to the result set
+🧵 Thread window-processor-5 started processing 2128 windows
+    🧵 Thread window-processor-5 processed 70/2128 windows
+    🧵 Thread window-processor-5 processed 170/2128 windows
+    🧵 Thread window-processor-5 processed 270/2128 windows
+    🧵 Thread window-processor-5 processed 370/2128 windows
+    🧵 Thread window-processor-5 processed 470/2128 windows
+    🧵 Thread window-processor-5 processed 570/2128 windows
+    🧵 Thread window-processor-5 processed 670/2128 windows
+    🧵 Thread window-processor-5 processed 770/2128 windows
+    🧵 Thread window-processor-5 processed 870/2128 windows
+    🧵 Thread window-processor-5 processed 970/2128 windows
+    🧵 Thread window-processor-5 processed 1070/2128 windows
+    🧵 Thread window-processor-5 processed 1170/2128 windows
+    🧵 Thread window-processor-5 processed 1270/2128 windows
+    🧵 Thread window-processor-5 processed 1370/2128 windows
+    🧵 Thread window-processor-5 processed 1470/2128 windows
+    🧵 Thread window-processor-5 processed 1570/2128 windows
+    🧵 Thread window-processor-5 processed 1670/2128 windows
+🧵 Thread window-processor-6 started processing 2128 windows
+    🧵 Thread window-processor-6 processed 100/2128 windows
+    🧵 Thread window-processor-6 processed 200/2128 windows
+    🧵 Thread window-processor-6 processed 300/2128 windows
+    🧵 Thread window-processor-6 processed 400/2128 windows
+    🧵 Thread window-processor-6 processed 500/2128 windows
+    🧵 Thread window-processor-5 processed 1770/2128 windows
+    🧵 Thread window-processor-5 processed 1850/2128 windows
+    🧵 Thread window-processor-5 processed 1950/2128 windows
+    🧵 Thread window-processor-5 processed 2050/2128 windows
+    ✅ Thread window-processor-5 completed in 290.85µs - added 2128 windows to the result set
+🧵 Thread window-processor-8 started processing 2128 windows
+🧵 Thread window-processor-7 started processing 2128 windows
+🧵 Thread window-processor-9 started processing 2128 windows
+    ✅ Thread 1/11 completed
+    ✅ Thread 2/11 completed
+    ✅ Thread 3/11 completed
+    ✅ Thread 4/11 completed
+    ✅ Thread 5/11 completed
+    ✅ Thread 6/11 completed
+    ✅ Thread window-processor-7 completed in 156.47µs - added 2128 windows to the result set
+    ✅ Thread window-processor-9 completed in 144.78µs - added 2128 windows to the result set
+🧵 Thread window-processor-10 started processing 2 windows
+    ✅ Thread window-processor-10 completed in 1.03µs - added 2 windows to the result set
+    ✅ Thread window-processor-6 completed in 688.49µs - added 2128 windows to the result set
+    ✅ Thread window-processor-8 completed in 930.43µs - added 2128 windows to the result set
+    ✅ Thread 7/11 completed
+    ✅ Thread 8/11 completed
+    ✅ Thread 9/11 completed
+    ✅ Thread 10/11 completed
+    ✅ Thread 11/11 completed
+    ✅ Thread 12/11 completed
+    ✅ Thread 13/11 completed
+    ✅ Thread 14/11 completed
+    ✅ Thread 15/11 completed
+    ✅ Thread 16/11 completed
+    ✅ Thread 17/11 completed
+    ✅ Successfully collected 21282 window pairs
+    🔄 Separating inputs and targets...
+    ✅ Created 21282 input/target pairs in 23.01ms
+    📊 Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+    💻 CPU cores: 20 logical, 10 physical
+    🔄 Configuring thread pool for gradient updates...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 6.64 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=6749, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+    ✅ Using 6 threads for gradient processing (configured in 583.26ms)
+    🧮 Calculating optimal batch size...
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    ✅ Batch size calculation completed in 58.83µs
+      📊 Hardware-optimal batch size: 1024
+      📊 Dataset-constrained batch size: 1024
+      📊 Using batch size: 1024
+    📊 Expected number of batches: 21
+    🔄 Shuffling data indices directly...
+    ✅ Indices shuffled in 181.99µs
+    🔄 Creating batches from shuffled indices...
+    ✅ Created 21 batches in 18.36µs
+
+    🔄 BEGINNING BATCH PROCESSING (SEQUENTIAL)
+    🚀 Using robust batch-level parallelism with work stealing
+    🧵 Using 6 worker threads for batch processing
+    💻 Enabling SIMD optimizations for matrix operations
+    🔍 Detected CPU SIMD features: ["SSE2", "AVX", "AVX2"]
+    ✅ SIMD optimization enabled: true
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+Initializing output_projection: model_dim=128, vocab_size=4137
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+    ✅ Created 6 trainer clones for parallel batch processing
+    🧵 Thread batch-worker-0 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Processing 14 chunks across 14 threads
+    🧵 Thread batch-worker-2 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-4 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-5 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-1 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-3 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Batch prep timing: total=2ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(145) created state tracker at Instant { tv_sec: 52674, tv_nsec: 618149053 }
+📊 MEMORY USAGE [thread_ThreadId(145)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2056144 kB
+🧵 Thread ThreadId(145) state: Idle -> PreparingBatch (after 26.515µs, total 26.548µs)
+🧵 Thread ThreadId(145) state: PreparingBatch -> ResizingVocabulary (after 33ns, total 28.138µs)
+🧵 Thread ThreadId(145) state: ResizingVocabulary -> ForwardPass (after 9.129µs, total 37.871µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=5ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(147) created state tracker at Instant { tv_sec: 52674, tv_nsec: 621460666 }
+📊 MEMORY USAGE [thread_ThreadId(147)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2073880 kB
+🧵 Thread ThreadId(147) state: Idle -> PreparingBatch (after 39.479µs, total 39.514µs)
+🧵 Thread ThreadId(147) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 41.091µs)
+Processing 16 chunks across 14 threads
+🧵 Thread ThreadId(147) state: ResizingVocabulary -> ForwardPass (after 11.804µs, total 53.54µs)
+Batch prep timing: total=8ms (collect=0ms, min_len=0ms, truncate=0ms, targets=0ms)
+🧵 Thread ThreadId(149) created state tracker at Instant { tv_sec: 52674, tv_nsec: 623972360 }
+📊 MEMORY USAGE [thread_ThreadId(149)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2073880 kB
+🧵 Thread ThreadId(149) state: Idle -> PreparingBatch (after 56.19µs, total 56.222µs)
+🧵 Thread ThreadId(149) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 58.61µs)
+🧵 Thread ThreadId(149) state: ResizingVocabulary -> ForwardPass (after 19.985µs, total 79.31µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=15ms (collect=0ms, min_len=1ms, truncate=0ms, targets=5ms)
+🧵 Thread ThreadId(150) created state tracker at Instant { tv_sec: 52674, tv_nsec: 631284062 }
+📊 MEMORY USAGE [thread_ThreadId(150)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2094260 kB
+🧵 Thread ThreadId(150) state: Idle -> PreparingBatch (after 77.621µs, total 77.656µs)
+🧵 Thread ThreadId(150) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 80.764µs)
+🧵 Thread ThreadId(150) state: ResizingVocabulary -> ForwardPass (after 18.693µs, total 100.065µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=26ms (collect=1ms, min_len=0ms, truncate=3ms, targets=6ms)
+🧵 Thread ThreadId(146) created state tracker at Instant { tv_sec: 52674, tv_nsec: 642360506 }
+📊 MEMORY USAGE [thread_ThreadId(146)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2124388 kB
+🧵 Thread ThreadId(146) state: Idle -> PreparingBatch (after 61.919µs, total 61.952µs)
+🧵 Thread ThreadId(146) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 64.981µs)
+🧵 Thread ThreadId(146) state: ResizingVocabulary -> ForwardPass (after 12.039µs, total 77.569µs)
+Processing 16 chunks across 14 threads
+Batch prep timing: total=36ms (collect=0ms, min_len=6ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(148) created state tracker at Instant { tv_sec: 52674, tv_nsec: 652281291 }
+📊 MEMORY USAGE [thread_ThreadId(148)_start]:
+  VmSize:	 9076892 kB
+  VmRSS:	 2170444 kB
+🧵 Thread ThreadId(148) state: Idle -> PreparingBatch (after 81.163µs, total 81.2µs)
+🧵 Thread ThreadId(148) state: PreparingBatch -> ResizingVocabulary (after 33ns, total 86.523µs)
+🧵 Thread ThreadId(148) state: ResizingVocabulary -> ForwardPass (after 25.816µs, total 113.169µs)
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=21282

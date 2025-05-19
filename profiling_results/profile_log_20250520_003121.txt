@@ -1,0 +1,1515 @@
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Axis` and `Ix3`
+ --> src/training/mod.rs:4:46
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, Axis, Ix1, Ix2, Ix3, Ix0, IxDyn, s};
+  |                                              ^^^^            ^^^
+
+warning: unused import: `ndarray::Array0`
+  --> src/training/mod.rs:12:5
+   |
+12 | use ndarray::Array0;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `ndarray::array`
+  --> src/training/mod.rs:13:5
+   |
+13 | use ndarray::array;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `crate::nabla::memory_opt`
+  --> src/training/enhanced_trainer.rs:15:5
+   |
+15 | use crate::nabla::memory_opt;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `MutexGuard` and `Mutex`
+ --> src/training/batch_dispatcher.rs:4:17
+  |
+4 | use std::sync::{Mutex, MutexGuard};
+  |                 ^^^^^  ^^^^^^^^^^
+
+warning: unused import: `std::thread::ThreadId`
+ --> src/training/batch_dispatcher.rs:5:5
+  |
+5 | use std::thread::ThreadId;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `v`
+  --> src/nabla/memory_opt.rs:88:15
+   |
+88 |     if let Ok(v) = std::env::var("MALLOC_ARENA_MAX") {
+   |               ^ help: if this is intentional, prefix it with an underscore: `_v`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:420:20
+    |
+420 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: unused variable: `tokens_to_add`
+    --> src/training/mod.rs:1259:13
+     |
+1259 |         let tokens_to_add = new_vocab_size - current_size;
+     |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_tokens_to_add`
+
+warning: variable `reported_progress` is assigned to, but never used
+   --> src/training/generation.rs:174:17
+    |
+174 |         let mut reported_progress = false;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_reported_progress` instead
+
+warning: value assigned to `reported_progress` is never read
+   --> src/training/generation.rs:181:17
+    |
+181 |                 reported_progress = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `batch`
+   --> src/training/enhanced_trainer.rs:535:34
+    |
+535 | ...   if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+
+warning: unused variable: `target`
+   --> src/training/enhanced_trainer.rs:535:47
+    |
+535 | ...ch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:539:29
+    |
+539 |                         let mut loss_guard = loss_mutex.lock().unwrap();
+    |                             ----^^^^^^^^^^
+    |                             |
+    |                             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: function `determine_allocator_type` is never used
+  --> src/nabla/memory_opt.rs:79:4
+   |
+79 | fn determine_allocator_type() -> Option<String> {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `get_total_elapsed` is never used
+   --> src/training/enhanced_trainer.rs:162:8
+    |
+131 | impl ThreadStateTracker {
+    | ----------------------- method in this implementation
+...
+162 |     fn get_total_elapsed(&self) -> std::time::Duration {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `run_with_timeout` is never used
+    --> src/training/enhanced_trainer.rs:1998:8
+     |
+198  | impl EnhancedTrainer {
+     | -------------------- method in this implementation
+...
+1998 |     fn run_with_timeout<F, T>(&self, f: F, timeout: std::time::Duration) -> Option<T> 
+     |        ^^^^^^^^^^^^^^^^
+
+warning: constant `V0_HEADER_SIZE` is never used
+  --> src/training/enhanced_trainer.rs:98:15
+   |
+98 |     pub const V0_HEADER_SIZE: usize = 32;
+   |               ^^^^^^^^^^^^^^
+
+warning: field `time` is never read
+  --> src/training/batch_dispatcher.rs:44:5
+   |
+40 | struct LockEvent {
+   |        --------- field in this struct
+...
+44 |     time: Instant,
+   |     ^^^^
+
+warning: `wall-e1` (lib) generated 20 warnings (run `cargo fix --lib -p wall-e1` to apply 8 suggestions)
+warning: unused imports: `Arc`, `AtomicUsize`, `Mutex`, and `Ordering`
+  --> src/bin/train_enhanced_model.rs:17:17
+   |
+17 | use std::sync::{Arc, Mutex, atomic::{AtomicUsize, Ordering}};
+   |                 ^^^  ^^^^^           ^^^^^^^^^^^  ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:47:13
+   |
+47 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `thread_count`
+   --> src/bin/train_enhanced_model.rs:371:13
+    |
+371 | ...let thread_count = if op == &"data_loading" { min_data_threads } else { pool.get_num_threads() };
+    |        ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_count`
+
+warning: unused variable: `setup_start`
+   --> src/bin/train_enhanced_model.rs:428:9
+    |
+428 |     let setup_start = Instant::now();
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_setup_start`
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:462:13
+    |
+462 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: variable `auto_resize_vocab` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:466:13
+    |
+466 |     let mut auto_resize_vocab = false;
+    |             ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_auto_resize_vocab` instead
+
+warning: variable `watchdog_timeout` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:467:13
+    |
+467 |     let mut watchdog_timeout: Option<u64> = None;
+    |             ^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_watchdog_timeout` instead
+
+warning: variable `target_id_max` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:469:13
+    |
+469 |     let mut target_id_max: Option<usize> = None;
+    |             ^^^^^^^^^^^^^
+    |
+    = note: consider using `_target_id_max` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:600:25
+    |
+600 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `auto_resize_vocab` is never read
+   --> src/bin/train_enhanced_model.rs:606:17
+    |
+606 |                 auto_resize_vocab = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `watchdog_timeout` is never read
+   --> src/bin/train_enhanced_model.rs:612:25
+    |
+612 |                         watchdog_timeout = Some(timeout);
+    |                         ^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `target_id_max` is never read
+   --> src/bin/train_enhanced_model.rs:628:25
+    |
+628 |                         target_id_max = Some(max_id);
+    |                         ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:1109:9
+     |
+1109 |     let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+     |         ----^^^^^^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `sliding_windows_start`
+    --> src/bin/train_enhanced_model.rs:1231:9
+     |
+1231 |     let sliding_windows_start = Instant::now();
+     |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_sliding_windows_start`
+
+warning: unused variable: `epoch`
+    --> src/bin/train_enhanced_model.rs:1219:68
+     |
+1219 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize, 
+     |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+
+warning: unused variable: `batch_inputs`
+    --> src/bin/train_enhanced_model.rs:1423:10
+     |
+1423 | ...t (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.instal...
+     |       ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_inputs`
+
+warning: unused variable: `min_seq_len`
+    --> src/bin/train_enhanced_model.rs:1423:24
+     |
+1423 | ...ts, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |        ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_seq_len`
+
+warning: unused variable: `k`
+    --> src/bin/train_enhanced_model.rs:1694:13
+     |
+1694 |     let (m, k) = a.dim();
+     |             ^ help: if this is intentional, prefix it with an underscore: `_k`
+
+warning: function `prepare_batch_parallel` is never used
+    --> src/bin/train_enhanced_model.rs:1387:4
+     |
+1387 | fn prepare_batch_parallel(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `detect_simd_features` is never used
+    --> src/bin/train_enhanced_model.rs:1606:4
+     |
+1606 | fn detect_simd_features() -> Vec<String> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `enable_simd_optimizations` is never used
+    --> src/bin/train_enhanced_model.rs:1643:4
+     |
+1643 | fn enable_simd_optimizations(features: &[String]) -> bool {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_simd` is never used
+    --> src/bin/train_enhanced_model.rs:1689:4
+     |
+1689 | fn matrix_multiply_simd(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>) -> ndarray::Array2<f32> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_avx2` is never used
+    --> src/bin/train_enhanced_model.rs:1759:4
+     |
+1759 | fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::...
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_scalar` is never used
+    --> src/bin/train_enhanced_model.rs:1765:4
+     |
+1765 | fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray...
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (bin "Wall-E") generated 24 warnings (run `cargo fix --bin "Wall-E"` to apply 2 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/Wall-E --stories 500 --model-dim 128 --ff-dim 512 --layers 2 --epochs 5 --perf-log true --save-path ./profiling_results/model_20250520_003121.json --json-format --use-memory-opt --curriculum-examples 500 --checkpoint-strategy adaptive --thread-opt gradient_update --watchdog-timeout 180 --data-threads 12 --target-id-max 10000 --auto-resize-vocab --vocab-size 10000 --min-freq 2 --enable-skip --strong-anti-rep ./data/tiny_stories_sample.json`
+Detected 20 CPU cores
+🔧 Setting WALL_E_DATA_THREADS to 14 for better parallelism (fixing low CPU usage)
+Memory [startup]: VmSize:	    5412 kB
+Memory [startup]: VmRSS:	    1484 kB
+
+📊 DETAILED STARTUP TIMING 📊
+⏳ Initializing thread pools...
+Creating thread pool with 19 threads for general operations
+  ✅ Global thread pool initialized with 19 threads (1.71ms)
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+  ✅ Thread pool for 'matrix_multiply' initialized with 19 threads (1.17ms)
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool for 'gradient_update' initialized with 15 threads (1.14ms)
+Using WALL_E_DATA_THREADS=14 from environment
+🔹 Creating dedicated thread pool for 'data_loading' operation with 14 threads
+Creating thread pool with 14 threads for data_loading operations
+  ✅ Thread pool for 'data_loading' initialized with 14 threads (585.54µs)
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+  ✅ Thread pool for 'attention' initialized with 19 threads (1.51ms)
+✅ Thread pools initialized in 6.16ms
+⏳ Configuring memory allocator...
+  ✅ Cache detection completed in 23.94µs
+     L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+  ✅ Memory allocator configured in 62.07µs
+  ✅ Memory bandwidth measured in 533.16ms: 8.63 GB/s
+✅ Memory optimizations completed in 533.28ms
+✅ Total initialization completed in 539.44ms
+
+Memory and thread optimizations configured
+
+🔄 STARTING APPLICATION SETUP 🔄
+⏳ Parsing command line arguments...
+  Processing 37 command line arguments
+Watchdog timeout set to 180 seconds
+Data loading threads set to 12
+Maximum target ID pre-allocated to 10000
+Automatic vocabulary resizing enabled
+🔄 Setting WALL_E_DATA_THREADS=12 for data loading operations
+✅ Arguments parsed in 4.79µs
+⏳ Configuring thread pool with 19 CPU cores
+
+🔄 TRAINING SETUP PHASE 🔄
+Training Configuration:
+  Training data: ./data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 500
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 2
+  Dropout rate: 0.1
+  Learning rate: 0.001
+  Epochs: 5
+  Curriculum learning: enabled
+  Vocabulary size: 10000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: ./profiling_results/model_20250520_003121.json
+  CPU threads: 19
+  Performance logging: enabled
+
+⏳ Reading training data (single-threaded operation)...
+  🔄 Reading JSON file from ./data/tiny_stories_sample.json...
+Found 58300 stories in JSON file
+Will use 500 stories for training
+Processed 500 stories, total text length: 440902 characters
+  ✅ JSON data loaded in 48.81ms, 440902 characters
+✅ Training data loaded in 49.13ms
+Memory [after_data_loading]: VmSize:	 7155996 kB
+Memory [after_data_loading]: VmRSS:	   62340 kB
+
+⏳ Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=128, vocab_size=101
+  🔄 Configuring trainer options...
+  ✅ Trainer options configured in 47.00ns
+  🔄 Enabling memory optimization with gradient checkpointing...
+Memory optimization enabled with gradient checkpointing
+  🔄 Using adaptive checkpoint strategy
+Gradient checkpointing strategy set to Adaptive
+  ✅ Memory optimization configured in 3.06µs
+Memory [after_memory_opt_enable]: VmSize:	 7155996 kB
+Memory [after_memory_opt_enable]: VmRSS:	   62340 kB
+  🔄 Configuring thread pool for gradient_update operations...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.15 GB/s
+Estimated bandwidth per thread: 0.00 GB/s
+Thread count calculation: bandwidth_limit=8286, compute_limit=12, adjusted=6, final=6
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool configured with 6 threads for gradient_update operations in 480.06ms
+✅ Trainer initialization completed in 484.93ms
+
+⏳ Configuring strong anti-repetition mechanisms...
+✅ Anti-repetition configured in 4.75µs
+
+⏳ Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=128, vocab_size=101
+Skip connections of type 'residual' enabled
+✅ Skip connections enabled in 5.30ms
+
+⏳ Learning tokenizer vocabulary (single-threaded operation)...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 45 chunks
+Starting parallel vocabulary learning with 45 chunks
+Using global thread pool with 19 threads
+Word counting completed in 12.71ms, found 3578 unique words
+Learning up to 9899 merges to reach vocab size 10000
+  Learned 1 merges (0.0%) in 982.28µs...
+  Learned 1001 merges (10.1%) in 680.81ms...
+  Learned 2001 merges (20.2%) in 1.20s...
+  Learned 3001 merges (30.3%) in 1.54s...
+  Learned 4001 merges (40.4%) in 1.71s...
+Parallel BPE learning completed in 1.74s, vocabulary size: 4270
+Learned 4170 merge operations
+Tokenizer vocabulary learned: 4270 tokens (from requested max: 10000)
+Initializing output_projection: model_dim=128, vocab_size=4270
+Resizing output projection to match vocabulary size: 4270
+Vocabulary learning completed in 1.74s
+✅ Tokenizer vocabulary learned in 1.74s
+
+⏳ Splitting training/validation data...
+✅ Data split in 2.76µs: 396811 characters for training, 44091 for validation
+
+⏳ Setting up curriculum learning...
+
+⏳ Tokenizing data (single-threaded operation)...
+  🔄 Tokenizing training data (396811 characters)...
+  ✅ Training data tokenized in 377.13ms: 174020 tokens
+  🔄 Tokenizing validation data (44091 characters)...
+  ✅ Validation data tokenized in 44.59ms: 19221 tokens
+✅ All data tokenized in 421.78ms
+Memory [after_tokenization]: VmSize:	 7155996 kB
+Memory [after_tokenization]: VmRSS:	   68196 kB
+
+⏳ Preparing validation dataset...
+    🔄 Configuring thread pool for validation data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.20 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+    ✅ Using 5 threads for validation data preparation
+🔸 Reusing existing thread pool for 'data_loading' operation
+    ✅ Using thread pool with 14 threads for validation data
+✅ Validation data prepared in 510.34ms: 2101 examples
+
+✅ TRAINING SETUP COMPLETED in 3.22s
+Starting training for 5 epochs...
+
+🔄 BEGINNING TRAINING PROCESS 🔄
+
+⏳ EPOCH 1/5 STARTING
+  🔄 Training on 174020 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7155996 kB
+Memory [train_epoch_start]: VmRSS:	   69248 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.97µs
+Memory [after_memory_opt_enable]: VmSize:	 7155996 kB
+Memory [after_memory_opt_enable]: VmRSS:	   69248 kB
+    🧐 Verifying model initialization before training...
+🔍 Verifying model initialization...
+Model verification:
+  Tokenizer vocabulary size: 4270
+  Model vocabulary size: 4270
+  Model dimensions: 128x512x4x2
+✅ Model vocabulary size is consistent with tokenizer
+✅ Model verification complete - ready for training
+    ✅ Model initialization verified in 3.05µs
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21751 sliding windows
+    🔒 Using reliable single-threaded data preparation
+    ✅ Created 21751 input/target pairs in 1.13ms
+Memory [after_data_preparation]: VmSize:	 7155996 kB
+Memory [after_data_preparation]: VmRSS:	   69248 kB
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    📊 Using batch size: 1024
+    🔄 Creating batches...
+    ✅ Created 22 batches in 782.34µs
+    🔒 Using reliable single-threaded training method
+🔒 Using reliable single-threaded training mode
+✅ Successfully pre-processed all batches
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53211, tv_nsec: 668727590 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7155996 kB
+  VmRSS:	   69248 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 16.482µs, total 16.513µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 17.753µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 11.764µs, total 30.094µs)
+✅ Thread ThreadId(1) training completed in 8409.97ms with loss 8.359374
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  339980 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.41001631s, total 8.410046931s)
+  Batch 1/22 - Loss: 8.359374
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53220, tv_nsec: 78780013 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  339980 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.103µs, total 10.141µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.91µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 14.934µs, total 26.366µs)
+✅ Thread ThreadId(1) training completed in 8872.40ms with loss 8.074051
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  345260 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.872442147s, total 8.872469167s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53228, tv_nsec: 951252941 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  345260 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 8.571µs, total 8.612µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 9.336µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.789µs, total 23.67µs)
+✅ Thread ThreadId(1) training completed in 8333.13ms with loss 7.804531
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  341512 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.333185255s, total 8.333209481s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53237, tv_nsec: 284468697 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  341512 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.418µs, total 10.461µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 11.318µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 34.117µs, total 45.966µs)
+✅ Thread ThreadId(1) training completed in 8461.14ms with loss 7.5451083
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355768 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.461161078s, total 8.461216366s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53245, tv_nsec: 745689855 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355768 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 13.568µs, total 13.629µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 36ns, total 14.817µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 27.138µs, total 42.763µs)
+✅ Thread ThreadId(1) training completed in 8279.46ms with loss 7.2834635
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  356824 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.279494403s, total 8.2795387s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53254, tv_nsec: 25233269 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  356824 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.145µs, total 9.174µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 9.903µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.232µs, total 28.658µs)
+✅ Thread ThreadId(1) training completed in 8069.47ms with loss 7.0333543
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357088 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.069515283s, total 8.069544493s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53262, tv_nsec: 94783518 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357088 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.491µs, total 9.534µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 10.34µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.251µs, total 26.281µs)
+✅ Thread ThreadId(1) training completed in 8394.53ms with loss 6.8054323
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357616 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.394571812s, total 8.394598682s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53270, tv_nsec: 489386136 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357616 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.819µs, total 9.859µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 10.594µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 14.342µs, total 25.476µs)
+✅ Thread ThreadId(1) training completed in 8633.91ms with loss 6.5988646
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359464 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.633973414s, total 8.633999434s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53279, tv_nsec: 123392143 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359464 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.933µs, total 10.977µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 11.952µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 21.661µs, total 34.14µs)
+✅ Thread ThreadId(1) training completed in 8580.52ms with loss 6.376454
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359992 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.580559167s, total 8.580593933s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53287, tv_nsec: 703993381 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359992 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.346µs, total 9.39µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 10.219µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 12.781µs, total 23.635µs)
+✅ Thread ThreadId(1) training completed in 8565.19ms with loss 6.148821
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  332428 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.565243475s, total 8.565267618s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53296, tv_nsec: 269264803 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  332428 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 11.349µs, total 11.389µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 12.255µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.784µs, total 26.596µs)
+✅ Thread ThreadId(1) training completed in 8421.10ms with loss 6.012805
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362260 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.421150344s, total 8.421177496s)
+  Batch 11/22 - Loss: 6.012805
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53304, tv_nsec: 690447668 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362260 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 11.02µs, total 11.075µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 11.968µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.675µs, total 28.21µs)
+✅ Thread ThreadId(1) training completed in 8495.70ms with loss 5.8107777
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362524 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.495749869s, total 8.495787517s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53313, tv_nsec: 186240519 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362524 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.121µs, total 10.163µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.935µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 20.362µs, total 31.836µs)
+✅ Thread ThreadId(1) training completed in 8339.16ms with loss 5.636858
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363316 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.339212943s, total 8.339245277s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53321, tv_nsec: 525490479 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363316 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 13.177µs, total 13.225µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 14.02µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.686µs, total 33.326µs)
+✅ Thread ThreadId(1) training completed in 8344.46ms with loss 5.488975
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363316 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.344496865s, total 8.344530779s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53329, tv_nsec: 870025417 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363316 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 12.426µs, total 12.477µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 13.448µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 20.09µs, total 34.366µs)
+✅ Thread ThreadId(1) training completed in 8790.83ms with loss 5.319624
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363580 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.790903362s, total 8.790938417s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53338, tv_nsec: 660968524 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363580 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.545µs, total 10.592µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 11.481µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 37.926µs, total 50.023µs)
+✅ Thread ThreadId(1) training completed in 8914.32ms with loss 5.186763
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  335756 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.914359854s, total 8.914410434s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53347, tv_nsec: 575383078 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  335756 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.05µs, total 10.093µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.962µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.573µs, total 27.067µs)
+✅ Thread ThreadId(1) training completed in 8445.32ms with loss 5.0914893
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  284176 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.445362589s, total 8.445390178s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53356, tv_nsec: 20776896 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  284176 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.287µs, total 9.335µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.057µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.999µs, total 24.551µs)
+✅ Thread ThreadId(1) training completed in 8362.67ms with loss 4.900183
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357832 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.362710722s, total 8.362735769s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53364, tv_nsec: 383516894 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357832 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.286µs, total 9.337µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 10.129µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.72µs, total 24.446µs)
+✅ Thread ThreadId(1) training completed in 8629.45ms with loss 4.790441
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359944 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.629502248s, total 8.629527276s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53373, tv_nsec: 13048463 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359944 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.537µs, total 9.579µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 10.349µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.222µs, total 27.159µs)
+✅ Thread ThreadId(1) training completed in 8612.71ms with loss 4.6939154
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  366016 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.61275194s, total 8.612779596s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53381, tv_nsec: 625831781 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  366016 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.605µs, total 9.645µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.43µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 12.833µs, total 23.904µs)
+✅ Thread ThreadId(1) training completed in 8486.71ms with loss 4.5872073
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  289700 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.486762798s, total 8.486787234s)
+  Batch 21/22 - Loss: 4.587207
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53390, tv_nsec: 112624623 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  289700 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.593µs, total 9.635µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.422µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 4.181µs, total 15.157µs)
+✅ Thread ThreadId(1) training completed in 2162.60ms with loss 4.581718
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7241204 kB
+  VmRSS:	  394628 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 2.162655213s, total 2.162670886s)
+  Batch 22/22 - Loss: 4.581718
+Epoch 1 completed with average loss: 6.096828
+    ✅ Completed epoch training in 180.61s with loss: 6.096828
+Memory [train_epoch_end]: VmSize:	 7241204 kB
+Memory [train_epoch_end]: VmRSS:	  394628 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 0.0012s, Avg: 0.0012s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     0.0012 sec
+  Average:   0.0012 sec
+  Min/Max:   0.0012/0.0012 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+  ⏳ Evaluating model...
+🔄 Temporarily disabled watchdog for evaluation phase
+🛑 Watchdog disabled for text generation
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 499, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time,.!"her she wa...
+
+✅ Epoch 1/5 completed
+  ⏱️ Total epoch time:   180.61s
+  ⏱️ Training time:      180.61s (100.0%)
+  ⏱️ Evaluation time:    9.21s (5.1%)
+  📊 Loss:               6.096828
+  📊 Perplexity:         83.08
+  📊 Accuracy:           43.81%
+  📊 Repetition score:   1.00
+  📊 Fluency score:      0.93
+  📊 Quality score:      0.64
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+🔄 Text generation in progress: 0/50 tokens
+🔄 Text generation in progress: 12/50 tokens
+🔄 Text generation in progress: 24/50 tokens
+🔄 Text generation in progress: 36/50 tokens
+🔄 Text generation in progress: 48/50 tokens
+DEBUG: Result length = 194, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the missed look but to.and, we...
+
+Sample generation:
+Prompt: "The"
+Generated: "the missed look but to.and, we he sour"a she i was his her to it.not of tasted driver.'it strong s you uce little metal firewere they sees kissed each birds lily books said watch unpack ake with"
+
+Saving checkpoint to models/./profiling_results/model_20250520_003121.walle.epoch1
+Saving model in JSON format
+Saving model in binary format...
+Model successfully saved to: models/./profiling_results/model_20250520_003121.walle.epoch1
+Checkpoint saved successfully
+
+⏳ EPOCH 2/5 STARTING
+  🔄 Training on 174020 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7241204 kB
+Memory [train_epoch_start]: VmRSS:	  394628 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.39µs
+Memory [after_memory_opt_enable]: VmSize:	 7241204 kB
+Memory [after_memory_opt_enable]: VmRSS:	  394628 kB
+    🧐 Verifying model initialization before training...
+🔍 Verifying model initialization...
+Model verification:
+  Tokenizer vocabulary size: 4270
+  Model vocabulary size: 4270
+  Model dimensions: 128x512x4x2
+✅ Model vocabulary size is consistent with tokenizer
+✅ Model verification complete - ready for training
+    ✅ Model initialization verified in 1.96µs
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21751 sliding windows
+    🔒 Using reliable single-threaded data preparation
+    ✅ Created 21751 input/target pairs in 1.48ms
+Memory [after_data_preparation]: VmSize:	 7241204 kB
+Memory [after_data_preparation]: VmRSS:	  394628 kB
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    📊 Using batch size: 1024
+    🔄 Creating batches...
+    ✅ Created 22 batches in 1.02ms
+    🔒 Using reliable single-threaded training method
+🔒 Using reliable single-threaded training mode
+✅ Successfully pre-processed all batches
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53402, tv_nsec: 839969723 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7241204 kB
+  VmRSS:	  394628 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 21.957µs, total 21.992µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 50ns, total 23.704µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 57.479µs, total 81.901µs)
+✅ Thread ThreadId(1) training completed in 8420.21ms with loss 4.3709846
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  328128 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.420184178s, total 8.420278447s)
+  Batch 1/22 - Loss: 4.370985
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53411, tv_nsec: 260252828 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  328128 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.591µs, total 9.633µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.403µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.306µs, total 24.307µs)
+✅ Thread ThreadId(1) training completed in 8131.33ms with loss 4.2229056
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359280 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.131377821s, total 8.131402666s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53419, tv_nsec: 391659911 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359280 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.423µs, total 9.464µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 10.261µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.979µs, total 27.798µs)
+✅ Thread ThreadId(1) training completed in 8303.09ms with loss 4.1895833
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361128 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.303152128s, total 8.30318243s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53427, tv_nsec: 694847003 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361128 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.252µs, total 10.295µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 11.081µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 23.714µs, total 35.306µs)
+✅ Thread ThreadId(1) training completed in 8682.53ms with loss 4.1292243
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361920 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.68257379s, total 8.682609883s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53436, tv_nsec: 377461188 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361920 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.311µs, total 9.358µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 10.097µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.418µs, total 29.094µs)
+✅ Thread ThreadId(1) training completed in 8230.94ms with loss 4.0317035
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361920 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.230983127s, total 8.231012749s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53444, tv_nsec: 608477691 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361920 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.382µs, total 9.424µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 24ns, total 10.193µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.853µs, total 24.63µs)
+✅ Thread ThreadId(1) training completed in 8352.20ms with loss 3.952153
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362184 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.352261657s, total 8.352286866s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53452, tv_nsec: 960769590 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362184 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.31µs, total 10.346µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 11.366µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 17.142µs, total 29.101µs)
+✅ Thread ThreadId(1) training completed in 8776.66ms with loss 3.8967888
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363240 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.776717273s, total 8.776747049s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53461, tv_nsec: 737520607 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363240 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.714µs, total 9.75µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.606µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.667µs, total 29.878µs)
+⚠️ Thread ThreadId(1) training step took 10.29s - slower than expected
+✅ Thread ThreadId(1) training completed in 10293.90ms with loss 3.8721957
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  348404 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 10.293913441s, total 10.293943867s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53472, tv_nsec: 31470165 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  348404 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.69µs, total 9.733µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.617µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 17.522µs, total 28.773µs)
+✅ Thread ThreadId(1) training completed in 8461.42ms with loss 3.7860358
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362660 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.461453099s, total 8.461482405s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53480, tv_nsec: 492956867 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  362660 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 22.259µs, total 22.306µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 24ns, total 23.202µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.557µs, total 37.253µs)
+✅ Thread ThreadId(1) training completed in 8480.24ms with loss 3.7423935
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363188 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.480276638s, total 8.480314368s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53488, tv_nsec: 973275444 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363188 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.178µs, total 9.219µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 9.971µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.972µs, total 27.497µs)
+✅ Thread ThreadId(1) training completed in 8699.49ms with loss 3.7653694
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363452 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.699530859s, total 8.699558912s)
+  Batch 11/22 - Loss: 3.765369
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53497, tv_nsec: 672840042 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363452 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 11.339µs, total 11.377µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 12.272µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 14.729µs, total 27.601µs)
+✅ Thread ThreadId(1) training completed in 9717.83ms with loss 3.7171698
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363716 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 9.717879638s, total 9.717907811s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53507, tv_nsec: 390752182 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363716 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 8.773µs, total 8.822µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 9.595µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 12.231µs, total 22.372µs)
+✅ Thread ThreadId(1) training completed in 8662.05ms with loss 3.7147481
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363716 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.662096019s, total 8.662126576s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53516, tv_nsec: 52883269 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  363716 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.981µs, total 11.031µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 31ns, total 12.059µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.7µs, total 28.41µs)
+✅ Thread ThreadId(1) training completed in 8663.89ms with loss 3.7027006
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  349936 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.663931398s, total 8.66396067s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53524, tv_nsec: 716847653 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  349936 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 12.5µs, total 12.541µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 13.379µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.174µs, total 33.401µs)
+✅ Thread ThreadId(1) training completed in 8669.15ms with loss 3.669542
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  287872 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.669205999s, total 8.669239932s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53533, tv_nsec: 386091841 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  287872 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.422µs, total 9.464µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 30ns, total 10.236µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 17.027µs, total 27.827µs)
+✅ Thread ThreadId(1) training completed in 8228.63ms with loss 3.6792738
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358624 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.228671145s, total 8.22869968s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53541, tv_nsec: 614795222 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358624 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.176µs, total 9.221µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 24ns, total 9.931µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.836µs, total 24.303µs)
+✅ Thread ThreadId(1) training completed in 8413.05ms with loss 3.7316763
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359680 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.41310325s, total 8.413128064s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53550, tv_nsec: 27927109 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359680 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.164µs, total 9.208µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 9.932µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.065µs, total 26.54µs)
+✅ Thread ThreadId(1) training completed in 8402.79ms with loss 3.6381915
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360472 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.402818116s, total 8.402845257s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53558, tv_nsec: 430776674 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360472 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 13.721µs, total 13.76µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 14.694µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.257µs, total 31.605µs)
+✅ Thread ThreadId(1) training completed in 8401.82ms with loss 3.6542888
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360472 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.401876924s, total 8.40190959s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53566, tv_nsec: 832690441 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360472 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.164µs, total 9.206µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 9.939µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.9µs, total 24.424µs)
+✅ Thread ThreadId(1) training completed in 8814.16ms with loss 3.6688166
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361792 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.814214608s, total 8.814239729s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53575, tv_nsec: 646935914 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  361792 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 12.659µs, total 12.706µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 13.574µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.285µs, total 29.41µs)
+✅ Thread ThreadId(1) training completed in 8701.65ms with loss 3.6979518
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  301108 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.701690573s, total 8.701720647s)
+  Batch 21/22 - Loss: 3.697952
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53584, tv_nsec: 348661030 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  301108 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.211µs, total 9.258µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 23ns, total 9.981µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 4.251µs, total 14.754µs)
+✅ Thread ThreadId(1) training completed in 2199.00ms with loss 3.7139168
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7241204 kB
+  VmRSS:	  404980 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 2.199042703s, total 2.199057982s)
+  Batch 22/22 - Loss: 3.713917
+Epoch 2 completed with average loss: 3.843074
+    ✅ Completed epoch training in 183.71s with loss: 3.843074
+Memory [train_epoch_end]: VmSize:	 7241204 kB
+Memory [train_epoch_end]: VmRSS:	  404980 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 0.0015s, Avg: 0.0015s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     0.0015 sec
+  Average:   0.0015 sec
+  Min/Max:   0.0015/0.0015 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+  ⏳ Evaluating model...
+🔄 Temporarily disabled watchdog for evaluation phase
+🛑 Watchdog disabled for text generation
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
+DEBUG: Result length = 482, prompt length = 16
+DEBUG: Using model-generated text.
+Generated preview: once upon a time called.but,sa...
+
+✅ Epoch 2/5 completed
+  ⏱️ Total epoch time:   183.71s
+  ⏱️ Training time:      183.71s (100.0%)
+  ⏱️ Evaluation time:    8.70s (4.7%)
+  📊 Loss:               3.843074
+  📊 Perplexity:         42.01
+  📊 Accuracy:           43.25%
+  📊 Repetition score:   1.00
+  📊 Fluency score:      0.89
+  📊 Quality score:      0.70
+Generating text with prompt: "The" (max_tokens=50)
+Attempting to use model for text generation...
+🔄 Text generation in progress: 0/50 tokens
+🔄 Text generation in progress: 12/50 tokens
+🔄 Text generation in progress: 24/50 tokens
+🔄 Text generation in progress: 36/50 tokens
+🔄 Text generation in progress: 48/50 tokens
+DEBUG: Result length = 209, prompt length = 3
+DEBUG: Using model-generated text.
+Generated preview: the exciting shelf she was.tim...
+
+Sample generation:
+Prompt: "The"
+Generated: "the exciting shelf she was.time loved the himself forit ed put!goat, together t so named next with friends and he to's felt streets tree could who.help together is irl?playing fluffy we called home decided how"
+
+
+⏳ EPOCH 3/5 STARTING
+  🔄 Training on 174020 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7241204 kB
+Memory [train_epoch_start]: VmRSS:	  404980 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.53µs
+Memory [after_memory_opt_enable]: VmSize:	 7241204 kB
+Memory [after_memory_opt_enable]: VmRSS:	  404980 kB
+    🧐 Verifying model initialization before training...
+🔍 Verifying model initialization...
+Model verification:
+  Tokenizer vocabulary size: 4270
+  Model vocabulary size: 4270
+  Model dimensions: 128x512x4x2
+✅ Model vocabulary size is consistent with tokenizer
+✅ Model verification complete - ready for training
+    ✅ Model initialization verified in 1.95µs
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 21751 sliding windows
+    🔒 Using reliable single-threaded data preparation
+    ✅ Created 21751 input/target pairs in 1.08ms
+Memory [after_data_preparation]: VmSize:	 7241204 kB
+Memory [after_data_preparation]: VmRSS:	  404980 kB
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    📊 Using batch size: 1024
+    🔄 Creating batches...
+    ✅ Created 22 batches in 740.69µs
+    🔒 Using reliable single-threaded training method
+🔒 Using reliable single-threaded training mode
+✅ Successfully pre-processed all batches
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53596, tv_nsec: 575802292 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7241204 kB
+  VmRSS:	  404980 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 25.412µs, total 25.445µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 26.821µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 12.438µs, total 39.862µs)
+✅ Thread ThreadId(1) training completed in 8451.79ms with loss 3.6376758
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357340 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.451821344s, total 8.451861773s)
+  Batch 1/22 - Loss: 3.637676
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53605, tv_nsec: 27669234 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357340 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.583µs, total 10.617µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 11.486µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.801µs, total 25.867µs)
+✅ Thread ThreadId(1) training completed in 8402.88ms with loss 3.5719485
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358132 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.402934259s, total 8.402960652s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53613, tv_nsec: 430633886 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358132 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.782µs, total 9.831µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.611µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.072µs, total 26.285µs)
+✅ Thread ThreadId(1) training completed in 8411.83ms with loss 3.584333
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358396 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.411883006s, total 8.411909877s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53621, tv_nsec: 842551479 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358396 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.256µs, total 10.29µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 11.071µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 14.48µs, total 26.085µs)
+✅ Thread ThreadId(1) training completed in 8565.19ms with loss 3.6167881
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358660 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.565239565s, total 8.565266504s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53630, tv_nsec: 407822048 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358660 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.138µs, total 10.177µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.982µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.656µs, total 27.179µs)
+✅ Thread ThreadId(1) training completed in 8470.32ms with loss 3.5513139
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360244 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.470364534s, total 8.470392245s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53638, tv_nsec: 878222726 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360244 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 14.106µs, total 14.153µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 14.935µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.312µs, total 31.775µs)
+✅ Thread ThreadId(1) training completed in 8507.78ms with loss 3.5261238
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  284664 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.507814551s, total 8.507846838s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53647, tv_nsec: 386074098 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  284664 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.536µs, total 9.585µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 10.366µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.751µs, total 24.713µs)
+✅ Thread ThreadId(1) training completed in 8396.11ms with loss 3.5288897
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355152 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.396153892s, total 8.396179169s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53655, tv_nsec: 782257235 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355152 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.247µs, total 9.292µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 10.075µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.61µs, total 24.237µs)
+✅ Thread ThreadId(1) training completed in 8329.69ms with loss 3.5408666
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355680 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.329739267s, total 8.329764089s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53664, tv_nsec: 112024968 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  355680 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 12.536µs, total 12.583µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 13.357µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 13.686µs, total 27.606µs)
+✅ Thread ThreadId(1) training completed in 8472.99ms with loss 3.4981852
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357000 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.473023565s, total 8.473051699s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53672, tv_nsec: 585080876 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357000 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.448µs, total 9.473µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.27µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 22.57µs, total 33.469µs)
+✅ Thread ThreadId(1) training completed in 8389.17ms with loss 3.471402
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357264 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.389202577s, total 8.389244841s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53680, tv_nsec: 974330037 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  357264 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.399µs, total 9.431µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.185µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.235µs, total 27.033µs)
+✅ Thread ThreadId(1) training completed in 8623.89ms with loss 3.5244064
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359112 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.623952026s, total 8.62397958s)
+  Batch 11/22 - Loss: 3.524406
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53689, tv_nsec: 598315134 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359112 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.217µs, total 10.256µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 11.054µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.713µs, total 30.318µs)
+✅ Thread ThreadId(1) training completed in 8642.43ms with loss 3.4857552
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360696 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.642470707s, total 8.642501584s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53698, tv_nsec: 240820913 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360696 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.904µs, total 9.942µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.756µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.324µs, total 29.713µs)
+✅ Thread ThreadId(1) training completed in 8547.22ms with loss 3.4901423
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  315656 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.54726024s, total 8.547290567s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53706, tv_nsec: 788115774 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  315656 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.449µs, total 9.494µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.312µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 17.965µs, total 28.898µs)
+✅ Thread ThreadId(1) training completed in 8511.73ms with loss 3.4793398
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358424 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.511803395s, total 8.511832817s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53715, tv_nsec: 299952606 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358424 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.197µs, total 10.242µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 10.99µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 27.596µs, total 39.128µs)
+✅ Thread ThreadId(1) training completed in 8400.37ms with loss 3.4451218
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358952 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.40035991s, total 8.40044542s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53723, tv_nsec: 700401987 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  358952 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.192µs, total 9.232µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 10.019µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 16.601µs, total 27.202µs)
+✅ Thread ThreadId(1) training completed in 8531.92ms with loss 3.4569852
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359216 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.53196481s, total 8.531992569s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53732, tv_nsec: 232398950 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359216 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.031µs, total 10.068µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 10.897µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.476µs, total 29.911µs)
+✅ Thread ThreadId(1) training completed in 8420.78ms with loss 3.5085876
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359216 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.420817566s, total 8.420847993s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53740, tv_nsec: 653251638 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359216 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.954µs, total 9.987µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 10.787µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 19.15µs, total 30.518µs)
+✅ Thread ThreadId(1) training completed in 8743.02ms with loss 3.4097483
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360800 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.743064663s, total 8.743105077s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53749, tv_nsec: 396360643 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  360800 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.036µs, total 9.082µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 23ns, total 9.876µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 17.366µs, total 27.768µs)
+✅ Thread ThreadId(1) training completed in 8620.63ms with loss 3.4238966
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  317056 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.620672459s, total 8.620700783s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53758, tv_nsec: 17066310 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  317056 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 10.137µs, total 10.178µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 41ns, total 11.756µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.742µs, total 31.114µs)
+✅ Thread ThreadId(1) training completed in 8486.15ms with loss 3.439417
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359824 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 8.486188537s, total 8.486220182s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 53766, tv_nsec: 503290488 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 7156076 kB
+  VmRSS:	  359824 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.447µs, total 9.49µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.337µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 18.908µs, total 29.847µs)

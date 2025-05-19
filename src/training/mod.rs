@@ -11,6 +11,8 @@ use rayon;
 use rayon::prelude::*;
 use ndarray::Array0;
 use ndarray::array;
+use rand;
+use rand::Rng;
 
 /// Possible errors during model usage
 #[derive(Error, Debug)]
@@ -851,6 +853,45 @@ impl Trainer {
         Ok(grad_norm)
     }
     
+    /// Thread-safe method to accumulate gradients from multiple workers
+    pub fn accumulate_gradients(&mut self, worker_gradients: &Tensor) -> Result<(), String> {
+        // Create or update the accumulated gradient tensor
+        if let Some(accumulated) = self.params.get_mut("accumulated_gradient") {
+            // Add the worker gradients to the existing accumulated gradients
+            accumulated.data += &worker_gradients.data;
+        } else {
+            // First worker to add gradients - create the accumulated tensor
+            self.params.insert("accumulated_gradient".to_string(), worker_gradients.clone());
+        }
+        
+        // Increment the gradient count
+        let mut count = self.get_gradient_count();
+        count += 1;
+        
+        // Create a scalar tensor with the updated count
+        let mut count_array = Array::zeros(IxDyn(&[1]));
+        count_array[IxDyn(&[0])] = count as f32;
+        self.params.insert("gradient_count".to_string(), Tensor::new_from_array(count_array));
+        
+        Ok(())
+    }
+    
+    /// Extract gradients from local computation for thread-safe accumulation
+    pub fn extract_local_gradients(&self) -> Option<Tensor> {
+        // If we don't have a local gradient, return None
+        if !self.params.contains_key("local_gradient") {
+            return None;
+        }
+        
+        // Return a clone of the local gradient
+        self.params.get("local_gradient").map(|grad| grad.clone())
+    }
+    
+    /// Store local gradients from computation
+    pub fn store_local_gradients(&mut self, gradients: Tensor) {
+        self.params.insert("local_gradient".to_string(), gradients);
+    }
+    
     /// Returns the total number of parameters in the model
     pub fn get_parameter_count(&self) -> usize {
         // ... Unchanged implementation
@@ -1203,6 +1244,88 @@ impl Trainer {
             // No resizing needed
             Ok(false)
         }
+    }
+
+    /// Resize model embeddings and output projection to support a larger vocabulary
+    pub fn resize_embeddings(&mut self, new_vocab_size: usize) -> Result<(), String> {
+        // Get current vocabulary size
+        let current_size = self.vocab_size;
+        
+        if new_vocab_size <= current_size {
+            return Ok(());
+        }
+        
+        // Calculate the number of tokens to add
+        let tokens_to_add = new_vocab_size - current_size;
+        
+        // 1. Resize embedding matrix
+        if let Some(embedding_matrix) = self.params.get_mut("embedding") {
+            // Create a new embedding matrix with expanded vocabulary
+            let old_shape = embedding_matrix.data.shape();
+            let model_dim = old_shape[1];
+            
+            // Create a new matrix with expanded vocabulary but same model dimension
+            let mut new_embedding = Array::zeros((new_vocab_size, model_dim));
+            
+            // Copy existing embeddings
+            for (i, row) in embedding_matrix.data.outer_iter().enumerate() {
+                if i < current_size {
+                    let mut new_row = new_embedding.slice_mut(s![i, ..]);
+                    new_row.assign(&row);
+                }
+            }
+            
+            // Initialize new embeddings randomly
+            let embedding_range = 0.02;
+            let mut rng = rand::thread_rng();
+            for i in current_size..new_vocab_size {
+                for j in 0..model_dim {
+                    new_embedding[[i, j]] = rng.gen_range(-embedding_range..embedding_range);
+                }
+            }
+            
+            // Replace the old embedding matrix
+            *embedding_matrix = Tensor::new(new_embedding);
+        }
+        
+        // 2. Resize output projection
+        if let Some(output_proj) = self.params.get_mut("output_projection") {
+            // Create a new output projection with expanded vocabulary
+            let old_shape = output_proj.data.shape();
+            let model_dim = old_shape[0];
+            
+            // Create a new matrix with same model dimension but expanded vocabulary
+            let mut new_output_proj = Array::zeros((model_dim, new_vocab_size));
+            
+            // Copy existing output projections
+            for i in 0..model_dim {
+                for j in 0..current_size {
+                    new_output_proj[[i, j]] = output_proj.data[[i, j]];
+                }
+            }
+            
+            // Initialize new output projections with small random values
+            let proj_range = 0.02;
+            let mut rng = rand::thread_rng();
+            for i in 0..model_dim {
+                for j in current_size..new_vocab_size {
+                    new_output_proj[[i, j]] = rng.gen_range(-proj_range..proj_range);
+                }
+            }
+            
+            // Replace the old output projection
+            *output_proj = Tensor::new(new_output_proj);
+        }
+        
+        // 3. Update the internal vocabulary size
+        self.vocab_size = new_vocab_size;
+        
+        // 4. Update output projection reference
+        if let Some(output_proj) = self.params.get("output_projection") {
+            self.output_projection = output_proj.clone();
+        }
+        
+        Ok(())
     }
 }
 

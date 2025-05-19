@@ -1,0 +1,1638 @@
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Axis` and `Ix3`
+ --> src/training/mod.rs:4:46
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, Axis, Ix1, Ix2, Ix3, Ix0, IxDyn, s};
+  |                                              ^^^^            ^^^
+
+warning: unused import: `ndarray::Array0`
+  --> src/training/mod.rs:12:5
+   |
+12 | use ndarray::Array0;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `ndarray::array`
+  --> src/training/mod.rs:13:5
+   |
+13 | use ndarray::array;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `crate::nabla::memory_opt`
+  --> src/training/enhanced_trainer.rs:15:5
+   |
+15 | use crate::nabla::memory_opt;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `MutexGuard` and `Mutex`
+ --> src/training/batch_dispatcher.rs:4:17
+  |
+4 | use std::sync::{Mutex, MutexGuard};
+  |                 ^^^^^  ^^^^^^^^^^
+
+warning: unused import: `std::thread::ThreadId`
+ --> src/training/batch_dispatcher.rs:5:5
+  |
+5 | use std::thread::ThreadId;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `v`
+  --> src/nabla/memory_opt.rs:88:15
+   |
+88 |     if let Ok(v) = std::env::var("MALLOC_ARENA_MAX") {
+   |               ^ help: if this is intentional, prefix it with an underscore: `_v`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:420:20
+    |
+420 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: variable `reported_progress` is assigned to, but never used
+   --> src/training/generation.rs:174:17
+    |
+174 |         let mut reported_progress = false;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_reported_progress` instead
+
+warning: value assigned to `reported_progress` is never read
+   --> src/training/generation.rs:181:17
+    |
+181 |                 reported_progress = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `batch`
+   --> src/training/enhanced_trainer.rs:534:34
+    |
+534 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+
+warning: unused variable: `target`
+   --> src/training/enhanced_trainer.rs:534:47
+    |
+534 |                     if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:538:29
+    |
+538 |                         let mut loss_guard = loss_mutex.lock().unwrap();
+    |                             ----^^^^^^^^^^
+    |                             |
+    |                             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: function `determine_allocator_type` is never used
+  --> src/nabla/memory_opt.rs:79:4
+   |
+79 | fn determine_allocator_type() -> Option<String> {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `get_total_elapsed` is never used
+   --> src/training/enhanced_trainer.rs:161:8
+    |
+130 | impl ThreadStateTracker {
+    | ----------------------- method in this implementation
+...
+161 |     fn get_total_elapsed(&self) -> std::time::Duration {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `run_with_timeout` is never used
+    --> src/training/enhanced_trainer.rs:1933:8
+     |
+197  | impl EnhancedTrainer {
+     | -------------------- method in this implementation
+...
+1933 |     fn run_with_timeout<F, T>(&self, f: F, timeout: std::time::Duration) -> Option<T> 
+     |        ^^^^^^^^^^^^^^^^
+
+warning: constant `V0_HEADER_SIZE` is never used
+  --> src/training/enhanced_trainer.rs:97:15
+   |
+97 |     pub const V0_HEADER_SIZE: usize = 32;
+   |               ^^^^^^^^^^^^^^
+
+warning: field `time` is never read
+  --> src/training/batch_dispatcher.rs:44:5
+   |
+40 | struct LockEvent {
+   |        --------- field in this struct
+...
+44 |     time: Instant,
+   |     ^^^^
+
+warning: `wall-e1` (lib) generated 19 warnings (run `cargo fix --lib -p wall-e1` to apply 8 suggestions)
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:46:13
+   |
+46 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `thread_count`
+   --> src/bin/train_enhanced_model.rs:370:13
+    |
+370 |         let thread_count = if op == &"data_loading" { min_data_threads } else { pool.get_num_threads() };
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_count`
+
+warning: unused variable: `setup_start`
+   --> src/bin/train_enhanced_model.rs:427:9
+    |
+427 |     let setup_start = Instant::now();
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_setup_start`
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:461:13
+    |
+461 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: variable `auto_resize_vocab` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:465:13
+    |
+465 |     let mut auto_resize_vocab = false;
+    |             ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_auto_resize_vocab` instead
+
+warning: variable `watchdog_timeout` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:466:13
+    |
+466 |     let mut watchdog_timeout: Option<u64> = None;
+    |             ^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_watchdog_timeout` instead
+
+warning: variable `target_id_max` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:468:13
+    |
+468 |     let mut target_id_max: Option<usize> = None;
+    |             ^^^^^^^^^^^^^
+    |
+    = note: consider using `_target_id_max` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:599:25
+    |
+599 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `auto_resize_vocab` is never read
+   --> src/bin/train_enhanced_model.rs:605:17
+    |
+605 |                 auto_resize_vocab = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `watchdog_timeout` is never read
+   --> src/bin/train_enhanced_model.rs:611:25
+    |
+611 |                         watchdog_timeout = Some(timeout);
+    |                         ^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `target_id_max` is never read
+   --> src/bin/train_enhanced_model.rs:627:25
+    |
+627 |                         target_id_max = Some(max_id);
+    |                         ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:1108:9
+     |
+1108 |     let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+     |         ----^^^^^^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `sliding_windows_start`
+    --> src/bin/train_enhanced_model.rs:1230:9
+     |
+1230 |     let sliding_windows_start = Instant::now();
+     |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_sliding_windows_start`
+
+warning: unused variable: `watchdog_handle`
+    --> src/bin/train_enhanced_model.rs:1311:9
+     |
+1311 |     let watchdog_handle = std::thread::Builder::new()
+     |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_handle`
+
+warning: unused variable: `start_time`
+    --> src/bin/train_enhanced_model.rs:1414:9
+     |
+1414 |     let start_time = Instant::now();
+     |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_start_time`
+
+warning: unused variable: `join_timeout`
+    --> src/bin/train_enhanced_model.rs:1447:13
+     |
+1447 |         let join_timeout = std::time::Duration::from_millis(100);
+     |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_join_timeout`
+
+warning: value assigned to `all_done` is never read
+    --> src/bin/train_enhanced_model.rs:1943:13
+     |
+1943 |             all_done = true;
+     |             ^^^^^^^^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: variable `joined_threads` is assigned to, but never used
+    --> src/bin/train_enhanced_model.rs:2006:13
+     |
+2006 |     let mut joined_threads = 0;
+     |             ^^^^^^^^^^^^^^
+     |
+     = note: consider using `_joined_threads` instead
+
+warning: unused variable: `watchdog_id`
+    --> src/bin/train_enhanced_model.rs:2101:9
+     |
+2101 |     let watchdog_id = format!("{:?}", watchdog_handle_copy.id());
+     |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_id`
+
+warning: unused variable: `watchdog_join_timeout`
+    --> src/bin/train_enhanced_model.rs:2108:9
+     |
+2108 |     let watchdog_join_timeout = std::time::Duration::from_millis(500);
+     |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_watchdog_join_timeout`
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:2012:13
+     |
+2012 |         let mut remaining_threads = Vec::new();
+     |             ----^^^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: unused variable: `batch_inputs`
+    --> src/bin/train_enhanced_model.rs:2185:10
+     |
+2185 |     let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |          ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_inputs`
+
+warning: unused variable: `min_seq_len`
+    --> src/bin/train_enhanced_model.rs:2185:24
+     |
+2185 |     let (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |                        ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_seq_len`
+
+warning: unused variable: `k`
+    --> src/bin/train_enhanced_model.rs:2456:13
+     |
+2456 |     let (m, k) = a.dim();
+     |             ^ help: if this is intentional, prefix it with an underscore: `_k`
+
+warning: function `matrix_multiply_simd` is never used
+    --> src/bin/train_enhanced_model.rs:2451:4
+     |
+2451 | fn matrix_multiply_simd(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>) -> ndarray::Array2<f32> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `matrix_multiply_avx2` is never used
+    --> src/bin/train_enhanced_model.rs:2521:4
+     |
+2521 | fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_scalar` is never used
+    --> src/bin/train_enhanced_model.rs:2527:4
+     |
+2527 | fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::Array2<f32>) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (bin "Wall-E") generated 27 warnings (run `cargo fix --bin "Wall-E"` to apply 2 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.19s
+     Running `target/release/Wall-E --stories 5000 --model-dim 512 --ff-dim 2048 --layers 6 --epochs 5 --perf-log true --save-path ./profiling_results/model_20250519_232845.json --json-format --use-memory-opt --curriculum-examples 500 --vocab-size 5000 --enable-skip --strong-anti-rep ./data/tiny_stories_sample.json`
+Detected 20 CPU cores
+🔧 Setting WALL_E_DATA_THREADS to 14 for better parallelism (fixing low CPU usage)
+Memory [startup]: VmSize:	    5664 kB
+Memory [startup]: VmRSS:	    1452 kB
+
+📊 DETAILED STARTUP TIMING 📊
+⏳ Initializing thread pools...
+Creating thread pool with 19 threads for general operations
+  ✅ Global thread pool initialized with 19 threads (2.62ms)
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+  ✅ Thread pool for 'matrix_multiply' initialized with 19 threads (1.66ms)
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool for 'gradient_update' initialized with 15 threads (2.31ms)
+Using WALL_E_DATA_THREADS=14 from environment
+🔹 Creating dedicated thread pool for 'data_loading' operation with 14 threads
+Creating thread pool with 14 threads for data_loading operations
+  ✅ Thread pool for 'data_loading' initialized with 14 threads (1.27ms)
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+  ✅ Thread pool for 'attention' initialized with 19 threads (1.17ms)
+✅ Thread pools initialized in 9.07ms
+⏳ Configuring memory allocator...
+  ✅ Cache detection completed in 28.87µs
+     L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+  ✅ Memory allocator configured in 29.96µs
+  ✅ Memory bandwidth measured in 533.82ms: 8.55 GB/s
+✅ Memory optimizations completed in 533.90ms
+✅ Total initialization completed in 542.97ms
+
+Memory and thread optimizations configured
+
+🔄 STARTING APPLICATION SETUP 🔄
+⏳ Parsing command line arguments...
+  Processing 24 command line arguments
+✅ Arguments parsed in 1.64µs
+⏳ Configuring thread pool with 19 CPU cores
+
+🔄 TRAINING SETUP PHASE 🔄
+Training Configuration:
+  Training data: ./data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 5000
+  Model dimension: 512
+  FF dimension: 2048
+  Attention heads: 4
+  Layers: 6
+  Dropout rate: 0.1
+  Learning rate: 0.001
+  Epochs: 5
+  Curriculum learning: enabled
+  Vocabulary size: 5000
+  Min token frequency: 2
+  Skip connections: enabled
+  Strong anti-repetition: enabled
+  Save path: ./profiling_results/model_20250519_232845.json
+  CPU threads: 19
+  Performance logging: enabled
+
+⏳ Reading training data (single-threaded operation)...
+  🔄 Reading JSON file from ./data/tiny_stories_sample.json...
+Found 58300 stories in JSON file
+Will use 5000 stories for training
+Processed 5000 stories, total text length: 4464940 characters
+  ✅ JSON data loaded in 59.31ms, 4464940 characters
+✅ Training data loaded in 59.35ms
+Memory [after_data_loading]: VmSize:	 7160288 kB
+Memory [after_data_loading]: VmRSS:	   68436 kB
+
+⏳ Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 6 (validated: 6)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+  🔄 Configuring trainer options...
+  ✅ Trainer options configured in 43.00ns
+  🔄 Enabling memory optimization with gradient checkpointing...
+Memory optimization enabled with gradient checkpointing
+  ✅ Memory optimization configured in 804.00ns
+Memory [after_memory_opt_enable]: VmSize:	 7201312 kB
+Memory [after_memory_opt_enable]: VmRSS:	  109200 kB
+✅ Trainer initialization completed in 68.28ms
+
+⏳ Configuring strong anti-repetition mechanisms...
+✅ Anti-repetition configured in 1.04µs
+
+⏳ Enabling skip connections...
+Enabling residual skip connections for improved gradient flow
+Initializing output_projection: model_dim=512, vocab_size=101
+Skip connections of type 'residual' enabled
+✅ Skip connections enabled in 69.80ms
+
+⏳ Learning tokenizer vocabulary (single-threaded operation)...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 447 chunks
+Starting parallel vocabulary learning with 447 chunks
+Using global thread pool with 19 threads
+Word counting completed in 46.21ms, found 7666 unique words
+Learning up to 4899 merges to reach vocab size 5000
+  Learned 1 merges (0.0%) in 2.02ms...
+  Learned 1001 merges (20.4%) in 1.71s...
+  Learned 2001 merges (40.8%) in 3.23s...
+  Learned 3001 merges (61.3%) in 4.59s...
+  Learned 4001 merges (81.7%) in 5.81s...
+  Learned 4899 merges (100.0%) in 6.80s...
+Parallel BPE learning completed in 6.85s, vocabulary size: 4999
+Learned 4899 merge operations
+Tokenizer vocabulary learned: 4999 tokens (from requested max: 5000)
+Initializing output_projection: model_dim=512, vocab_size=4999
+Resizing output projection to match vocabulary size: 4999
+Vocabulary learning completed in 6.92s
+✅ Tokenizer vocabulary learned in 6.92s
+
+⏳ Splitting training/validation data...
+✅ Data split in 7.37µs: 4018446 characters for training, 446494 for validation
+
+⏳ Setting up curriculum learning...
+
+⏳ Tokenizing data (single-threaded operation)...
+  🔄 Tokenizing training data (4018446 characters)...
+  ✅ Training data tokenized in 4.04s: 1767381 tokens
+  🔄 Tokenizing validation data (446494 characters)...
+  ✅ Validation data tokenized in 491.00ms: 195998 tokens
+✅ All data tokenized in 4.53s
+Memory [after_tokenization]: VmSize:	 7311424 kB
+Memory [after_tokenization]: VmRSS:	  219556 kB
+
+⏳ Preparing validation dataset...
+    🔄 Configuring thread pool for validation data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.57 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+    ✅ Using 5 threads for validation data preparation
+🔸 Reusing existing thread pool for 'data_loading' operation
+    ✅ Using thread pool with 14 threads for validation data
+✅ Validation data prepared in 529.85ms: 21435 examples
+
+✅ TRAINING SETUP COMPLETED in 12.17s
+Starting training for 5 epochs...
+
+🔄 BEGINNING TRAINING PROCESS 🔄
+
+⏳ EPOCH 1/5 STARTING
+  🔄 Training on 1767381 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7311424 kB
+Memory [train_epoch_start]: VmRSS:	  230388 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    ⏳ Preparing sliding windows...
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Adaptive
+    ✅ Memory optimization enabled in 1.59µs
+Memory [after_memory_opt_enable]: VmSize:	 7311424 kB
+Memory [after_memory_opt_enable]: VmRSS:	  230388 kB
+    🔄 Configuring thread pool for data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.53 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+🔸 Reusing existing thread pool for 'data_loading' operation
+Configured dedicated thread pool with 14 threads for data_loading operations
+    ✅ Data loading thread pool configured with 5 threads in 465.98ms
+    🔄 Creating input/target pairs for training...
+    🔄 Calculating sliding window positions...
+    ✅ Will create 220921 sliding windows in parallel
+    ⚠️ Using direct thread work allocation to avoid deadlocks
+    🔄 Creating 220921 input/target pairs directly
+    📊 Processing 11 chunks with size 22092 each
+🧵 Thread window-processor-0 started processing 22092 windows
+    🧵 Thread window-processor-0 processed 10/22092 windows
+    🧵 Thread window-processor-0 processed 110/22092 windows
+    🧵 Thread window-processor-0 processed 210/22092 windows
+    🧵 Thread window-processor-0 processed 310/22092 windows
+    🧵 Thread window-processor-0 processed 410/22092 windows
+    🧵 Thread window-processor-0 processed 510/22092 windows
+    🧵 Thread window-processor-0 processed 610/22092 windows
+    🧵 Thread window-processor-0 processed 710/22092 windows
+    🧵 Thread window-processor-0 processed 810/22092 windows
+    🧵 Thread window-processor-0 processed 910/22092 windows
+    🧵 Thread window-processor-0 processed 1010/22092 windows
+    🧵 Thread window-processor-0 processed 1110/22092 windows
+    🧵 Thread window-processor-0 processed 1210/22092 windows
+    🧵 Thread window-processor-0 processed 1310/22092 windows
+    🧵 Thread window-processor-0 processed 1410/22092 windows
+    🧵 Thread window-processor-0 processed 1510/22092 windows
+    🧵 Thread window-processor-0 processed 1610/22092 windows
+    🧵 Thread window-processor-0 processed 1710/22092 windows
+    🧵 Thread window-processor-0 processed 1810/22092 windows
+    🧵 Thread window-processor-0 processed 1910/22092 windows
+    🧵 Thread window-processor-0 processed 2010/22092 windows
+    🧵 Thread window-processor-0 processed 2110/22092 windows
+    🧵 Thread window-processor-0 processed 2210/22092 windows
+    🧵 Thread window-processor-0 processed 2310/22092 windows
+    🧵 Thread window-processor-0 processed 2410/22092 windows
+    🧵 Thread window-processor-0 processed 2510/22092 windows
+    🧵 Thread window-processor-0 processed 2610/22092 windows
+    🧵 Thread window-processor-0 processed 2710/22092 windows
+    🧵 Thread window-processor-0 processed 2810/22092 windows
+    🧵 Thread window-processor-0 processed 2910/22092 windows
+    🧵 Thread window-processor-0 processed 3010/22092 windows
+    🧵 Thread window-processor-0 processed 3110/22092 windows
+    🧵 Thread window-processor-0 processed 3210/22092 windows
+    🧵 Thread window-processor-0 processed 3310/22092 windows
+    🧵 Thread window-processor-0 processed 3410/22092 windows
+    🧵 Thread window-processor-0 processed 3510/22092 windows
+    🧵 Thread window-processor-0 processed 3610/22092 windows
+    🧵 Thread window-processor-0 processed 3710/22092 windows
+    🧵 Thread window-processor-0 processed 3810/22092 windows
+    🧵 Thread window-processor-0 processed 3910/22092 windows
+    🧵 Thread window-processor-0 processed 4010/22092 windows
+    🧵 Thread window-processor-0 processed 4110/22092 windows
+    🧵 Thread window-processor-0 processed 4210/22092 windows
+    🧵 Thread window-processor-0 processed 4310/22092 windows
+    🧵 Thread window-processor-0 processed 4410/22092 windows
+    🧵 Thread window-processor-0 processed 4510/22092 windows
+    🧵 Thread window-processor-0 processed 4610/22092 windows
+    🧵 Thread window-processor-0 processed 4710/22092 windows
+    🧵 Thread window-processor-0 processed 4810/22092 windows
+    🧵 Thread window-processor-0 processed 4910/22092 windows
+    🧵 Thread window-processor-0 processed 5010/22092 windows
+    🧵 Thread window-processor-0 processed 5110/22092 windows
+    🧵 Thread window-processor-0 processed 5210/22092 windows
+    🧵 Thread window-processor-0 processed 5310/22092 windows
+    🧵 Thread window-processor-0 processed 5410/22092 windows
+    🧵 Thread window-processor-0 processed 5510/22092 windows
+🧵 Thread window-processor-1 started processing 22092 windows
+    🧵 Thread window-processor-0 processed 5600/22092 windows
+    🧵 Thread window-processor-1 processed 110/22092 windows
+    🧵 Thread window-processor-1 processed 150/22092 windows
+    🧵 Thread window-processor-1 processed 190/22092 windows
+    🧵 Thread window-processor-0 processed 5800/22092 windows
+    🧵 Thread window-processor-1 processed 280/22092 windows
+    🧵 Thread window-processor-0 processed 5930/22092 windows
+    🧵 Thread window-processor-0 processed 5970/22092 windows
+    🧵 Thread window-processor-1 processed 390/22092 windows
+    🧵 Thread window-processor-1 processed 410/22092 windows
+    🧵 Thread window-processor-0 processed 6200/22092 windows
+    🧵 Thread window-processor-1 processed 470/22092 windows
+    🧵 Thread window-processor-0 processed 6330/22092 windows
+    🧵 Thread window-processor-1 processed 550/22092 windows
+    🧵 Thread window-processor-1 processed 600/22092 windows
+    🧵 Thread window-processor-1 processed 650/22092 windows
+    🧵 Thread window-processor-0 processed 6510/22092 windows
+    🧵 Thread window-processor-0 processed 6560/22092 windows
+    🧵 Thread window-processor-1 processed 810/22092 windows
+    🧵 Thread window-processor-1 processed 850/22092 windows
+    🧵 Thread window-processor-0 processed 6710/22092 windows
+    🧵 Thread window-processor-0 processed 6760/22092 windows
+    🧵 Thread window-processor-1 processed 1010/22092 windows
+    🧵 Thread window-processor-1 processed 1060/22092 windows
+    🧵 Thread window-processor-1 processed 1100/22092 windows
+    🧵 Thread window-processor-1 processed 1150/22092 windows
+    🧵 Thread window-processor-0 processed 7020/22092 windows
+    🧵 Thread window-processor-0 processed 7070/22092 windows
+    🧵 Thread window-processor-0 processed 7120/22092 windows
+    🧵 Thread window-processor-0 processed 7170/22092 windows
+    🧵 Thread window-processor-1 processed 1410/22092 windows
+    🧵 Thread window-processor-0 processed 7300/22092 windows
+    🧵 Thread window-processor-1 processed 1470/22092 windows
+    🧵 Thread window-processor-0 processed 7360/22092 windows
+    🧵 Thread window-processor-0 processed 7420/22092 windows
+    🧵 Thread window-processor-1 processed 1670/22092 windows
+    🧵 Thread window-processor-1 processed 1700/22092 windows
+    🧵 Thread window-processor-0 processed 7600/22092 windows
+    🧵 Thread window-processor-0 processed 7700/22092 windows
+    🧵 Thread window-processor-1 processed 1750/22092 windows
+    🧵 Thread window-processor-1 processed 1820/22092 windows
+    🧵 Thread window-processor-1 processed 1920/22092 windows
+    🧵 Thread window-processor-1 processed 2020/22092 windows
+    🧵 Thread window-processor-1 processed 2080/22092 windows
+    🧵 Thread window-processor-0 processed 7890/22092 windows
+    🧵 Thread window-processor-1 processed 2190/22092 windows
+    🧵 Thread window-processor-0 processed 7930/22092 windows
+    🧵 Thread window-processor-1 processed 2370/22092 windows
+    🧵 Thread window-processor-1 processed 2420/22092 windows
+    🧵 Thread window-processor-0 processed 8060/22092 windows
+    🧵 Thread window-processor-1 processed 2500/22092 windows
+    🧵 Thread window-processor-0 processed 8170/22092 windows
+    🧵 Thread window-processor-1 processed 2590/22092 windows
+    🧵 Thread window-processor-1 processed 2630/22092 windows
+    🧵 Thread window-processor-1 processed 2680/22092 windows
+    🧵 Thread window-processor-1 processed 2730/22092 windows
+    🧵 Thread window-processor-0 processed 8480/22092 windows
+    🧵 Thread window-processor-0 processed 8550/22092 windows
+    🧵 Thread window-processor-0 processed 8590/22092 windows
+    🧵 Thread window-processor-0 processed 8640/22092 windows
+    🧵 Thread window-processor-1 processed 2930/22092 windows
+    🧵 Thread window-processor-1 processed 2990/22092 windows
+    🧵 Thread window-processor-1 processed 3010/22092 windows
+    🧵 Thread window-processor-0 processed 8870/22092 windows
+    🧵 Thread window-processor-0 processed 8910/22092 windows
+    🧵 Thread window-processor-1 processed 3160/22092 windows
+    🧵 Thread window-processor-0 processed 9010/22092 windows
+    🧵 Thread window-processor-0 processed 9050/22092 windows
+    🧵 Thread window-processor-0 processed 9150/22092 windows
+    🧵 Thread window-processor-0 processed 9240/22092 windows
+    🧵 Thread window-processor-0 processed 9270/22092 windows
+    🧵 Thread window-processor-0 processed 9300/22092 windows
+    🧵 Thread window-processor-0 processed 9310/22092 windows
+    🧵 Thread window-processor-0 processed 9360/22092 windows
+    🧵 Thread window-processor-0 processed 9410/22092 windows
+    🧵 Thread window-processor-1 processed 3650/22092 windows
+    🧵 Thread window-processor-1 processed 3690/22092 windows
+    🧵 Thread window-processor-0 processed 9580/22092 windows
+    🧵 Thread window-processor-1 processed 3810/22092 windows
+    🧵 Thread window-processor-1 processed 3850/22092 windows
+    🧵 Thread window-processor-1 processed 3890/22092 windows
+    🧵 Thread window-processor-1 processed 3940/22092 windows
+    🧵 Thread window-processor-0 processed 9840/22092 windows
+    🧵 Thread window-processor-1 processed 4050/22092 windows
+    🧵 Thread window-processor-1 processed 4090/22092 windows
+    🧵 Thread window-processor-1 processed 4130/22092 windows
+    🧵 Thread window-processor-0 processed 10040/22092 windows
+    🧵 Thread window-processor-0 processed 10120/22092 windows
+    🧵 Thread window-processor-0 processed 10140/22092 windows
+    🧵 Thread window-processor-0 processed 10180/22092 windows
+    🧵 Thread window-processor-0 processed 10230/22092 windows
+    🧵 Thread window-processor-0 processed 10250/22092 windows
+    🧵 Thread window-processor-1 processed 4520/22092 windows
+    🧵 Thread window-processor-1 processed 4570/22092 windows
+    🧵 Thread window-processor-0 processed 10410/22092 windows
+    🧵 Thread window-processor-0 processed 10470/22092 windows
+    🧵 Thread window-processor-0 processed 10490/22092 windows
+    🧵 Thread window-processor-1 processed 4810/22092 windows
+    🧵 Thread window-processor-1 processed 4830/22092 windows
+    🧵 Thread window-processor-1 processed 4870/22092 windows
+    🧵 Thread window-processor-0 processed 10730/22092 windows
+    🧵 Thread window-processor-1 processed 4940/22092 windows
+    🧵 Thread window-processor-1 processed 5020/22092 windows
+    🧵 Thread window-processor-1 processed 5040/22092 windows
+    🧵 Thread window-processor-0 processed 10920/22092 windows
+    🧵 Thread window-processor-1 processed 5160/22092 windows
+    🧵 Thread window-processor-0 processed 11020/22092 windows
+    🧵 Thread window-processor-1 processed 5270/22092 windows
+    🧵 Thread window-processor-1 processed 5330/22092 windows
+    🧵 Thread window-processor-0 processed 11150/22092 windows
+    🧵 Thread window-processor-1 processed 5460/22092 windows
+🧵 Thread window-processor-2 started processing 22092 windows
+    🧵 Thread window-processor-0 processed 11170/22092 windows
+    🧵 Thread window-processor-1 processed 5520/22092 windows
+    🧵 Thread window-processor-2 processed 110/22092 windows
+    🧵 Thread window-processor-2 processed 210/22092 windows
+    🧵 Thread window-processor-0 processed 11340/22092 windows
+    🧵 Thread window-processor-1 processed 5650/22092 windows
+    🧵 Thread window-processor-0 processed 11390/22092 windows
+    🧵 Thread window-processor-1 processed 5720/22092 windows
+    🧵 Thread window-processor-1 processed 5800/22092 windows
+    🧵 Thread window-processor-1 processed 5900/22092 windows
+    🧵 Thread window-processor-1 processed 6000/22092 windows
+    🧵 Thread window-processor-1 processed 6010/22092 windows
+    🧵 Thread window-processor-0 processed 11620/22092 windows
+    🧵 Thread window-processor-1 processed 6110/22092 windows
+    🧵 Thread window-processor-0 processed 11710/22092 windows
+    🧵 Thread window-processor-2 processed 300/22092 windows
+    🧵 Thread window-processor-1 processed 6160/22092 windows
+    🧵 Thread window-processor-2 processed 340/22092 windows
+    🧵 Thread window-processor-2 processed 400/22092 windows
+    🧵 Thread window-processor-2 processed 470/22092 windows
+    🧵 Thread window-processor-2 processed 550/22092 windows
+    🧵 Thread window-processor-2 processed 590/22092 windows
+    🧵 Thread window-processor-1 processed 6350/22092 windows
+    🧵 Thread window-processor-0 processed 12000/22092 windows
+    🧵 Thread window-processor-2 processed 650/22092 windows
+    🧵 Thread window-processor-0 processed 12120/22092 windows
+    🧵 Thread window-processor-1 processed 6490/22092 windows
+    🧵 Thread window-processor-0 processed 12220/22092 windows
+    🧵 Thread window-processor-0 processed 12270/22092 windows
+    🧵 Thread window-processor-1 processed 6640/22092 windows
+    🧵 Thread window-processor-0 processed 12370/22092 windows
+    🧵 Thread window-processor-0 processed 12470/22092 windows
+    🧵 Thread window-processor-0 processed 12570/22092 windows
+    🧵 Thread window-processor-0 processed 12670/22092 windows
+    🧵 Thread window-processor-0 processed 12770/22092 windows
+    🧵 Thread window-processor-0 processed 12870/22092 windows
+    🧵 Thread window-processor-0 processed 12940/22092 windows
+    🧵 Thread window-processor-1 processed 6750/22092 windows
+    🧵 Thread window-processor-1 processed 6850/22092 windows
+    🧵 Thread window-processor-0 processed 13040/22092 windows
+    🧵 Thread window-processor-0 processed 13100/22092 windows
+    🧵 Thread window-processor-1 processed 6960/22092 windows
+    🧵 Thread window-processor-0 processed 13120/22092 windows
+    🧵 Thread window-processor-2 processed 800/22092 windows
+    🧵 Thread window-processor-0 processed 13240/22092 windows
+    🧵 Thread window-processor-1 processed 7100/22092 windows
+    🧵 Thread window-processor-0 processed 13400/22092 windows
+    🧵 Thread window-processor-2 processed 840/22092 windows
+    🧵 Thread window-processor-1 processed 7220/22092 windows
+    🧵 Thread window-processor-2 processed 910/22092 windows
+    🧵 Thread window-processor-1 processed 7290/22092 windows
+    🧵 Thread window-processor-0 processed 13560/22092 windows
+    🧵 Thread window-processor-0 processed 13620/22092 windows
+    🧵 Thread window-processor-1 processed 7420/22092 windows
+    🧵 Thread window-processor-0 processed 13720/22092 windows
+    🧵 Thread window-processor-0 processed 13790/22092 windows
+    🧵 Thread window-processor-1 processed 7510/22092 windows
+    🧵 Thread window-processor-0 processed 13830/22092 windows
+    🧵 Thread window-processor-0 processed 13910/22092 windows
+    🧵 Thread window-processor-0 processed 14010/22092 windows
+    🧵 Thread window-processor-0 processed 14110/22092 windows
+    🧵 Thread window-processor-0 processed 14210/22092 windows
+    🧵 Thread window-processor-0 processed 14280/22092 windows
+    🧵 Thread window-processor-0 processed 14380/22092 windows
+    🧵 Thread window-processor-1 processed 7670/22092 windows
+    🧵 Thread window-processor-1 processed 7770/22092 windows
+    🧵 Thread window-processor-2 processed 1030/22092 windows
+    🧵 Thread window-processor-0 processed 14450/22092 windows
+    🧵 Thread window-processor-1 processed 7900/22092 windows
+    🧵 Thread window-processor-1 processed 7970/22092 windows
+    🧵 Thread window-processor-2 processed 1200/22092 windows
+    🧵 Thread window-processor-2 processed 1300/22092 windows
+    🧵 Thread window-processor-2 processed 1400/22092 windows
+    🧵 Thread window-processor-1 processed 8020/22092 windows
+    🧵 Thread window-processor-0 processed 14570/22092 windows
+    🧵 Thread window-processor-0 processed 14620/22092 windows
+    🧵 Thread window-processor-0 processed 14720/22092 windows
+    🧵 Thread window-processor-0 processed 14820/22092 windows
+    🧵 Thread window-processor-0 processed 14920/22092 windows
+    🧵 Thread window-processor-0 processed 15000/22092 windows
+    🧵 Thread window-processor-1 processed 8170/22092 windows
+    🧵 Thread window-processor-1 processed 8270/22092 windows
+🧵 Thread window-processor-3 started processing 22092 windows
+    🧵 Thread window-processor-2 processed 1560/22092 windows
+    🧵 Thread window-processor-2 processed 1660/22092 windows
+    🧵 Thread window-processor-0 processed 15040/22092 windows
+    🧵 Thread window-processor-2 processed 1780/22092 windows
+    🧵 Thread window-processor-1 processed 8450/22092 windows
+    🧵 Thread window-processor-1 processed 8480/22092 windows
+    🧵 Thread window-processor-3 processed 60/22092 windows
+    🧵 Thread window-processor-3 processed 130/22092 windows
+    🧵 Thread window-processor-2 processed 1910/22092 windows
+    🧵 Thread window-processor-1 processed 8550/22092 windows
+    🧵 Thread window-processor-3 processed 250/22092 windows
+    🧵 Thread window-processor-1 processed 8590/22092 windows
+    🧵 Thread window-processor-0 processed 15230/22092 windows
+    🧵 Thread window-processor-2 processed 2000/22092 windows
+    🧵 Thread window-processor-0 processed 15330/22092 windows
+    🧵 Thread window-processor-2 processed 2090/22092 windows
+    🧵 Thread window-processor-2 processed 2190/22092 windows
+    🧵 Thread window-processor-2 processed 2290/22092 windows
+    🧵 Thread window-processor-0 processed 15420/22092 windows
+    🧵 Thread window-processor-1 processed 8720/22092 windows
+    🧵 Thread window-processor-1 processed 8730/22092 windows
+    🧵 Thread window-processor-2 processed 2420/22092 windows
+    🧵 Thread window-processor-0 processed 15530/22092 windows
+    🧵 Thread window-processor-0 processed 15580/22092 windows
+    🧵 Thread window-processor-3 processed 380/22092 windows
+    🧵 Thread window-processor-1 processed 8970/22092 windows
+    🧵 Thread window-processor-0 processed 15610/22092 windows
+    🧵 Thread window-processor-2 processed 2470/22092 windows
+    🧵 Thread window-processor-0 processed 15690/22092 windows
+    🧵 Thread window-processor-1 processed 9090/22092 windows
+    🧵 Thread window-processor-0 processed 15770/22092 windows
+    🧵 Thread window-processor-0 processed 15810/22092 windows
+    🧵 Thread window-processor-2 processed 2630/22092 windows
+    🧵 Thread window-processor-2 processed 2640/22092 windows
+    🧵 Thread window-processor-0 processed 15880/22092 windows
+    🧵 Thread window-processor-1 processed 9190/22092 windows
+    🧵 Thread window-processor-3 processed 640/22092 windows
+    🧵 Thread window-processor-2 processed 2680/22092 windows
+    🧵 Thread window-processor-1 processed 9250/22092 windows
+    🧵 Thread window-processor-2 processed 2750/22092 windows
+    🧵 Thread window-processor-0 processed 16220/22092 windows
+    🧵 Thread window-processor-1 processed 9350/22092 windows
+    🧵 Thread window-processor-3 processed 730/22092 windows
+    🧵 Thread window-processor-0 processed 16240/22092 windows
+    🧵 Thread window-processor-2 processed 2820/22092 windows
+    🧵 Thread window-processor-2 processed 2920/22092 windows
+    🧵 Thread window-processor-2 processed 2970/22092 windows
+    🧵 Thread window-processor-1 processed 9560/22092 windows
+    🧵 Thread window-processor-1 processed 9620/22092 windows
+    🧵 Thread window-processor-2 processed 3020/22092 windows
+    🧵 Thread window-processor-2 processed 3120/22092 windows
+    🧵 Thread window-processor-2 processed 3220/22092 windows
+    🧵 Thread window-processor-2 processed 3320/22092 windows
+    🧵 Thread window-processor-2 processed 3340/22092 windows
+    🧵 Thread window-processor-1 processed 9730/22092 windows
+    🧵 Thread window-processor-1 processed 9770/22092 windows
+    🧵 Thread window-processor-2 processed 3440/22092 windows
+    🧵 Thread window-processor-0 processed 16480/22092 windows
+    🧵 Thread window-processor-0 processed 16580/22092 windows
+    🧵 Thread window-processor-3 processed 930/22092 windows
+    🧵 Thread window-processor-3 processed 990/22092 windows
+    🧵 Thread window-processor-3 processed 1090/22092 windows
+    🧵 Thread window-processor-3 processed 1190/22092 windows
+    🧵 Thread window-processor-3 processed 1290/22092 windows
+    🧵 Thread window-processor-3 processed 1390/22092 windows
+    🧵 Thread window-processor-3 processed 1490/22092 windows
+    🧵 Thread window-processor-1 processed 9860/22092 windows
+    🧵 Thread window-processor-1 processed 9960/22092 windows
+    🧵 Thread window-processor-2 processed 3500/22092 windows
+    🧵 Thread window-processor-2 processed 3600/22092 windows
+    🧵 Thread window-processor-3 processed 1580/22092 windows
+    🧵 Thread window-processor-3 processed 1670/22092 windows
+    🧵 Thread window-processor-3 processed 1750/22092 windows
+    🧵 Thread window-processor-3 processed 1760/22092 windows
+    🧵 Thread window-processor-3 processed 1860/22092 windows
+    🧵 Thread window-processor-0 processed 16680/22092 windows
+    🧵 Thread window-processor-1 processed 10130/22092 windows
+    🧵 Thread window-processor-2 processed 3840/22092 windows
+    🧵 Thread window-processor-0 processed 16810/22092 windows
+    🧵 Thread window-processor-3 processed 2030/22092 windows
+    🧵 Thread window-processor-2 processed 3930/22092 windows
+    🧵 Thread window-processor-3 processed 2120/22092 windows
+    🧵 Thread window-processor-2 processed 3950/22092 windows
+    🧵 Thread window-processor-0 processed 16910/22092 windows
+    🧵 Thread window-processor-1 processed 10170/22092 windows
+    🧵 Thread window-processor-2 processed 4020/22092 windows
+    🧵 Thread window-processor-0 processed 17100/22092 windows
+    🧵 Thread window-processor-0 processed 17200/22092 windows
+    🧵 Thread window-processor-0 processed 17300/22092 windows
+    🧵 Thread window-processor-0 processed 17340/22092 windows
+    🧵 Thread window-processor-1 processed 10230/22092 windows
+    🧵 Thread window-processor-1 processed 10240/22092 windows
+    🧵 Thread window-processor-3 processed 2430/22092 windows
+🧵 Thread window-processor-4 started processing 22092 windows
+    🧵 Thread window-processor-2 processed 4080/22092 windows
+    🧵 Thread window-processor-2 processed 4180/22092 windows
+    🧵 Thread window-processor-2 processed 4280/22092 windows
+    🧵 Thread window-processor-2 processed 4380/22092 windows
+    🧵 Thread window-processor-4 processed 20/22092 windows
+    🧵 Thread window-processor-2 processed 4520/22092 windows
+    🧵 Thread window-processor-2 processed 4620/22092 windows
+    🧵 Thread window-processor-0 processed 17520/22092 windows
+    🧵 Thread window-processor-1 processed 10340/22092 windows
+    🧵 Thread window-processor-2 processed 4630/22092 windows
+    🧵 Thread window-processor-0 processed 17610/22092 windows
+    🧵 Thread window-processor-0 processed 17710/22092 windows
+    🧵 Thread window-processor-3 processed 2660/22092 windows
+    🧵 Thread window-processor-0 processed 17720/22092 windows
+    🧵 Thread window-processor-1 processed 10370/22092 windows
+    🧵 Thread window-processor-0 processed 17850/22092 windows
+    🧵 Thread window-processor-0 processed 17950/22092 windows
+    🧵 Thread window-processor-0 processed 18010/22092 windows
+    🧵 Thread window-processor-1 processed 10460/22092 windows
+    🧵 Thread window-processor-1 processed 10560/22092 windows
+    🧵 Thread window-processor-4 processed 120/22092 windows
+    🧵 Thread window-processor-1 processed 10660/22092 windows
+    🧵 Thread window-processor-1 processed 10690/22092 windows
+    🧵 Thread window-processor-3 processed 2840/22092 windows
+    🧵 Thread window-processor-0 processed 18090/22092 windows
+    🧵 Thread window-processor-1 processed 10770/22092 windows
+    🧵 Thread window-processor-3 processed 2900/22092 windows
+    🧵 Thread window-processor-2 processed 4870/22092 windows
+    🧵 Thread window-processor-2 processed 4970/22092 windows
+    🧵 Thread window-processor-0 processed 18100/22092 windows
+    🧵 Thread window-processor-4 processed 330/22092 windows
+    🧵 Thread window-processor-3 processed 2990/22092 windows
+    🧵 Thread window-processor-3 processed 3090/22092 windows
+    🧵 Thread window-processor-1 processed 10800/22092 windows
+    🧵 Thread window-processor-4 processed 420/22092 windows
+    🧵 Thread window-processor-1 processed 10940/22092 windows
+    🧵 Thread window-processor-0 processed 18170/22092 windows
+    🧵 Thread window-processor-2 processed 5100/22092 windows
+    🧵 Thread window-processor-3 processed 3190/22092 windows
+    🧵 Thread window-processor-0 processed 18380/22092 windows
+    🧵 Thread window-processor-0 processed 18480/22092 windows
+    🧵 Thread window-processor-0 processed 18580/22092 windows
+    🧵 Thread window-processor-3 processed 3250/22092 windows
+    🧵 Thread window-processor-4 processed 510/22092 windows
+    🧵 Thread window-processor-2 processed 5130/22092 windows
+    🧵 Thread window-processor-2 processed 5190/22092 windows
+    🧵 Thread window-processor-4 processed 590/22092 windows
+    🧵 Thread window-processor-1 processed 11060/22092 windows
+    🧵 Thread window-processor-1 processed 11110/22092 windows
+    🧵 Thread window-processor-2 processed 5300/22092 windows
+    🧵 Thread window-processor-1 processed 11170/22092 windows
+    🧵 Thread window-processor-0 processed 18880/22092 windows
+    🧵 Thread window-processor-0 processed 18980/22092 windows
+    🧵 Thread window-processor-2 processed 5330/22092 windows
+    🧵 Thread window-processor-3 processed 3360/22092 windows
+    🧵 Thread window-processor-1 processed 11300/22092 windows
+    🧵 Thread window-processor-3 processed 3380/22092 windows
+    🧵 Thread window-processor-3 processed 3480/22092 windows
+    🧵 Thread window-processor-3 processed 3560/22092 windows
+    🧵 Thread window-processor-0 processed 19120/22092 windows
+    🧵 Thread window-processor-1 processed 11340/22092 windows
+    🧵 Thread window-processor-2 processed 5410/22092 windows
+    🧵 Thread window-processor-3 processed 3710/22092 windows
+    🧵 Thread window-processor-2 processed 5490/22092 windows
+    🧵 Thread window-processor-3 processed 3740/22092 windows
+    🧵 Thread window-processor-3 processed 3830/22092 windows
+    🧵 Thread window-processor-2 processed 5560/22092 windows
+    🧵 Thread window-processor-4 processed 810/22092 windows
+    🧵 Thread window-processor-0 processed 19270/22092 windows
+    🧵 Thread window-processor-0 processed 19300/22092 windows
+    🧵 Thread window-processor-1 processed 11590/22092 windows
+    🧵 Thread window-processor-4 processed 890/22092 windows
+    🧵 Thread window-processor-2 processed 5750/22092 windows
+    🧵 Thread window-processor-1 processed 11630/22092 windows
+    🧵 Thread window-processor-2 processed 5800/22092 windows
+    🧵 Thread window-processor-4 processed 1010/22092 windows
+    🧵 Thread window-processor-0 processed 19340/22092 windows
+    🧵 Thread window-processor-4 processed 1090/22092 windows
+    🧵 Thread window-processor-4 processed 1130/22092 windows
+    🧵 Thread window-processor-3 processed 3940/22092 windows
+    🧵 Thread window-processor-4 processed 1200/22092 windows
+    🧵 Thread window-processor-4 processed 1280/22092 windows
+    🧵 Thread window-processor-2 processed 5860/22092 windows
+    🧵 Thread window-processor-0 processed 19540/22092 windows
+    🧵 Thread window-processor-4 processed 1340/22092 windows
+    🧵 Thread window-processor-4 processed 1380/22092 windows
+    🧵 Thread window-processor-0 processed 19640/22092 windows
+    🧵 Thread window-processor-3 processed 4060/22092 windows
+    🧵 Thread window-processor-4 processed 1450/22092 windows
+    🧵 Thread window-processor-2 processed 5960/22092 windows
+    🧵 Thread window-processor-3 processed 4120/22092 windows
+    🧵 Thread window-processor-1 processed 11890/22092 windows
+    🧵 Thread window-processor-1 processed 11990/22092 windows
+    🧵 Thread window-processor-1 processed 12050/22092 windows
+    🧵 Thread window-processor-2 processed 6130/22092 windows
+    🧵 Thread window-processor-2 processed 6230/22092 windows
+    🧵 Thread window-processor-2 processed 6270/22092 windows
+    🧵 Thread window-processor-4 processed 1550/22092 windows
+    🧵 Thread window-processor-0 processed 19860/22092 windows
+    🧵 Thread window-processor-1 processed 12120/22092 windows
+    🧵 Thread window-processor-0 processed 19930/22092 windows
+    🧵 Thread window-processor-4 processed 1650/22092 windows
+    🧵 Thread window-processor-1 processed 12210/22092 windows
+    🧵 Thread window-processor-1 processed 12260/22092 windows
+    🧵 Thread window-processor-3 processed 4270/22092 windows
+    🧵 Thread window-processor-2 processed 6470/22092 windows
+    🧵 Thread window-processor-4 processed 1820/22092 windows
+    🧵 Thread window-processor-4 processed 1890/22092 windows
+    🧵 Thread window-processor-3 processed 4310/22092 windows
+    🧵 Thread window-processor-4 processed 1990/22092 windows
+    🧵 Thread window-processor-4 processed 2020/22092 windows
+    🧵 Thread window-processor-4 processed 2030/22092 windows
+    🧵 Thread window-processor-1 processed 12320/22092 windows
+    🧵 Thread window-processor-3 processed 4480/22092 windows
+    🧵 Thread window-processor-0 processed 20160/22092 windows
+    🧵 Thread window-processor-3 processed 4530/22092 windows
+    🧵 Thread window-processor-2 processed 6670/22092 windows
+    🧵 Thread window-processor-1 processed 12370/22092 windows
+    🧵 Thread window-processor-1 processed 12410/22092 windows
+    🧵 Thread window-processor-0 processed 20300/22092 windows
+    🧵 Thread window-processor-2 processed 6770/22092 windows
+    🧵 Thread window-processor-0 processed 20380/22092 windows
+    🧵 Thread window-processor-0 processed 20420/22092 windows
+    🧵 Thread window-processor-3 processed 4570/22092 windows
+    🧵 Thread window-processor-1 processed 12510/22092 windows
+    🧵 Thread window-processor-0 processed 20520/22092 windows
+    🧵 Thread window-processor-4 processed 2250/22092 windows
+    🧵 Thread window-processor-0 processed 20560/22092 windows
+    🧵 Thread window-processor-0 processed 20650/22092 windows
+    🧵 Thread window-processor-2 processed 6930/22092 windows
+    🧵 Thread window-processor-4 processed 2270/22092 windows
+    🧵 Thread window-processor-4 processed 2350/22092 windows
+    🧵 Thread window-processor-3 processed 4750/22092 windows
+    🧵 Thread window-processor-4 processed 2420/22092 windows
+    🧵 Thread window-processor-2 processed 6980/22092 windows
+    🧵 Thread window-processor-3 processed 4820/22092 windows
+    🧵 Thread window-processor-0 processed 20810/22092 windows
+    🧵 Thread window-processor-2 processed 6990/22092 windows
+    🧵 Thread window-processor-1 processed 12790/22092 windows
+    🧵 Thread window-processor-4 processed 2470/22092 windows
+    🧵 Thread window-processor-2 processed 7090/22092 windows
+    🧵 Thread window-processor-2 processed 7190/22092 windows
+    🧵 Thread window-processor-1 processed 12870/22092 windows
+    🧵 Thread window-processor-0 processed 20940/22092 windows
+    🧵 Thread window-processor-4 processed 2500/22092 windows
+    🧵 Thread window-processor-1 processed 13060/22092 windows
+    🧵 Thread window-processor-0 processed 20960/22092 windows
+    🧵 Thread window-processor-2 processed 7310/22092 windows
+    🧵 Thread window-processor-0 processed 21010/22092 windows
+    🧵 Thread window-processor-3 processed 5120/22092 windows
+    🧵 Thread window-processor-0 processed 21120/22092 windows
+    🧵 Thread window-processor-3 processed 5200/22092 windows
+    🧵 Thread window-processor-3 processed 5300/22092 windows
+    🧵 Thread window-processor-0 processed 21230/22092 windows
+    🧵 Thread window-processor-3 processed 5360/22092 windows
+    🧵 Thread window-processor-2 processed 7410/22092 windows
+    🧵 Thread window-processor-1 processed 13110/22092 windows
+    🧵 Thread window-processor-4 processed 2630/22092 windows
+    🧵 Thread window-processor-0 processed 21400/22092 windows
+    🧵 Thread window-processor-1 processed 13120/22092 windows
+    🧵 Thread window-processor-1 processed 13170/22092 windows
+    🧵 Thread window-processor-3 processed 5550/22092 windows
+    🧵 Thread window-processor-2 processed 7500/22092 windows
+    🧵 Thread window-processor-3 processed 5670/22092 windows
+    🧵 Thread window-processor-1 processed 13200/22092 windows
+    🧵 Thread window-processor-2 processed 7600/22092 windows
+    🧵 Thread window-processor-0 processed 21480/22092 windows
+    🧵 Thread window-processor-3 processed 5770/22092 windows
+    🧵 Thread window-processor-2 processed 7680/22092 windows
+    🧵 Thread window-processor-0 processed 21490/22092 windows
+    🧵 Thread window-processor-2 processed 7750/22092 windows
+    🧵 Thread window-processor-1 processed 13420/22092 windows
+    🧵 Thread window-processor-3 processed 5830/22092 windows
+    🧵 Thread window-processor-3 processed 5920/22092 windows
+    🧵 Thread window-processor-1 processed 13460/22092 windows
+    🧵 Thread window-processor-0 processed 21590/22092 windows
+    🧵 Thread window-processor-2 processed 7800/22092 windows
+    🧵 Thread window-processor-3 processed 6070/22092 windows
+    🧵 Thread window-processor-4 processed 2930/22092 windows
+    🧵 Thread window-processor-1 processed 13610/22092 windows
+    🧵 Thread window-processor-1 processed 13650/22092 windows
+    🧵 Thread window-processor-1 processed 13680/22092 windows
+    🧵 Thread window-processor-3 processed 6110/22092 windows
+    🧵 Thread window-processor-3 processed 6160/22092 windows
+    🧵 Thread window-processor-3 processed 6200/22092 windows
+    🧵 Thread window-processor-2 processed 7970/22092 windows
+    🧵 Thread window-processor-3 processed 6250/22092 windows
+    🧵 Thread window-processor-4 processed 3040/22092 windows
+    🧵 Thread window-processor-1 processed 13800/22092 windows
+    🧵 Thread window-processor-3 processed 6350/22092 windows
+    🧵 Thread window-processor-1 processed 13870/22092 windows
+    🧵 Thread window-processor-4 processed 3130/22092 windows
+    🧵 Thread window-processor-0 processed 21930/22092 windows
+    🧵 Thread window-processor-3 processed 6450/22092 windows
+🧵 Thread window-processor-5 started processing 22092 windows
+    🧵 Thread window-processor-5 processed 60/22092 windows
+    🧵 Thread window-processor-1 processed 13900/22092 windows
+    🧵 Thread window-processor-0 processed 22030/22092 windows
+    ✅ Thread window-processor-0 completed in 39.48ms - added 22092 windows to the result set
+🧵 Thread window-processor-6 started processing 22092 windows
+🧵 Thread window-processor-7 started processing 22092 windows
+🧵 Thread window-processor-8 started processing 22092 windows
+    ✅ Thread window-processor-1 completed in 63.13ms - added 22092 windows to the result set
+    ✅ Thread window-processor-2 completed in 76.54ms - added 22092 windows to the result set
+🧵 Thread window-processor-9 started processing 22092 windows
+    ✅ Thread window-processor-3 completed in 83.39ms - added 22092 windows to the result set
+    🧵 Thread window-processor-6 processed 14060/22092 windows
+    🧵 Thread window-processor-9 processed 5670/22092 windows
+    ✅ Thread window-processor-4 completed in 78.44ms - added 22092 windows to the result set
+    🧵 Thread window-processor-6 processed 14120/22092 windows
+    🧵 Thread window-processor-8 processed 8710/22092 windows
+    🧵 Thread window-processor-6 processed 14180/22092 windows
+    🧵 Thread window-processor-5 processed 17390/22092 windows
+    🧵 Thread window-processor-9 processed 5820/22092 windows
+    🧵 Thread window-processor-5 processed 17440/22092 windows
+    🧵 Thread window-processor-7 processed 10350/22092 windows
+    🧵 Thread window-processor-6 processed 14300/22092 windows
+    🧵 Thread window-processor-5 processed 17460/22092 windows
+    🧵 Thread window-processor-9 processed 5900/22092 windows
+    🧵 Thread window-processor-9 processed 5960/22092 windows
+    🧵 Thread window-processor-5 processed 17540/22092 windows
+    🧵 Thread window-processor-8 processed 8850/22092 windows
+    🧵 Thread window-processor-5 processed 17620/22092 windows
+    🧵 Thread window-processor-9 processed 6000/22092 windows
+    🧵 Thread window-processor-6 processed 14440/22092 windows
+    🧵 Thread window-processor-7 processed 10510/22092 windows
+    🧵 Thread window-processor-8 processed 9000/22092 windows
+    🧵 Thread window-processor-8 processed 9080/22092 windows
+    🧵 Thread window-processor-9 processed 6090/22092 windows
+    🧵 Thread window-processor-6 processed 14550/22092 windows
+    🧵 Thread window-processor-6 processed 14570/22092 windows
+    🧵 Thread window-processor-5 processed 17750/22092 windows
+    🧵 Thread window-processor-9 processed 6360/22092 windows
+    🧵 Thread window-processor-7 processed 10550/22092 windows
+    🧵 Thread window-processor-9 processed 6430/22092 windows
+    🧵 Thread window-processor-7 processed 10590/22092 windows
+    🧵 Thread window-processor-7 processed 10680/22092 windows
+    🧵 Thread window-processor-6 processed 14670/22092 windows
+    🧵 Thread window-processor-5 processed 17820/22092 windows
+    🧵 Thread window-processor-5 processed 17920/22092 windows
+    🧵 Thread window-processor-5 processed 18020/22092 windows
+    🧵 Thread window-processor-6 processed 14790/22092 windows
+    🧵 Thread window-processor-8 processed 9230/22092 windows
+    🧵 Thread window-processor-8 processed 9280/22092 windows
+    🧵 Thread window-processor-9 processed 6560/22092 windows
+    🧵 Thread window-processor-9 processed 6590/22092 windows
+    🧵 Thread window-processor-5 processed 18120/22092 windows
+    🧵 Thread window-processor-9 processed 6620/22092 windows
+    🧵 Thread window-processor-7 processed 10920/22092 windows
+    🧵 Thread window-processor-9 processed 6630/22092 windows
+    🧵 Thread window-processor-7 processed 10970/22092 windows
+    🧵 Thread window-processor-7 processed 11020/22092 windows
+    🧵 Thread window-processor-5 processed 18200/22092 windows
+    🧵 Thread window-processor-9 processed 6760/22092 windows
+    🧵 Thread window-processor-8 processed 9400/22092 windows
+    🧵 Thread window-processor-8 processed 9440/22092 windows
+    🧵 Thread window-processor-5 processed 18250/22092 windows
+    🧵 Thread window-processor-9 processed 6860/22092 windows
+    🧵 Thread window-processor-9 processed 6930/22092 windows
+    🧵 Thread window-processor-5 processed 18310/22092 windows
+    🧵 Thread window-processor-5 processed 18410/22092 windows
+    🧵 Thread window-processor-9 processed 6990/22092 windows
+    🧵 Thread window-processor-7 processed 11120/22092 windows
+    🧵 Thread window-processor-7 processed 11130/22092 windows
+    🧵 Thread window-processor-5 processed 18590/22092 windows
+    🧵 Thread window-processor-7 processed 11180/22092 windows
+    🧵 Thread window-processor-9 processed 7140/22092 windows
+    🧵 Thread window-processor-7 processed 11200/22092 windows
+    🧵 Thread window-processor-8 processed 9610/22092 windows
+    ✅ Thread 1/11 completed
+    🧵 Thread window-processor-8 processed 9620/22092 windows
+    ✅ Thread 2/11 completed
+    ✅ Thread 3/11 completed
+    ✅ Thread 4/11 completed
+    ✅ Thread 5/11 completed
+    🧵 Thread window-processor-5 processed 18700/22092 windows
+    🧵 Thread window-processor-6 processed 15410/22092 windows
+🧵 Thread window-processor-10 started processing 1 windows
+    ✅ Thread window-processor-10 completed in 602.00ns - added 1 windows to the result set
+    ✅ Thread window-processor-5 completed in 76.61ms - added 22092 windows to the result set
+    ✅ Thread 6/11 completed
+    ✅ Thread 7/11 completed
+    ✅ Thread 8/11 completed
+    ✅ Thread 9/11 completed
+    ✅ Thread 10/11 completed
+    ✅ Thread 11/11 completed
+    ✅ Thread 12/11 completed
+    ✅ Thread window-processor-6 completed in 67.19ms - added 22092 windows to the result set
+    ✅ Successfully collected 154645 window pairs
+    🔄 Separating inputs and targets...
+    ✅ Thread window-processor-8 completed in 68.08ms - added 22092 windows to the result set
+    ✅ Thread window-processor-7 completed in 75.02ms - added 22092 windows to the result set
+    ✅ Thread window-processor-9 completed in 43.49ms - added 22092 windows to the result set
+    ✅ Created 154645 input/target pairs in 136.26ms
+    📊 Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+    💻 CPU cores: 20 logical, 10 physical
+    🔄 Configuring thread pool for gradient updates...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.44 GB/s
+Estimated bandwidth per thread: 0.04 GB/s
+Thread count calculation: bandwidth_limit=178, compute_limit=12, adjusted=9, final=9
+🔸 Reusing existing thread pool for 'gradient_update' operation
+Configured dedicated thread pool with 15 threads for gradient_update operations
+    ✅ Using 9 threads for gradient processing (configured in 468.89ms)
+    🧮 Calculating optimal batch size...
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=512, seq_len=16, element_size=4 bytes
+Memory per sequence: 32768 bytes (0.03 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 614
+Final optimal batch size (after constraints): 614
+Calculated memory-optimal batch size: 614
+    ✅ Batch size calculation completed in 45.92µs
+      📊 Hardware-optimal batch size: 614
+      📊 Dataset-constrained batch size: 614
+      📊 Using batch size: 614
+    📊 Expected number of batches: 252
+    🔄 Shuffling data indices directly...
+    ✅ Indices shuffled in 1.08ms
+    🔄 Creating batches from shuffled indices...
+    ✅ Created 252 batches in 96.60µs
+
+    🔄 BEGINNING BATCH PROCESSING (SEQUENTIAL)
+    🚀 Using robust batch-level parallelism with work stealing
+    🧵 Using 6 worker threads for batch processing
+    💻 Enabling SIMD optimizations for matrix operations
+    🔍 Detected CPU SIMD features: ["SSE2", "AVX", "AVX2"]
+    ✅ SIMD optimization enabled: true
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+Initializing enhanced model with configuration:
+  model_dim: 512 (validated: 512)
+  ff_dim: 2048 (validated: 2048)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=512, vocab_size=101
+    ✅ Created 6 trainer clones for parallel batch processing
+    🧵 Thread batch-worker-1 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-0 started for batch processing
+    🧵 Thread batch-worker-2 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-3 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Processing 14 chunks across 14 threads
+    🧵 Thread batch-worker-4 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+    🧵 Thread batch-worker-5 started for batch processing
+🔸 Reusing existing thread pool for 'data_loading' operation
+Data loading with 14 threads
+Batch prep timing: total=2ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(121) created state tracker at Instant { tv_sec: 49634, tv_nsec: 367054130 }
+📊 MEMORY USAGE [thread_ThreadId(121)_start]:
+  VmSize:	 8104944 kB
+  VmRSS:	  466400 kB
+🧵 Thread ThreadId(121) state: Idle -> PreparingBatch (after 40.253µs, total 40.288µs)
+🧵 Thread ThreadId(121) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 42.247µs)
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4973
+Processing 14 chunks across 14 threads
+Resizing output layer from 101 to 10000 tokens
+Batch prep timing: total=5ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(120) created state tracker at Instant { tv_sec: 49634, tv_nsec: 370309316 }
+📊 MEMORY USAGE [thread_ThreadId(120)_start]:
+  VmSize:	 8144952 kB
+  VmRSS:	  492720 kB
+🧵 Thread ThreadId(120) state: Idle -> PreparingBatch (after 45.177µs, total 45.213µs)
+🧵 Thread ThreadId(120) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 47.394µs)
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4992
+Resizing output layer from 101 to 10000 tokens
+Processing 14 chunks across 14 threads
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(121) state: ResizingVocabulary -> ForwardPass (after 5.496052ms, total 5.539234ms)
+Batch prep timing: total=9ms (collect=0ms, min_len=0ms, truncate=1ms, targets=0ms)
+🧵 Thread ThreadId(122) created state tracker at Instant { tv_sec: 49634, tv_nsec: 374032846 }
+📊 MEMORY USAGE [thread_ThreadId(122)_start]:
+  VmSize:	 8201956 kB
+  VmRSS:	  537016 kB
+🧵 Thread ThreadId(122) state: Idle -> PreparingBatch (after 102.43µs, total 102.472µs)
+🧵 Thread ThreadId(122) state: PreparingBatch -> ResizingVocabulary (after 31ns, total 104.515µs)
+Processing 14 chunks across 14 threads
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4965
+Resizing output layer from 101 to 10000 tokens
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(120) state: ResizingVocabulary -> ForwardPass (after 8.506887ms, total 8.55497ms)
+Batch prep timing: total=14ms (collect=0ms, min_len=0ms, truncate=2ms, targets=1ms)
+🧵 Thread ThreadId(123) created state tracker at Instant { tv_sec: 49634, tv_nsec: 379553013 }
+📊 MEMORY USAGE [thread_ThreadId(123)_start]:
+  VmSize:	 8278612 kB
+  VmRSS:	  603348 kB
+🧵 Thread ThreadId(123) state: Idle -> PreparingBatch (after 102.431µs, total 102.494µs)
+🧵 Thread ThreadId(123) state: PreparingBatch -> ResizingVocabulary (after 29ns, total 105.028µs)
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4988
+Resizing output layer from 101 to 10000 tokens
+Processing 14 chunks across 14 threads
+Batch prep timing: total=18ms (collect=0ms, min_len=0ms, truncate=1ms, targets=1ms)
+🧵 Thread ThreadId(124) created state tracker at Instant { tv_sec: 49634, tv_nsec: 383290028 }
+📊 MEMORY USAGE [thread_ThreadId(124)_start]:
+  VmSize:	 8335616 kB
+  VmRSS:	  650716 kB
+🧵 Thread ThreadId(124) state: Idle -> PreparingBatch (after 58.87µs, total 58.906µs)
+🧵 Thread ThreadId(124) state: PreparingBatch -> ResizingVocabulary (after 28ns, total 61.856µs)
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4971
+Resizing output layer from 101 to 10000 tokens
+Processing 14 chunks across 14 threads
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(122) state: ResizingVocabulary -> ForwardPass (after 10.086495ms, total 10.191789ms)
+Batch prep timing: total=27ms (collect=0ms, min_len=0ms, truncate=1ms, targets=4ms)
+🧵 Thread ThreadId(125) created state tracker at Instant { tv_sec: 49634, tv_nsec: 391906010 }
+📊 MEMORY USAGE [thread_ThreadId(125)_start]:
+  VmSize:	 8434580 kB
+  VmRSS:	  741112 kB
+🧵 Thread ThreadId(125) state: Idle -> PreparingBatch (after 34.398µs, total 34.432µs)
+🧵 Thread ThreadId(125) state: PreparingBatch -> ResizingVocabulary (after 30ns, total 36.281µs)
+🔄 Resizing vocabulary from 101 to 10000 to handle target ID 4950
+Resizing output layer from 101 to 10000 tokens
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(123) state: ResizingVocabulary -> ForwardPass (after 15.960612ms, total 16.066697ms)
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(124) state: ResizingVocabulary -> ForwardPass (after 17.976191ms, total 18.038812ms)
+Output layer successfully resized to vocabulary size 10000
+✅ Vocabulary successfully resized to 10000
+🧵 Thread ThreadId(125) state: ResizingVocabulary -> ForwardPass (after 13.239209ms, total 13.276161ms)
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 249
+        - Thread ThreadId(123): Training on batch 248
+        - Thread ThreadId(124): Training on batch 247
+        - Thread ThreadId(125): Training on batch 246
+        - Thread ThreadId(120): Training on batch 250
+        - Thread ThreadId(121): Training on batch 251
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 249
+        - Thread ThreadId(123): Training on batch 248
+        - Thread ThreadId(124): Training on batch 247
+        - Thread ThreadId(125): Training on batch 246
+        - Thread ThreadId(120): Training on batch 250
+        - Thread ThreadId(121): Training on batch 251
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+    ⚠️ WATCHDOG: Batch processing potentially stalled for 10+ seconds
+        - Active workers: 6
+        - Queue empty: false
+        - Thread ThreadId(122): Training on batch 249
+        - Thread ThreadId(123): Training on batch 248
+        - Thread ThreadId(124): Training on batch 247
+        - Thread ThreadId(125): Training on batch 246
+        - Thread ThreadId(120): Training on batch 250
+        - Thread ThreadId(121): Training on batch 251
+    🔄 WATCHDOG: Deadlock detected, requesting termination
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ Thread ThreadId(121) training step took 114.55s - slower than expected
+✅ Thread ThreadId(121) training completed in 114556.48ms with loss 9.21078
+📊 MEMORY USAGE [thread_ThreadId(121)_end]:
+  VmSize:	18059792 kB
+  VmRSS:	 9861360 kB
+🧵 Thread ThreadId(121) state: ForwardPass -> Completed (after 114.550998264s, total 114.556539411s)
+⚠️ Thread ThreadId(121) spent too long (114.550998264s) in state ForwardPass - potential deadlock
+    🧵 Thread batch-worker-1 received termination request
+    🧵 Thread batch-worker-1 exiting, 5 workers remaining
+    📊 Batch 252/252 - Loss: 9.210780 - Avg: 9.210780 - Prep: 0.003s - Train: 114.557s
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+    ⚠️ GLOBAL TRAINING TIMEOUT: Forcing completion after 120s
+    🔄 Waiting for all threads to finish...
+    🔄 Attempting to join threads with aggressive timeouts...
+    ⏳ Trying to join thread 0 with 200ms timeout...
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+    ⚠️ Thread 0 join timed out
+    ⚠️ Thread will be abandoned
+    ⏳ Trying to join thread 1 with 200ms timeout...
+    ✅ Thread 1 joined successfully
+    ⏳ Trying to join thread 2 with 200ms timeout...
+    ⚠️ Thread 2 join timed out
+    ⚠️ Thread will be abandoned
+    ⏳ Trying to join thread 3 with 200ms timeout...
+    ⚠️ Thread 3 join timed out
+    ⚠️ Thread will be abandoned
+    ⏳ Trying to join thread 4 with 200ms timeout...
+    ⚠️ Thread 4 join timed out
+    ⚠️ Thread will be abandoned
+    ⏳ Trying to join thread 5 with 200ms timeout...
+    ⚠️ Thread 5 join timed out
+    ⚠️ Thread will be abandoned
+    ✅ Thread joining process complete: collected 1/6 trainers
+    🔄 Applying parallel gradients from 1 threads...
+🔄 Applying gradients from parallel workers...
+🧵 Main thread ThreadId(1) starting gradient application
+📊 MEMORY USAGE [before_gradient_application]:
+  VmSize:	18083868 kB
+  VmRSS:	 9622832 kB
+🧵 Thread ThreadId(1) state: Idle -> ExtractingGradients (after 102ns)
+📊 Found 0 accumulated gradients
+⚠️ No gradients to apply, skipping
+🧵 Thread ThreadId(1) state: ExtractingGradients -> Completed (after 17.545µs)
+✅ Parallel gradient application completed in 103.196µs
+📊 MEMORY USAGE [after_gradient_application]:
+  VmSize:	18083868 kB
+  VmRSS:	 9622832 kB
+
+Time analysis:
+  Total batch preparation time: 0.003s (0.0%)
+  Total training step time:     114.557s (100.0%)
+  Average batch preparation:    0.003s
+  Average training step:        114.557s
+  Ratio (train/prep):           45440.25x
+    🛑 Signaling watchdog to terminate before evaluation phase
+    ✅ Watchdog thread joined successfully
+
+✅ TRAINING COMPLETED:
+    - Processed 1 batches
+    - Average loss: 9.210780
+    - Total preparation time: 0.003s
+    - Total training time: 114.557s
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full/data_preparation - Total: 0.1363s, Avg: 0.1363s, Count: 1
+#2: train_epoch_full/shuffling_indices - Total: 0.0011s, Avg: 0.0011s, Count: 1
+#3: train_epoch_full/batch_creation - Total: 0.0001s, Avg: 0.0001s, Count: 1
+#4: train_epoch_full/batch_size_calculation - Total: 0.0000s, Avg: 0.0000s, Count: 1
+
+--- PARALLELISM METRICS ---
+train_epoch_full/batch_creation - Threads: 1, Total CPU Time: 0.0001s
+train_epoch_full/batch_size_calculation - Threads: 1, Total CPU Time: 0.0000s
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full/batch_creation
+  Count:     1
+  Total:     0.0001 sec
+  Average:   0.0001 sec
+  Min/Max:   0.0001/0.0001 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/shuffling_indices
+  Count:     1
+  Total:     0.0011 sec
+  Average:   0.0011 sec
+  Min/Max:   0.0011/0.0011 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/batch_size_calculation
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: train_epoch_full/data_preparation
+  Count:     1
+  Total:     0.1363 sec
+  Average:   0.1363 sec
+  Min/Max:   0.1363/0.1363 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+  ⏳ Evaluating model...
+🔄 Temporarily disabled watchdog for evaluation phase
+⚠️ WATCHDOG: Progress stalled for 5 seconds, progress=220921
+✅ WATCHDOG: Disabled by environment variable, exiting...
+⚠️ Thread ThreadId(125) training step took 138.97s - slower than expected
+✅ Thread ThreadId(125) training completed in 138987.14ms with loss 9.210801
+📊 MEMORY USAGE [thread_ThreadId(125)_end]:
+  VmSize:	18197708 kB
+  VmRSS:	 9742136 kB
+🧵 Thread ThreadId(125) state: ForwardPass -> Completed (after 138.973907748s, total 138.987186793s)
+⚠️ Thread ThreadId(125) spent too long (138.973907748s) in state ForwardPass - potential deadlock
+    ⚠️ Thread batch-worker-5 failed to send result message
+    🧵 Thread batch-worker-5 received termination request
+    🧵 Thread batch-worker-5 exiting, 4 workers remaining
+⚠️ Thread ThreadId(124) training step took 148.73s - slower than expected
+✅ Thread ThreadId(124) training completed in 148753.05ms with loss 9.210801
+📊 MEMORY USAGE [thread_ThreadId(124)_end]:
+  VmSize:	17245804 kB
+  VmRSS:	 8864544 kB
+🧵 Thread ThreadId(124) state: ForwardPass -> Completed (after 148.735070182s, total 148.753113781s)
+⚠️ Thread ThreadId(124) spent too long (148.735070182s) in state ForwardPass - potential deadlock
+    ⚠️ Thread batch-worker-4 failed to send result message
+    🧵 Thread batch-worker-4 received termination request
+    🧵 Thread batch-worker-4 exiting, 3 workers remaining
+⚠️ Thread ThreadId(120) training step took 154.09s - slower than expected
+✅ Thread ThreadId(120) training completed in 154097.00ms with loss 9.210801
+📊 MEMORY USAGE [thread_ThreadId(120)_end]:
+  VmSize:	14996712 kB
+  VmRSS:	 6745944 kB
+🧵 Thread ThreadId(120) state: ForwardPass -> Completed (after 154.088486704s, total 154.09704698s)
+⚠️ Thread ThreadId(120) spent too long (154.088486704s) in state ForwardPass - potential deadlock
+    ⚠️ Thread batch-worker-0 failed to send result message
+    🧵 Thread batch-worker-0 received termination request
+    🧵 Thread batch-worker-0 exiting, 2 workers remaining
+⚠️ Thread ThreadId(122) training step took 160.19s - slower than expected
+✅ Thread ThreadId(122) training completed in 160198.44ms with loss 9.210801
+📊 MEMORY USAGE [thread_ThreadId(122)_end]:
+  VmSize:	12223332 kB
+  VmRSS:	 4175028 kB
+🧵 Thread ThreadId(122) state: ForwardPass -> Completed (after 160.188303547s, total 160.19849699s)
+⚠️ Thread ThreadId(122) spent too long (160.188303547s) in state ForwardPass - potential deadlock
+    ⚠️ Thread batch-worker-2 failed to send result message
+    🧵 Thread batch-worker-2 received termination request
+    🧵 Thread batch-worker-2 exiting, 1 workers remaining
+⚠️ Thread ThreadId(123) training step took 168.13s - slower than expected
+✅ Thread ThreadId(123) training completed in 168143.61ms with loss 9.210801
+📊 MEMORY USAGE [thread_ThreadId(123)_end]:
+  VmSize:	10301920 kB
+  VmRSS:	 2370688 kB
+🧵 Thread ThreadId(123) state: ForwardPass -> Completed (after 168.127630961s, total 168.143702983s)
+⚠️ Thread ThreadId(123) spent too long (168.127630961s) in state ForwardPass - potential deadlock
+    ⚠️ Thread batch-worker-3 failed to send result message
+    🧵 Thread batch-worker-3 received termination request
+    🧵 Thread batch-worker-3 exiting, 0 workers remaining
+🛑 Watchdog disabled for text generation
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
