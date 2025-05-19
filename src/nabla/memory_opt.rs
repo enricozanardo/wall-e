@@ -1,6 +1,9 @@
 use ndarray::{Array, Array2, ArrayD, Ix2, Ix3};
 use rayon::prelude::*;
 use std::cmp;
+use std::time::{Instant, Duration};
+use std::collections::HashMap;
+use super::tensor::Tensor;
 
 /// Contains the determined hardware parameters
 pub struct CacheParameters {
@@ -269,31 +272,293 @@ pub fn prefetch<T>(_data: &[T], _offset: usize) {
     // No-op
 }
 
-/// Measure memory bandwidth
+/// Strategy for selecting which layers to checkpoint during backpropagation
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum CheckpointStrategy {
+    /// Only checkpoint the boundaries (input and output of layer blocks)
+    Boundary,
+    /// Checkpoint layers at uniform intervals
+    Uniform,
+    /// Adaptively select checkpoints based on memory usage
+    Adaptive,
+    /// No checkpointing (store all intermediate activations)
+    None,
+}
+
+/// Memory tracker for gradient checkpointing
+#[derive(Debug, Clone)]
+pub struct MemoryTracker {
+    /// Current memory usage in bytes
+    pub current_usage: usize,
+    /// Peak memory usage in bytes
+    pub peak_usage: usize,
+    /// Memory usage snapshots at different points
+    pub snapshots: HashMap<String, usize>,
+}
+
+impl MemoryTracker {
+    /// Create a new memory tracker
+    pub fn new() -> Self {
+        Self {
+            current_usage: 0,
+            peak_usage: 0,
+            snapshots: HashMap::new(),
+        }
+    }
+
+    /// Track memory allocation
+    pub fn allocate(&mut self, bytes: usize) {
+        self.current_usage += bytes;
+        self.peak_usage = self.peak_usage.max(self.current_usage);
+    }
+
+    /// Track memory deallocation
+    pub fn deallocate(&mut self, bytes: usize) {
+        self.current_usage = self.current_usage.saturating_sub(bytes);
+    }
+
+    /// Take a memory snapshot with a label
+    pub fn snapshot(&mut self, label: &str) {
+        self.snapshots.insert(label.to_string(), self.current_usage);
+    }
+
+    /// Get current memory usage in MB
+    pub fn current_usage_mb(&self) -> f64 {
+        self.current_usage as f64 / (1024.0 * 1024.0)
+    }
+
+    /// Get peak memory usage in MB
+    pub fn peak_usage_mb(&self) -> f64 {
+        self.peak_usage as f64 / (1024.0 * 1024.0)
+    }
+}
+
+/// Gradient checkpointing for memory-efficient backpropagation
+pub struct GradientCheckpointer {
+    /// The chosen checkpointing strategy
+    strategy: CheckpointStrategy,
+    /// Number of model layers
+    num_layers: usize,
+    /// Memory tracker
+    memory_tracker: MemoryTracker,
+    /// Checkpoint interval for uniform strategy
+    checkpoint_interval: usize,
+    /// Checkpointed tensors by layer index
+    checkpoints: HashMap<usize, Vec<Tensor>>,
+    /// Flag to track whether forward pass is active
+    in_forward_pass: bool,
+}
+
+impl GradientCheckpointer {
+    /// Create a new gradient checkpointer with the specified strategy
+    pub fn new(strategy: CheckpointStrategy, num_layers: usize) -> Self {
+        // Calculate a reasonable default checkpoint interval based on layers
+        let default_interval = match num_layers {
+            0..=4 => 1,    // For very small models, checkpoint everything
+            5..=10 => 2,   // For small models
+            11..=20 => 3,  // For medium models
+            21..=40 => 4,  // For large models
+            _ => 5,        // For very large models
+        };
+
+        Self {
+            strategy,
+            num_layers,
+            memory_tracker: MemoryTracker::new(),
+            checkpoint_interval: default_interval,
+            checkpoints: HashMap::new(),
+            in_forward_pass: false,
+        }
+    }
+
+    /// Begin the forward pass
+    pub fn begin_forward(&mut self) {
+        self.in_forward_pass = true;
+        self.checkpoints.clear();
+        self.memory_tracker = MemoryTracker::new();
+    }
+
+    /// End the forward pass
+    pub fn end_forward(&mut self) {
+        self.in_forward_pass = false;
+        self.memory_tracker.snapshot("end_forward");
+    }
+
+    /// Determine if a layer's activations should be checkpointed
+    pub fn should_checkpoint(&self, layer_idx: usize) -> bool {
+        if !self.in_forward_pass {
+            return false;
+        }
+
+        match self.strategy {
+            CheckpointStrategy::None => false,
+            CheckpointStrategy::Boundary => {
+                // Only checkpoint the first and last layers
+                layer_idx == 0 || layer_idx == self.num_layers - 1
+            },
+            CheckpointStrategy::Uniform => {
+                // Checkpoint at regular intervals
+                layer_idx % self.checkpoint_interval == 0 || layer_idx == self.num_layers - 1
+            },
+            CheckpointStrategy::Adaptive => {
+                // Adaptive checkpointing based on available memory and layer characteristics
+                // This is a simplified version - a real implementation would consider tensor sizes
+                if layer_idx == 0 || layer_idx == self.num_layers - 1 {
+                    return true;
+                }
+                
+                // Check if memory usage is high
+                let current_mb = self.memory_tracker.current_usage_mb();
+                let threshold_mb = 1000.0; // 1GB threshold
+                
+                if current_mb > threshold_mb {
+                    // If memory usage is high, checkpoint more aggressively
+                    layer_idx % 2 == 0
+                } else {
+                    // Otherwise use a more relaxed interval
+                    layer_idx % 3 == 0
+                }
+            }
+        }
+    }
+
+    /// Store a checkpoint for a layer
+    pub fn store_checkpoint(&mut self, layer_idx: usize, tensors: Vec<Tensor>) {
+        if !self.in_forward_pass {
+            return;
+        }
+
+        if self.should_checkpoint(layer_idx) {
+            // Calculate size of tensors for memory tracking
+            let size_bytes = tensors.iter()
+                .map(|t| t.data.len() * std::mem::size_of::<f32>())
+                .sum();
+            
+            self.memory_tracker.allocate(size_bytes);
+            self.checkpoints.insert(layer_idx, tensors);
+            
+            // Take a snapshot at this checkpoint
+            self.memory_tracker.snapshot(&format!("checkpoint_layer_{}", layer_idx));
+        }
+    }
+
+    /// Retrieve a checkpoint for a layer
+    pub fn get_checkpoint(&self, layer_idx: usize) -> Option<&Vec<Tensor>> {
+        self.checkpoints.get(&layer_idx)
+    }
+
+    /// Check if a layer has a stored checkpoint
+    pub fn has_checkpoint(&self, layer_idx: usize) -> bool {
+        self.checkpoints.contains_key(&layer_idx)
+    }
+
+    /// Recompute activations for a layer that wasn't checkpointed
+    pub fn recompute_activations(&self, layer_idx: usize, 
+                                input_tensors: Vec<Tensor>, 
+                                compute_fn: &dyn Fn(Vec<Tensor>) -> Vec<Tensor>) -> Vec<Tensor> {
+        // If we have a checkpoint, return it
+        if let Some(checkpoint) = self.get_checkpoint(layer_idx) {
+            return checkpoint.clone();
+        }
+        
+        // Otherwise, recompute using the provided function
+        compute_fn(input_tensors)
+    }
+
+    /// Set the checkpoint interval for uniform strategy
+    pub fn set_checkpoint_interval(&mut self, interval: usize) {
+        self.checkpoint_interval = interval.max(1); // Ensure at least 1
+    }
+
+    /// Get memory usage statistics
+    pub fn get_memory_stats(&self) -> (f64, f64) {
+        (
+            self.memory_tracker.current_usage_mb(),
+            self.memory_tracker.peak_usage_mb()
+        )
+    }
+
+    /// Free a specific checkpoint to reclaim memory
+    pub fn free_checkpoint(&mut self, layer_idx: usize) {
+        if let Some(tensors) = self.checkpoints.remove(&layer_idx) {
+            // Calculate size of tensors for memory tracking
+            let size_bytes = tensors.iter()
+                .map(|t| t.data.len() * std::mem::size_of::<f32>())
+                .sum();
+            
+            self.memory_tracker.deallocate(size_bytes);
+        }
+    }
+
+    /// Estimate memory savings from current checkpointing strategy
+    pub fn estimate_memory_savings(&self) -> (f64, f64) {
+        // Calculate current memory usage with checkpointing
+        let with_checkpointing = self.memory_tracker.peak_usage_mb();
+        
+        // Estimate memory usage without checkpointing
+        // (Assuming each layer has similar memory requirements)
+        let avg_checkpoint_size = if !self.checkpoints.is_empty() {
+            let total_size: usize = self.checkpoints.values()
+                .map(|tensors| tensors.iter()
+                    .map(|t| t.data.len() * std::mem::size_of::<f32>())
+                    .sum::<usize>())
+                .sum();
+            total_size as f64 / self.checkpoints.len() as f64
+        } else {
+            0.0
+        };
+        
+        let without_checkpointing = avg_checkpoint_size * self.num_layers as f64 / (1024.0 * 1024.0);
+        
+        (with_checkpointing, without_checkpointing)
+    }
+}
+
+/// Helper function to measure memory bandwidth
 pub fn measure_memory_bandwidth() -> f64 {
-    // Create large arrays to ensure we're measuring memory bandwidth not cache
-    let size = 100 * 1024 * 1024; // 100 MB
-    let a = vec![1.0f32; size];
-    let b = vec![2.0f32; size];
-    let mut c = vec![0.0f32; size];
+    // Use a fixed size for memory bandwidth testing to avoid sys_info dependency
+    let memory_size = 500_000_000; // 500MB, a reasonable size for most systems
+    let num_elements = memory_size / std::mem::size_of::<f32>();
     
-    // Warm up
-    for i in 0..1000 {
-        c[i] = a[i] + b[i];
+    // Allocate memory
+    let mut data = vec![0.0f32; num_elements];
+    
+    // Warm-up
+    for i in 0..num_elements {
+        data[i] = i as f32;
     }
     
-    // Measure bandwidth
-    let start = std::time::Instant::now();
+    // Measure read bandwidth
+    let read_start = Instant::now();
+    let mut sum = 0.0f32;
+    for _ in 0..3 {
+        for i in 0..num_elements {
+            sum += data[i];
+        }
+    }
+    let read_time = read_start.elapsed();
     
-    for i in 0..size {
-        c[i] = a[i] + b[i];
+    // Measure write bandwidth
+    let write_start = Instant::now();
+    for _ in 0..3 {
+        for i in 0..num_elements {
+            data[i] = i as f32 * 0.5;
+        }
+    }
+    let write_time = write_start.elapsed();
+    
+    // Prevent compiler from optimizing away the operations
+    if sum < 0.0 {
+        println!("Sum: {}", sum);
     }
     
-    let elapsed = start.elapsed().as_secs_f64();
-    let bytes_processed = (size * 3 * std::mem::size_of::<f32>()) as f64;
-    let bandwidth_gb_per_sec = bytes_processed / (elapsed * 1_000_000_000.0);
+    // Calculate bandwidth in GB/s
+    let total_bytes = (num_elements * std::mem::size_of::<f32>() * 3) as f64;
+    let read_bandwidth = total_bytes / read_time.as_secs_f64() / 1_000_000_000.0;
+    let write_bandwidth = total_bytes / write_time.as_secs_f64() / 1_000_000_000.0;
     
-    bandwidth_gb_per_sec
+    // Return average of read and write bandwidth
+    (read_bandwidth + write_bandwidth) / 2.0
 }
 
 #[cfg(test)]
@@ -348,5 +613,38 @@ mod tests {
         let bandwidth = measure_memory_bandwidth();
         println!("Measured memory bandwidth: {:.2} GB/s", bandwidth);
         assert!(bandwidth > 0.0);
+    }
+
+    #[test]
+    fn test_gradient_checkpointer() {
+        // Create a gradient checkpointer with uniform strategy
+        let mut checkpointer = GradientCheckpointer::new(CheckpointStrategy::Uniform, 10);
+        
+        // Begin forward pass
+        checkpointer.begin_forward();
+        
+        // Check which layers should be checkpointed
+        for i in 0..10 {
+            let should_store = checkpointer.should_checkpoint(i);
+            println!("Layer {}: checkpoint={}", i, should_store);
+            
+            if should_store {
+                // Create a mock tensor for testing
+                let tensor = Tensor::new(Array2::<f32>::zeros((2, 2)));
+                checkpointer.store_checkpoint(i, vec![tensor]);
+            }
+        }
+        
+        // End forward pass
+        checkpointer.end_forward();
+        
+        // Check which layers were checkpointed
+        for i in 0..10 {
+            println!("Layer {}: has_checkpoint={}", i, checkpointer.has_checkpoint(i));
+        }
+        
+        // Get memory stats
+        let (current, peak) = checkpointer.get_memory_stats();
+        println!("Memory usage: current={:.2} MB, peak={:.2} MB", current, peak);
     }
 } 

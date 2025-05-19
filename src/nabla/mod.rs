@@ -10,3 +10,6 @@ pub mod tensor;
 /// This module provides cache-efficient implementations of tensor operations
 /// and utilities for optimizing memory access patterns to improve performance.
 pub mod memory_opt;
+
+// Re-export key components
+pub use tensor::Tensor;

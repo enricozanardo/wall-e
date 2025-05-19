@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::io;
-use ndarray::{Array, Array1, Array2,s};
+use ndarray::{Array, Array1, Array2, Array3, s, Ix2, Ix3};
 use thiserror::Error;
 use crate::tokenizer::Tokenizer;
 use crate::embedding::TransformerEmbedding;
@@ -942,6 +942,46 @@ impl Trainer {
         
         println!("Successfully loaded {} weight matrices", matrix_idx);
         Ok(())
+    }
+
+    /// Resizes the output projection layer to accommodate the new vocabulary size
+    ///
+    /// # Arguments
+    /// * `new_vocab_size` - The new vocabulary size to resize to
+    pub fn resize_output_layer(&mut self, new_vocab_size: usize) {
+        if new_vocab_size == self.vocab_size {
+            // No resize needed
+            return;
+        }
+        
+        println!("Resizing output_projection from vocab_size={} to {}", 
+                self.vocab_size, new_vocab_size);
+        
+        // Create a new output projection with the new vocabulary size
+        let model_dim = self.model_dim;
+        
+        // Initialize output projection with zeros
+        let mut output_proj_data = Array2::<f32>::zeros((model_dim, new_vocab_size));
+        
+        // Preserve old weights for the tokens that are still in the vocabulary
+        let common_size = self.vocab_size.min(new_vocab_size);
+        
+        // Use rayon for parallel copying of weights
+        let old_proj_data = self.output_projection.data.clone().into_dimensionality::<Ix2>().unwrap();
+        
+        // Create slices and copy in parallel
+        output_proj_data.slice_mut(s![.., 0..common_size])
+            .assign(&old_proj_data.slice(s![.., 0..common_size]));
+        
+        // Update the vocabulary size
+        self.vocab_size = new_vocab_size;
+        
+        // Create new tensor from the data
+        let output_projection = Tensor::new(output_proj_data);
+        
+        // Update both the struct field and the parameter hashmap
+        self.output_projection = output_projection.clone();
+        self.params.insert("output_projection".to_string(), output_projection);
     }
 }
 

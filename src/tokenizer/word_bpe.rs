@@ -293,6 +293,144 @@ impl WordPieceBPETokenizer {
         // internal token tables, merges, etc.
         println!("Note: Full vocabulary resizing not implemented in this version");
     }
+
+    /// Returns the current vocabulary size
+    pub fn get_vocab_size(&self) -> usize {
+        self.vocab.len()
+    }
+    
+    /// Learns BPE merge rules from multiple text chunks in parallel
+    pub fn learn_bpe_parallel(&mut self, text_chunks: &[&str], vocab_size: usize, min_frequency: usize) {
+        use rayon::prelude::*;
+        use std::sync::{Arc, Mutex};
+        
+        println!("Starting parallel vocabulary learning with {} chunks", text_chunks.len());
+        let start = std::time::Instant::now();
+        
+        // Step 1: Pre-tokenize all chunks in parallel and gather word frequencies
+        let word_count_mutex = Arc::new(Mutex::new(HashMap::<String, usize>::new()));
+        
+        text_chunks.par_iter().for_each(|&chunk| {
+            // Pre-tokenize this chunk
+            let pre_tokens = self.pre_tokenize(chunk);
+            
+            // Extract words
+            let chunk_words: Vec<String> = pre_tokens.iter()
+                .filter(|&token| !token.starts_with('[') && !token.ends_with(']'))
+                .map(|token| token.clone() + &self.end_token)
+                .collect();
+            
+            // Count word frequencies for this chunk
+            let mut local_counts = HashMap::new();
+            for word in chunk_words {
+                *local_counts.entry(word).or_insert(0) += 1;
+            }
+            
+            // Merge into global counts
+            let mut global_counts = word_count_mutex.lock().unwrap();
+            for (word, count) in local_counts {
+                *global_counts.entry(word).or_insert(0) += count;
+            }
+        });
+        
+        let word_counts = Arc::try_unwrap(word_count_mutex).unwrap().into_inner().unwrap();
+        println!("Word counting completed in {:.2?}, found {} unique words", 
+                 start.elapsed(), word_counts.len());
+        
+        // Step 2: Initialize word representations as characters
+        let mut word_parts: HashMap<String, Vec<String>> = HashMap::new();
+        
+        for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+            let parts: Vec<String> = word.chars().map(|c| c.to_string()).collect();
+            word_parts.insert(word.clone(), parts);
+        }
+        
+        // Step 3: Learn BPE rules iteratively, same as before
+        let current_vocab_size = self.vocab.len();
+        let max_merges = vocab_size.saturating_sub(current_vocab_size);
+        println!("Learning up to {} merges to reach vocab size {}", max_merges, vocab_size);
+        
+        let bpe_start = std::time::Instant::now();
+        let mut merges_learned = 0;
+        
+        for i in 0..max_merges {
+            // Count pair frequencies in parallel
+            let pair_counts_mutex = Arc::new(Mutex::new(HashMap::<(String, String), usize>::new()));
+            
+            // Process words in parallel to count pairs
+            let filtered_words: Vec<(&String, &usize)> = word_counts.iter()
+                .filter(|&(_, count)| *count >= min_frequency)
+                .collect();
+            
+            filtered_words.par_iter().for_each(|&(word, count)| {
+                let parts = match word_parts.get(word) {
+                    Some(p) => p,
+                    None => return,
+                };
+                
+                if parts.len() < 2 {
+                    return;
+                }
+                
+                let mut local_pairs = HashMap::new();
+                for i in 0..parts.len() - 1 {
+                    let pair = (parts[i].clone(), parts[i + 1].clone());
+                    *local_pairs.entry(pair).or_insert(0) += count;
+                }
+                
+                // Merge local counts into global
+                let mut global_pairs = pair_counts_mutex.lock().unwrap();
+                for (pair, pair_count) in local_pairs {
+                    *global_pairs.entry(pair).or_insert(0) += pair_count;
+                }
+            });
+            
+            let pair_counts = Arc::try_unwrap(pair_counts_mutex).unwrap().into_inner().unwrap();
+            
+            // Find the most frequent pair
+            if pair_counts.is_empty() {
+                break;
+            }
+            
+            let best_pair = pair_counts
+                .iter()
+                .max_by_key(|&(_, count)| count)
+                .map(|((first, second), _)| (first.clone(), second.clone()))
+                .unwrap();
+            
+            // Create the new merged token
+            let new_token = format!("{}{}", best_pair.0, best_pair.1);
+            self.merges.push((best_pair.0.clone(), best_pair.1.clone(), new_token.clone()));
+            
+            // Update the vocabulary
+            self.vocab.add_token(&new_token);
+            merges_learned += 1;
+            
+            // Progress reporting
+            if i % 1000 == 0 || i == max_merges - 1 {
+                println!("  Learned {} merges ({:.1}%) in {:.2?}...", 
+                         i + 1, (i as f32 + 1.0) * 100.0 / max_merges as f32, bpe_start.elapsed());
+            }
+            
+            // Update word representations
+            // This step is harder to parallelize efficiently due to interdependencies
+            for parts in word_parts.values_mut() {
+                let mut i = 0;
+                while i < parts.len() - 1 {
+                    if parts[i] == best_pair.0 && parts[i + 1] == best_pair.1 {
+                        parts[i] = new_token.clone();
+                        parts.remove(i + 1);
+                    } else {
+                        i += 1;
+                    }
+                }
+            }
+        }
+        
+        println!("Parallel BPE learning completed in {:.2?}, vocabulary size: {}", 
+                 start.elapsed(), self.vocab.len());
+        println!("Learned {} merge operations", merges_learned);
+    }
 }
 
 impl Tokenizer for WordPieceBPETokenizer {

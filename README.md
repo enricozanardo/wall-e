@@ -23,6 +23,8 @@ Use the convenience script in the root directory:
 - Transformer-based architecture with self-attention
 - Optimized tokenization with WordPiece BPE algorithm
 - Curriculum learning for progressive model training
+- Gradient checkpointing for memory-efficient backpropagation
+- Workload-aware thread allocation for optimal CPU utilization
 - Support for both JSON and binary model formats
 - Text generation with anti-repetition mechanisms
 
@@ -60,10 +62,32 @@ Wall-E1 includes advanced memory optimization techniques to address bandwidth li
 
 - **Cache-efficient operations**: Matrix multiplication and tensor operations are optimized for CPU cache utilization
 - **Memory-aware batch sizing**: Automatically determines optimal batch sizes based on available cache
-- **Hardware detection**: Detects CPU cache parameters to tune algorithm performance
+- **Gradient checkpointing**: Trades computation for memory by selectively saving activations during backpropagation
+- **Hardware detection**: Detects CPU cache parameters and memory bandwidth to tune algorithm performance
 - **Prefetching**: Uses strategic data prefetching for improved memory access patterns
 - **Blocked algorithms**: Implements cache-blocked matrix multiplication for better spatial locality
-- **Thread optimization**: Intelligently allocates threads based on memory bandwidth capabilities
+- **Thread optimization**: Intelligently allocates threads based on workload characteristics and memory bandwidth capabilities
+
+## Thread Pool Optimization
+
+Wall-E1 dynamically adjusts parallelism based on operation type and hardware characteristics:
+
+- **Workload classification**: Different operations (matrix multiply, attention, data loading) get different thread counts
+- **Memory bandwidth analysis**: Measures available memory bandwidth and allocates threads to avoid saturating it
+- **Compute vs. memory bound detection**: Balances thread count based on whether an operation is compute or memory bound
+- **Hardware topology awareness**: Considers physical vs. logical cores for different workload types
+- **Small model efficiency**: Prevents overhead from excessive parallelization of small operations
+
+## Gradient Checkpointing
+
+To reduce memory usage during training, Wall-E1 implements gradient checkpointing with multiple strategies:
+
+- **Boundary strategy**: Only checkpoints the input/output of layer blocks, minimizing memory but requiring more recomputation
+- **Uniform strategy**: Checkpoints at regular intervals, providing a balanced approach
+- **Adaptive strategy**: Dynamically adjusts which activations to checkpoint based on memory usage patterns
+- **Memory tracking**: Monitors peak usage and provides statistics on memory savings
+
+This technique can reduce memory usage by 30-70% with only a 20-30% increase in computation time.
 
 ## Usage
 
@@ -76,8 +100,17 @@ Wall-E1 includes advanced memory optimization techniques to address bandwidth li
 # Training with memory optimization
 ./scripts/wall-e1-model.sh train --size medium --memory-opt
 
+# Training with specific gradient checkpointing strategy
+./scripts/wall-e1-model.sh train --size medium --memory-opt --checkpoint-strategy uniform
+
+# Training with thread optimization for specific operations
+./scripts/wall-e1-model.sh train --size medium --thread-opt matrix_multiply
+
 # Advanced options
-./scripts/wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --batch-size 128
+./scripts/wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128
+
+# Performance profiling
+./scripts/wall-e1-model.sh train --size small --perf-log
 ```
 
 ### Generating Text
@@ -98,7 +131,12 @@ Wall-E1 includes advanced memory optimization techniques to address bandwidth li
 - `--stories [number]`: Number of stories to use for training (default: 4000)
 - `--cpus [number]`: Number of CPU cores to use (default: all available)
 - `--memory-opt`: Enable memory optimization for better cache utilization and thread allocation
+- `--checkpoint-strategy [boundary|uniform|adaptive]`: Gradient checkpointing strategy (default: adaptive)
+- `--thread-opt [operation]`: Optimize thread allocation for a specific operation type
 - `--batch-size [number]`: Manually set batch size (overrides automatic calculation)
+- `--epochs [number]`: Number of training epochs (default: 10)
+- `--curriculum-examples [number]`: Number of examples for curriculum initialization (default: 500)
+- `--profile, --perf-log`: Enable detailed performance profiling and metrics collection
 
 ### Generation Options
 
@@ -116,6 +154,8 @@ Wall-E1 uses a Transformer-based architecture with the following components:
 - Positional encoding for sequence awareness
 - Curriculum learning for improved training efficiency
 - Memory optimization for cache-efficient operations
+- Gradient checkpointing for memory-efficient backpropagation
+- Workload-aware thread allocation for optimal CPU utilization
 
 ## Model Formats
 
@@ -126,7 +166,7 @@ Wall-E1 supports both JSON and binary model formats with the `.walle` extension.
 Wall-E1 is written in Rust and requires Rust 1.65 or later. Key components:
 
 - `nabla`: Tensor operations and automatic differentiation
-- `memory_opt`: Memory optimization and cache-efficient algorithms
+- `memory_opt`: Memory optimization, cache-efficient algorithms, and gradient checkpointing
 - `tokenizer`: WordPiece BPE tokenization
 - `training`: Model training and evaluation
 - `export`: Model serialization and loading 

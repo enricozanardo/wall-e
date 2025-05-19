@@ -210,32 +210,87 @@ fn calculate_memory_optimal_batch_size(model_dim: usize, seq_len: usize) -> usiz
 }
 
 // Calculate optimal thread count based on model and cache characteristics
-fn calculate_optimal_thread_count(model_dim: usize, num_layers: usize) -> usize {
+fn calculate_optimal_thread_count(model_dim: usize, num_layers: usize, operation_type: Option<&str>) -> usize {
+    // Physical cores are more important than logical cores for compute-heavy ML operations
+    let physical_cores = num_cpus::get_physical();
+    let logical_cores = num_cpus::get();
+    
+    println!("Hardware: {} physical cores, {} logical cores", physical_cores, logical_cores);
+    
     // Measure available memory bandwidth
     let bandwidth_gb_per_sec = memory_opt::measure_memory_bandwidth();
+    println!("Measured memory bandwidth: {:.2} GB/s", bandwidth_gb_per_sec);
     
-    // Estimate memory bandwidth needs per model instance
-    // This is a simplified model - in reality, it depends on many factors
-    // For each layer, we need:
-    // - Forward pass: read weights + read inputs + write outputs
-    // - Backward pass: similar operations
+    // Estimate memory bandwidth needs per model based on dimensions
     let bytes_per_parameter = std::mem::size_of::<f32>() as f64;
     let model_dim_f64 = model_dim as f64;
     let num_layers_f64 = num_layers as f64;
     
+    // Different operations have different memory bandwidth requirements
+    let (bandwidth_multiplier, compute_intensity) = match operation_type {
+        Some("matrix_multiply") => (8.0, 2.0),       // High compute intensity, high bandwidth
+        Some("attention") => (10.0, 1.5),            // Very high memory bandwidth requirement
+        Some("tokenization") => (2.0, 0.5),          // Low compute, medium bandwidth
+        Some("embedding") => (4.0, 0.8),             // Medium bandwidth, low compute
+        Some("gradient_update") => (6.0, 1.2),       // High bandwidth, medium compute
+        Some("data_loading") => (1.5, 0.2),          // I/O bound, low compute
+        _ => (6.0, 1.0),                             // Default for general operations
+    };
+    
+    // Calculate bandwidth requirement per thread (GB/s)
     let estimated_bandwidth_per_thread = 
-        model_dim_f64 * model_dim_f64 * num_layers_f64 * bytes_per_parameter * 6.0 / 1_000_000_000.0;
+        model_dim_f64 * model_dim_f64 * num_layers_f64 * bytes_per_parameter * 
+        bandwidth_multiplier / 1_000_000_000.0;
+    
+    println!("Estimated bandwidth per thread: {:.2} GB/s", estimated_bandwidth_per_thread);
     
     // Calculate how many threads we can run before hitting bandwidth limits
     // Use 80% of available bandwidth to leave headroom
     let bandwidth_threads = (bandwidth_gb_per_sec * 0.8 / estimated_bandwidth_per_thread) as usize;
     
-    // Get physical core count to avoid hyperthreading inefficiency
-    let physical_cores = num_cpus::get_physical();
+    // For compute-bound operations, we want to use more cores
+    let compute_factor = (compute_intensity * physical_cores as f64) as usize;
+    let compute_threads = (compute_factor.min(logical_cores)).max(1);
     
-    // Choose the minimum of physical cores and bandwidth-limited threads
-    // Ensure at least 1 thread
-    std::cmp::min(physical_cores, bandwidth_threads).max(1)
+    // Choose the limiting factor: either bandwidth or compute capability
+    let optimal_threads = bandwidth_threads.min(compute_threads);
+    
+    // Adjust for small models - don't overparallelise small workloads
+    let workload_size = model_dim * num_layers;
+    let small_model_factor = if workload_size < 1000 {
+        // For tiny models, reduce thread count to avoid overhead
+        0.5
+    } else if workload_size < 10000 {
+        0.75
+    } else {
+        1.0
+    };
+    
+    // Apply small model adjustment 
+    let adjusted_threads = ((optimal_threads as f64) * small_model_factor) as usize;
+    
+    // Ensure at least 1 thread, and no more than logical core count
+    let final_thread_count = adjusted_threads.clamp(1, logical_cores);
+    
+    println!("Thread count calculation: bandwidth_limit={}, compute_limit={}, adjusted={}, final={}",
+        bandwidth_threads, compute_threads, adjusted_threads, final_thread_count);
+    
+    final_thread_count
+}
+
+// Configure thread pool dynamically for specific operations
+fn configure_thread_pool_for_operation(model_dim: usize, num_layers: usize, operation: &str) -> usize {
+    // Calculate optimal thread count for this specific operation
+    let thread_count = calculate_optimal_thread_count(model_dim, num_layers, Some(operation));
+    
+    // Configure the rayon thread pool for this operation
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(thread_count)
+        .build_global()
+        .unwrap_or_else(|e| println!("Warning: Failed to configure thread pool: {}", e));
+    
+    // Return the configured thread count
+    thread_count
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -270,6 +325,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut enable_memory_optimization = false;
     let mut manual_batch_size = None;
     let mut curriculum_examples: usize = 2000;
+    let mut checkpoint_strategy = None;
+    let mut thread_opt = None;
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -361,6 +418,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "--use-memory-opt" => {
                 enable_memory_optimization = true;
             }
+            "--checkpoint-strategy" => {
+                if let Some(val) = args.next() {
+                    checkpoint_strategy = Some(val);
+                }
+            }
+            "--thread-opt" => {
+                if let Some(val) = args.next() {
+                    thread_opt = Some(val);
+                }
+            }
             "--batch-size" => {
                 if let Some(val) = args.next() {
                     manual_batch_size = Some(val.parse().unwrap_or(32));
@@ -408,7 +475,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         threads_str.parse().unwrap_or_else(|_| num_cpus::get())
     } else {
         // Calculate optimal thread count based on model dimensions
-        let opt_threads = calculate_optimal_thread_count(model_dim, num_layers);
+        let opt_threads = calculate_optimal_thread_count(model_dim, num_layers, None);
         println!("Calculated memory-optimal thread count: {}", opt_threads);
         opt_threads
     };
@@ -550,12 +617,51 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         num_layers,
         dropout_rate,
         learning_rate,
-    ).with_curriculum_learning(enable_curriculum)
-     .with_dynamic_learning_rate(true)
-     .with_gradient_clipping(Some(1.0));
+    );
+    
+    // Configure trainer with appropriate settings
+    trainer.with_curriculum_learning(enable_curriculum)
+           .with_dynamic_learning_rate(true)
+           .with_gradient_clipping(Some(1.0));
+    
+    // Apply memory optimization if enabled
+    if enable_memory_optimization {
+        println!("Enabling memory optimization with gradient checkpointing");
+        trainer.with_memory_optimization(true);
+        
+        // Apply checkpoint strategy if specified
+        if let Some(strategy_str) = &checkpoint_strategy {
+            println!("Using {} checkpoint strategy", strategy_str);
+            let strategy = match strategy_str.to_lowercase().as_str() {
+                "boundary" => memory_opt::CheckpointStrategy::Boundary,
+                "uniform" => memory_opt::CheckpointStrategy::Uniform,
+                "adaptive" => memory_opt::CheckpointStrategy::Adaptive,
+                "none" => memory_opt::CheckpointStrategy::None,
+                _ => {
+                    println!("Warning: Unknown checkpoint strategy '{}', using adaptive", strategy_str);
+                    memory_opt::CheckpointStrategy::Adaptive
+                }
+            };
+            trainer.with_checkpoint_strategy(strategy);
+        }
+        
+        global_perf_logger.memory_snapshot("after_memory_opt_enable");
+    }
+    
+    // Configure thread pool based on operation type if specified
+    if let Some(operation) = &thread_opt {
+        println!("Configuring thread pool for {} operations", operation);
+        let thread_count = configure_thread_pool_for_operation(
+            model_dim, 
+            num_layers,
+            operation
+        );
+        println!("Configured thread pool with {} threads for {} operations", 
+                thread_count, operation);
+    }
+    
     global_perf_logger.end("trainer_initialization");
     
-    // Configure anti-repetition
     if strong_anti_rep {
         println!("Configuring strong anti-repetition mechanisms...");
         trainer.configure_advanced_anti_repetition(1.3, 0.7, 0.7, 0.8);
@@ -787,6 +893,33 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     perf_logger.start("train_epoch_full");
     perf_logger.memory_snapshot("train_epoch_start");
     
+    // Configure thread pool for data preparation (low compute intensity)
+    let model_dim = trainer.trainer.get_model_dim();
+    let num_layers = trainer.trainer.get_num_layers();
+    
+    // Apply memory optimization setting to the trainer
+    if enable_memory_optimization {
+        println!("Enabling memory optimization with gradient checkpointing for training epoch");
+        trainer.with_memory_optimization(true);
+        
+        // Set default checkpoint strategy based on model size
+        let strategy = if num_layers <= 4 {
+            memory_opt::CheckpointStrategy::Uniform
+        } else {
+            memory_opt::CheckpointStrategy::Adaptive
+        };
+        trainer.with_checkpoint_strategy(strategy);
+        
+        perf_logger.memory_snapshot("after_memory_opt_enable");
+    }
+    
+    // For each training epoch we'll dynamically configure thread pools for different operations
+    // This optimizes performance for different workload types
+    
+    // Configure thread pool for data preparation
+    configure_thread_pool_for_operation(model_dim, num_layers, "data_loading");
+    perf_logger.start("create_sliding_windows");
+    
     perf_logger.start("data_preparation");
     let mut inputs = Vec::new();
     let mut targets = Vec::new();
@@ -829,16 +962,9 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     println!("CPU cores: {} logical, {} physical", num_cpus, num_physical_cpus);
     
     // Set Rayon thread pool size to optimize CPU usage
-    let rayon_threads = std::cmp::max(num_physical_cpus, 2);
+    // Configure thread pool for batch processing (compute intensive)
+    let rayon_threads = configure_thread_pool_for_operation(model_dim, num_layers, "gradient_update");
     println!("Using {} threads for parallel processing", rayon_threads);
-    
-    perf_logger.start("rayon_thread_pool_setup");
-    // Setting the global Rayon thread pool size
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(rayon_threads)
-        .build_global()
-        .unwrap_or_else(|e| println!("Warning: Failed to set global thread pool: {}", e));
-    perf_logger.end("rayon_thread_pool_setup");
     
     // Get model dimensions for batch size calculation
     let model_dim = trainer.trainer.get_model_dim();
@@ -867,6 +993,9 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     println!("Expected number of batches: {}", expected_batches);
     println!("======================================\n");
     
+    // Configure thread pool for shuffling (low compute, but needs some parallelism)
+    configure_thread_pool_for_operation(model_dim, num_layers, "data_loading");
+    
     // Shuffle indices for randomized training
     perf_logger.start("shuffling_indices");
     let mut indices: Vec<usize> = (0..inputs.len()).collect();
@@ -885,6 +1014,9 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
         .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} batches ({percent}%) - ETA: {eta_precise} - Loss: {msg}")
         .unwrap()
         .progress_chars("#>-"));
+    
+    // Configure thread pool for batch processing (higher compute intensity)
+    configure_thread_pool_for_operation(model_dim, num_layers, "matrix_multiply");
     
     // Process batches in parallel
     perf_logger.start("batch_processing_loop");
@@ -964,12 +1096,14 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, _epoch: usize
     });
     
     // Get the final values from mutexes
-    let mut total_loss = *total_loss_mutex.lock().unwrap();
-    let mut batch_counter = *batch_counter_mutex.lock().unwrap();
-    let mut batch_prep_times = batch_prep_times_mutex.lock().unwrap().clone();
-    let mut train_step_times = train_step_times_mutex.lock().unwrap().clone();
+    let total_loss = *total_loss_mutex.lock().unwrap();
+    let batch_counter = *batch_counter_mutex.lock().unwrap();
+    let batch_prep_times = batch_prep_times_mutex.lock().unwrap().clone();
+    let train_step_times = train_step_times_mutex.lock().unwrap().clone();
     
     // Apply accumulated gradients from all parallel trainers (if trainer supports it)
+    // Configure thread pool for gradient application (heavy on memory operations)
+    configure_thread_pool_for_operation(model_dim, num_layers, "gradient_update");
     trainer.apply_parallel_gradients();
     
     perf_logger.end("batch_processing_loop");
