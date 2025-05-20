@@ -60,6 +60,17 @@ impl ThreadPoolManager {
             println!("Thread pool with {} threads installed for global use", self.num_threads);
         });
     }
+    
+    /// Spawn a job to be executed by the thread pool in FIFO order
+    /// This is a wrapper around the standard spawn method but can be used to indicate
+    /// that strict ordering should be maintained when possible
+    pub fn spawn_fifo<F>(&self, job: F)
+    where
+        F: FnOnce() + Send + 'static,
+    {
+        let pool = self.pool.lock().unwrap();
+        pool.spawn(job);
+    }
 }
 
 /// Get or initialize the global thread pool manager

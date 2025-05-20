@@ -1,0 +1,294 @@
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 194.0823s, Avg: 194.0823s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     194.0823 sec
+  Average:   194.0823 sec
+  Min/Max:   194.0823/194.0823 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 185.6614s, Avg: 185.6614s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     185.6614 sec
+  Average:   185.6614 sec
+  Min/Max:   185.6614/185.6614 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 186.0186s, Avg: 186.0186s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     186.0186 sec
+  Average:   186.0186 sec
+  Min/Max:   186.0186/186.0186 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 185.7378s, Avg: 185.7378s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     185.7378 sec
+  Average:   185.7378 sec
+  Min/Max:   185.7378/185.7378 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 186.3473s, Avg: 186.3473s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     186.3473 sec
+  Average:   186.3473 sec
+  Min/Max:   186.3473/186.3473 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: training_process - Total: 989.9385s, Avg: 989.9385s, Count: 1
+#2: training_process/epoch_1 - Total: 194.0824s, Avg: 194.0824s, Count: 1
+#3: training_process/epoch_5 - Total: 186.3475s, Avg: 186.3475s, Count: 1
+#4: training_process/epoch_3 - Total: 186.0188s, Avg: 186.0188s, Count: 1
+#5: training_process/epoch_4 - Total: 185.7380s, Avg: 185.7380s, Count: 1
+#6: training_process/epoch_2 - Total: 185.6616s, Avg: 185.6616s, Count: 1
+#7: training_process/evaluation_3 - Total: 9.7393s, Avg: 9.7393s, Count: 1
+#8: training_process/evaluation_2 - Total: 9.4478s, Avg: 9.4478s, Count: 1
+#9: training_process/evaluation_5 - Total: 8.9335s, Avg: 8.9335s, Count: 1
+#10: training_process/evaluation_4 - Total: 8.8277s, Avg: 8.8277s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: training_process
+  Count:     1
+  Total:     989.9385 sec
+  Average:   989.9385 sec
+  Min/Max:   989.9385/989.9385 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/sample_generation_5
+  Count:     1
+  Total:     1.2834 sec
+  Average:   1.2834 sec
+  Min/Max:   1.2834/1.2834 sec
+  Thread distribution: 1 threads
+
+Operation: cpu_configuration
+  Count:     1
+  Total:     0.0043 sec
+  Average:   0.0043 sec
+  Min/Max:   0.0043/0.0043 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/data_splitting
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/epoch_2
+  Count:     1
+  Total:     185.6616 sec
+  Average:   185.6616 sec
+  Min/Max:   185.6616/185.6616 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/epoch_5
+  Count:     1
+  Total:     186.3475 sec
+  Average:   186.3475 sec
+  Min/Max:   186.3475/186.3475 sec
+  Thread distribution: 1 threads
+
+Operation: save_final_model
+  Count:     1
+  Total:     0.0000 sec
+  Average:   0.0000 sec
+  Min/Max:   0.0000/0.0000 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/save_checkpoint_5
+  Count:     1
+  Total:     0.0019 sec
+  Average:   0.0019 sec
+  Min/Max:   0.0019/0.0019 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/evaluation_4
+  Count:     1
+  Total:     8.8277 sec
+  Average:   8.8277 sec
+  Min/Max:   8.8277/8.8277 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/sample_generation_2
+  Count:     1
+  Total:     1.3593 sec
+  Average:   1.3593 sec
+  Min/Max:   1.3593/1.3593 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/trainer_initialization
+  Count:     1
+  Total:     0.4732 sec
+  Average:   0.4732 sec
+  Min/Max:   0.4732/0.4732 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/evaluation_3
+  Count:     1
+  Total:     9.7393 sec
+  Average:   9.7393 sec
+  Min/Max:   9.7393/9.7393 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/epoch_4
+  Count:     1
+  Total:     185.7380 sec
+  Average:   185.7380 sec
+  Min/Max:   185.7380/185.7380 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/vocabulary_learning
+  Count:     1
+  Total:     1.6839 sec
+  Average:   1.6839 sec
+  Min/Max:   1.6839/1.6839 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/epoch_3
+  Count:     1
+  Total:     186.0188 sec
+  Average:   186.0188 sec
+  Min/Max:   186.0188/186.0188 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/evaluation_1
+  Count:     1
+  Total:     8.6027 sec
+  Average:   8.6027 sec
+  Min/Max:   8.6027/8.6027 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/tokenization
+  Count:     1
+  Total:     0.3971 sec
+  Average:   0.3971 sec
+  Min/Max:   0.3971/0.3971 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/validation_data_preparation
+  Count:     1
+  Total:     0.4886 sec
+  Average:   0.4886 sec
+  Min/Max:   0.4886/0.4886 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup/data_loading
+  Count:     1
+  Total:     0.0458 sec
+  Average:   0.0458 sec
+  Min/Max:   0.0458/0.0458 sec
+  Thread distribution: 1 threads
+
+Operation: training_setup
+  Count:     1
+  Total:     3.0933 sec
+  Average:   3.0933 sec
+  Min/Max:   3.0933/3.0933 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/evaluation_2
+  Count:     1
+  Total:     9.4478 sec
+  Average:   9.4478 sec
+  Min/Max:   9.4478/9.4478 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/save_checkpoint_1
+  Count:     1
+  Total:     0.0109 sec
+  Average:   0.0109 sec
+  Min/Max:   0.0109/0.0109 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/sample_generation_3
+  Count:     1
+  Total:     1.3469 sec
+  Average:   1.3469 sec
+  Min/Max:   1.3469/1.3469 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/save_checkpoint_3
+  Count:     1
+  Total:     0.0024 sec
+  Average:   0.0024 sec
+  Min/Max:   0.0024/0.0024 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/epoch_1
+  Count:     1
+  Total:     194.0824 sec
+  Average:   194.0824 sec
+  Min/Max:   194.0824/194.0824 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/sample_generation_1
+  Count:     1
+  Total:     1.2331 sec
+  Average:   1.2331 sec
+  Min/Max:   1.2331/1.2331 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/sample_generation_4
+  Count:     1
+  Total:     1.3013 sec
+  Average:   1.3013 sec
+  Min/Max:   1.3013/1.3013 sec
+  Thread distribution: 1 threads
+
+Operation: training_process/evaluation_5
+  Count:     1
+  Total:     8.9335 sec
+  Average:   8.9335 sec
+  Min/Max:   8.9335/8.9335 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════

@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format]  Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--mt-training] Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -34,6 +34,8 @@ show_usage() {
   echo "  --enable-skip                      Enable skip connections in the model architecture"
   echo "  --strong-anti-rep                  Enable stronger anti-repetition mechanisms"
   echo "  --json-format                      Use JSON format for input data instead of plain text"
+  echo "  --parallel                         Enable parallel data preparation (for faster training)"
+  echo "  --mt-training                      Enable multi-threaded model training (experimental)"
   echo ""
   echo "Generate options:"
   echo "  --model [path]                     Model file path (default: models/high_accuracy_model.walle)"
@@ -52,6 +54,7 @@ show_usage() {
   echo "  $0 train --size medium --auto-resize-vocab --target-id-max 10000  Train with automatic vocabulary resizing"
   echo "  $0 train --size small --watchdog-timeout 120 --data-threads 16  Train with custom watchdog and data thread settings"
   echo "  $0 train --size small --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format  Train with custom vocabulary and architecture settings"
+  echo "  $0 train --size small --parallel   Train with parallel data preparation for better performance"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2 --disable-watchdog"
 }
@@ -98,6 +101,12 @@ train_model() {
   local strong_anti_rep_param=""
   local json_format=""
   local json_format_param=""
+  # New reliable training parameters
+  local reliable_training=""
+  local reliable_training_param=""
+  local parallel_data_prep=""
+  local parallel_data_prep_param=""
+  local mt_training_param=""
   
   # Process arguments
   while [[ $# -gt 0 ]]; do
@@ -191,6 +200,16 @@ train_model() {
         json_format_param="--json-format"
         shift 1
         ;;
+      --reliable-training)
+        # Reliable training is now the default approach, so we'll just show a message
+        echo "Note: Reliable training is now the default mode, ignoring redundant option"
+        shift 1
+        ;;
+      --parallel-data-prep|--parallel)
+        parallel_data_prep="true"
+        parallel_data_prep_param="--parallel"
+        shift 1
+        ;;
       --profile)
         profile="true"
         shift 1
@@ -210,6 +229,12 @@ train_model() {
           # No value provided, treat as flag
           shift 1
         fi
+        ;;
+      --mt-training|--mt)
+        # New parameter for multi-threaded training
+        mt_training_param="--mt-training"
+        parallel_data_prep_param="--parallel" # MT training implies parallel data prep
+        shift 1
         ;;
       *)
         echo "Unknown option: $1"
@@ -299,6 +324,9 @@ train_model() {
   if [[ -n "$json_format" ]]; then
     echo "Using JSON format for input data"
   fi
+  if [[ -n "$parallel_data_prep" ]]; then
+    echo "Parallel data preparation enabled"
+  fi
   if [[ -n "$profile" ]]; then
     echo "Performance profiling enabled"
   fi
@@ -348,6 +376,8 @@ train_model() {
       $enable_skip_param \
       $strong_anti_rep_param \
       $json_format_param \
+      $parallel_data_prep_param \
+      $mt_training_param \
       $data_file
   else
     # Use the regular training script
@@ -369,7 +399,9 @@ train_model() {
       $min_freq_param \
       $enable_skip_param \
       $strong_anti_rep_param \
-      $json_format_param
+      $json_format_param \
+      $parallel_data_prep_param \
+      $mt_training_param
   fi
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"

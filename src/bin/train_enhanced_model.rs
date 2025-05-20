@@ -468,6 +468,64 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut data_threads: Option<usize> = None;
     let mut target_id_max: Option<usize> = None;
     let mut disable_watchdog = false;
+    // New parameter for enabling parallel data preparation
+    let mut use_parallel = false;
+    // New parameter for full multi-threaded training
+    let mut use_mt_training = false;
+
+    // Display help if no arguments are provided or explicitly requested
+    if args.len() == 1 || args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
+        println!("Wall-E1 Neural Network Training Tool");
+        println!("Usage: {} [options]", args[0]);
+        println!("Options:");
+        println!("  --model-dim <dim>       Model dimension (default: {})", model_dim);
+        println!("  --ff-dim <dim>          Feed-forward dimension (default: {})", ff_dim);
+        println!("  --heads <num>           Number of attention heads (default: {})", num_heads);
+        println!("  --layers <num>          Number of transformer layers (default: {})", num_layers);
+        println!("  --dropout <rate>        Dropout rate (default: {})", dropout_rate);
+        println!("  --epochs <num>          Number of training epochs (default: {})", num_epochs);
+        println!("  --vocab-size <size>     Vocabulary size (default: {})", vocab_size);
+        println!("  --min-freq <freq>       Minimum token frequency (default: {})", min_freq);
+        println!("  --model <path>          Load model from file");
+        println!("  --save-path <path>      Save model to file (default: model.json)");
+        println!("  --learning-rate <rate>  Learning rate (default: {})", learning_rate);
+        println!("  --dataset <path>        Path to training data");
+        println!("  --generate-only         Generate text without training");
+        println!("  --prompt <text>         Text prompt for generation");
+        println!("  --max-tokens <num>      Maximum tokens to generate (default: 100)");
+        println!("  --enable-skip           Enable skip connections");
+        println!("  --disable-curriculum    Disable curriculum learning");
+        println!("  --json-format           Process input file as JSON");
+        println!("  --strong-anti-rep       Use stronger anti-repetition penalty");
+        println!("  --max-stories <num>     Maximum number of stories to process");
+        println!("  --perf-log              Enable detailed performance logging");
+        println!("  --num-cpus <num>        Override number of CPUs for computation");
+        println!("  --memory-opt            Enable memory optimization");
+        println!("  --batch-size <size>     Override batch size");
+        println!("  --curriculum-examples <num> Number of curriculum examples (default: 2000)");
+        println!("  --checkpoint <strat>    Checkpoint strategy: uniform, layerwise, adaptive");
+        println!("  --thread-opt <strat>    Thread optimization strategy: default, aggressive, conservative");
+        println!("  --auto-resize-vocab <bool> Automatically resize vocabulary (yes/no)");
+        println!("  --watchdog-timeout <sec> Set watchdog timeout in seconds for detecting hangs");
+        println!("  --data-threads <num>    Set number of threads for data loading");
+        println!("  --target-id-max <num>   Set maximum token ID to target (for focused training)");
+        println!("  --disable-watchdog      Disable the watchdog timer");
+        println!("  --parallel              Enable parallel data preparation for training");
+        println!("  --mt-training           Enable multi-threaded model training (experimental)");
+        println!("");
+        println!("Examples:");
+        println!("  Train a new model:");
+        println!("    {} --dataset path/to/data --epochs 10 --save-path model.json", args[0]);
+        println!("  Continue training an existing model:");
+        println!("    {} --dataset path/to/data --model existing.json --save-path updated.json", args[0]);
+        println!("  Generate text using an existing model:");
+        println!("    {} --generate-only --model model.json --prompt \"Once upon a time\"", args[0]);
+        println!("  Train with parallel data preparation (faster on multi-core systems):");
+        println!("    {} --dataset path/to/data --parallel --memory-opt", args[0]);
+        
+        // Exit with success
+        return Ok(());
+    }
 
     // Command line arguments parsing loop with progress counter
     let arg_count = args.len();
@@ -634,6 +692,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 disable_watchdog = true;
                 println!("Watchdog disabled for training");
             }
+            // Add new argument for parallel data preparation
+            "--parallel-data-prep" | "--parallel" => {
+                use_parallel = true;
+                println!("  🧵 Enabling parallel data preparation");
+            }
+            // Add new argument for multi-threaded training
+            "--mt-training" | "--mt" => {
+                use_mt_training = true;
+                use_parallel = true; // Multi-threaded training implies parallel data prep
+                println!("  🧵 Enabling multi-threaded model training (experimental)");
+                println!("  ⚠️ This mode is experimental and may cause instability");
+            }
             _ => {
                 // If this is the first non-flag argument and we don't have a training data path yet,
                 // assume it's the training data path
@@ -790,6 +860,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Save path: {}", save_path.as_deref().map_or("N/A", |v| v));
     println!("  CPU threads: {}", num_threads);
     println!("  Performance logging: {}", if enable_perf_log { "enabled" } else { "disabled" });
+    
+    // Display the training mode
+    let training_mode = if use_mt_training {
+        "multi-threaded (training + data preparation)"
+    } else if use_parallel {
+        "parallel data preparation with single-threaded training"
+    } else {
+        "single-threaded"
+    };
+    println!("  Training mode: {}", training_mode);
     
     // Read training data
     println!("\n⏳ Reading training data (single-threaded operation)...");
@@ -1002,7 +1082,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // This is likely the step using a single core during initialization
         let train_epoch_start = Instant::now();
         println!("  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...");
-        let loss = train_epoch(&mut trainer, &training_tokens, epoch, enable_memory_optimization, manual_batch_size);
+        let loss = train_epoch(&mut trainer, &training_tokens, epoch, enable_memory_optimization, manual_batch_size, use_parallel, use_mt_training);
         let train_epoch_time = train_epoch_start.elapsed();
         
         global_perf_logger.end(format!("epoch_{}", epoch + 1).as_str());
@@ -1217,7 +1297,14 @@ fn process_json_data(file_path: &str, max_stories: usize) -> Result<String, Box<
 
 // Train for a single epoch on tokenized data
 fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize, 
-               enable_memory_optimization: bool, manual_batch_size: Option<usize>) -> f32 {
+               enable_memory_optimization: bool, manual_batch_size: Option<usize>, 
+               use_parallel: bool, use_mt_training: bool) -> f32 {
+    // Add debug information about which training mode is selected
+    println!("\n⚙️ TRAIN_EPOCH FUNCTION MODE SELECTION ⚙️");
+    println!("  use_mt_training = {}", use_mt_training);
+    println!("  use_parallel = {}", use_parallel);
+    println!("  If both are correct, you should see colored debug messages from EnhancedTrainer.\n");
+                   
     // Create sliding windows of input/target pairs
     let max_sequence_length = trainer.get_max_seq_len();
     let stride = max_sequence_length / 2; // 50% overlap between windows
@@ -1227,8 +1314,6 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize,
     perf_logger.memory_snapshot("train_epoch_start");
     
     println!("    🔍 TRAIN EPOCH DETAILED LOGGING");
-    println!("    ⏳ Preparing sliding windows...");
-    let sliding_windows_start = Instant::now();
     
     // Configure thread pool for data preparation (low compute intensity)
     let model_dim = trainer.trainer.get_model_dim();
@@ -1266,108 +1351,67 @@ fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize,
         }
     }
     
-    println!("    🔄 Creating input/target pairs for training...");
-    let data_prep_start = Instant::now();
-    
-    // Calculate window positions
-    println!("    🔄 Calculating sliding window positions...");
-    let window_indices: Vec<usize> = (0..tokens.len().saturating_sub(max_sequence_length))
-        .step_by(stride)
-        .filter(|&i| i + max_sequence_length <= tokens.len())
-        .collect();
-    
-    let estimated_windows = window_indices.len();
-    println!("    ✅ Will create {} sliding windows", estimated_windows);
-    
-    // Create a progress bar for sliding window creation
-    let pb = ProgressBar::new(estimated_windows as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} windows ({percent}%) - ETA: {eta_precise}")
-        .unwrap()
-        .progress_chars("#>-"));
-    
-    // IMPORTANT CHANGE: Use single-threaded reliable data preparation
-    println!("    🔒 Using reliable single-threaded data preparation");
-    let mut all_inputs = Vec::with_capacity(estimated_windows);
-    let mut all_targets = Vec::with_capacity(estimated_windows);
-    
-    // Process each window sequentially
-    for (window_idx, &start_idx) in window_indices.iter().enumerate() {
-        // Create input window
-        let input = tokens[start_idx..start_idx + max_sequence_length].to_vec();
-        
-        // Create target by shifting input by one position
-        let mut target = Vec::with_capacity(max_sequence_length);
-        for j in 0..max_sequence_length {
-            let target_idx = (start_idx + j + 1) % tokens.len();
-            target.push(tokens[target_idx]);
-        }
-        
-        // Add to our collections
-        all_inputs.push(input);
-        all_targets.push(target);
-        
-        // Update progress bar every 50 windows or at the end
-        if window_idx % 50 == 0 || window_idx == estimated_windows - 1 {
-            pb.set_position((window_idx + 1) as u64);
-        }
-    }
-    pb.finish_with_message("Data preparation complete");
-    
-    let data_prep_time = data_prep_start.elapsed();
-    println!("    ✅ Created {} input/target pairs in {:.2?}", all_inputs.len(), data_prep_time);
-    perf_logger.end("data_preparation");
-    perf_logger.memory_snapshot("after_data_preparation");
-    
     // Set batch size
     let batch_size = manual_batch_size.unwrap_or_else(|| {
         calculate_memory_optimal_batch_size(model_dim, max_sequence_length)
     });
     println!("    📊 Using batch size: {}", batch_size);
     
-    // Organize inputs and targets into batches
-    println!("    🔄 Creating batches...");
-    let create_batches_start = Instant::now();
+    // Determine training approach based on parameters
+    let training_approach = if use_mt_training {
+        "multi-threaded"
+    } else if use_parallel {
+        "parallel data preparation"
+    } else {
+        "sequential"
+    };
     
-    let mut batched_inputs = Vec::new();
-    let mut batched_targets = Vec::new();
-    
-    for batch_idx in 0..((all_inputs.len() + batch_size - 1) / batch_size) {
-        let start_idx = batch_idx * batch_size;
-        let end_idx = std::cmp::min(start_idx + batch_size, all_inputs.len());
-        
-        // Skip creating empty batches
-        if start_idx >= all_inputs.len() {
-            continue;
-        }
-        
-        // Create this batch's input
-        let mut batch_input = Vec::with_capacity(end_idx - start_idx);
-        for idx in start_idx..end_idx {
-            batch_input.push(all_inputs[idx].clone());
-        }
-        
-        // Create this batch's target (converted to Array2)
-        let mut batch_target = Array2::zeros((end_idx - start_idx, max_sequence_length));
-        for (i, idx) in (start_idx..end_idx).enumerate() {
-            for (j, &token) in all_targets[idx].iter().enumerate() {
-                batch_target[[i, j]] = token;
-            }
-        }
-        
-        batched_inputs.push(batch_input);
-        batched_targets.push(batch_target);
-    }
-    
-    let create_batches_time = create_batches_start.elapsed();
-    println!("    ✅ Created {} batches in {:.2?}", batched_inputs.len(), create_batches_time);
-    
-    // IMPORTANT CHANGE: Use the reliable single-threaded training method
-    println!("    🔒 Using reliable single-threaded training method");
+    println!("    🔄 Training from tokens using {} approach", training_approach);
     let training_start = Instant::now();
     
-    // Call our new reliable training method
-    let loss = trainer.train_reliable(&batched_inputs, &batched_targets);
+    // Choose the appropriate training method
+    let result = if use_mt_training {
+        // Use the new multi-threaded training method
+        println!("    🧵 Using multi-threaded processing for model training");
+        
+        // Prepare data for training (similar for all approaches)
+        let (inputs, targets) = match trainer.prepare_data_parallel(tokens, max_sequence_length, stride) {
+            Ok((i, t)) => (i, t),
+            Err(e) => {
+                println!("    ❌ Error preparing data: {}", e);
+                return 10.0; // Default high loss value
+            }
+        };
+        
+        // Create batches
+        let (batched_inputs, batched_targets) = match trainer.create_batches(&inputs, &targets, batch_size) {
+            Ok((i, t)) => (i, t),
+            Err(e) => {
+                println!("    ❌ Error creating batches: {}", e);
+                return 10.0; // Default high loss value
+            }
+        };
+        
+        // Multi-threaded training - use the new method
+        println!("    🧮 Running multi-threaded training with {} batches", batched_inputs.len());
+        trainer.train_parallel(&batched_inputs, &batched_targets)
+            .map_err(|e| format!("Multi-threaded training failed: {}", e))
+    } else {
+        // Use the standard training method with parallel data prep
+        trainer.train_from_tokens(tokens, batch_size, use_parallel)
+    };
+    
+    let loss = match result {
+        Ok(loss) => {
+            println!("    ✅ Training completed successfully");
+            loss
+        },
+        Err(e) => {
+            println!("    ⚠️ Error during training: {}", e);
+            println!("    ⚠️ Returning default loss value");
+            10.0 // Default high loss value
+        }
+    };
     
     let training_time = training_start.elapsed();
     println!("    ✅ Completed epoch training in {:.2?} with loss: {:.6}", training_time, loss);

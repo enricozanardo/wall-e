@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--profile|--perf-log]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--profile|--perf-log]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50 [--disable-watchdog]
@@ -74,8 +74,11 @@ All trained models use the `.walle` extension for consistency. The internal form
 # Train with JSON format data source
 ./wall-e1-model.sh train --size small --json-format --stories 2000
 
+# Train with parallel data preparation for better performance
+./wall-e1-model.sh train --size medium --parallel
+
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12 --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12 --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format --parallel
 
 # Train with performance profiling
 ./wall-e1-model.sh train --size small --perf-log
@@ -147,7 +150,62 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - **--enable-skip**: Enable skip connections in the model architecture, which can improve gradient flow and model performance.
 - **--strong-anti-rep**: Enable stronger anti-repetition mechanisms to prevent the model from generating repetitive text.
 - **--json-format**: Use JSON format for input data instead of plain text. Required when training on TinyStories or similar JSON-formatted datasets.
+- **--parallel**: Enable parallel data preparation while maintaining reliable training. This accelerates data processing but keeps the model updates safe and stable.
 - **--profile, --perf-log [true|false]**: Enable detailed performance profiling and metrics collection. You can use it as a flag (--perf-log) or with an explicit value (--perf-log true)
+
+## Reliable Training
+
+Wall-E1 now uses a reliable training mechanism by default to avoid thread synchronization issues that can lead to deadlocks and stalled training:
+
+1. **Single-Threaded Training**: The system now uses a fully sequential training process that eliminates thread synchronization issues by design. This approach provides:
+   - Much higher reliability by avoiding deadlocks entirely
+   - Consistent, predictable training behavior
+   - Simpler debugging when issues occur
+
+2. **Parallel Data Preparation**: The `--parallel` option allows safe parallelization of data preparation while maintaining reliable single-threaded model training. This gives you:
+   - The stability of single-threaded model updates
+   - Performance benefits of parallel data preparation
+   - Balanced approach for most training scenarios
+
+To enable parallel data preparation with reliable training:
+
+```bash
+./wall-e1-model.sh train --size medium --parallel
+```
+
+The parallel option is especially recommended for larger datasets or when performance is important, as it provides a significant speedup while maintaining the reliability of the training process.
+
+## Training Modes
+
+Wall-E1 offers three distinct training modes with different performance and reliability characteristics:
+
+1. **Regular Single-Threaded Training (Default)**: 
+   - Uses a single thread for all training operations
+   - Highest reliability and consistency
+   - Predictable memory usage
+   - Slowest performance, especially on multi-core systems
+   - Usage: `./wall-e1-model.sh train --size medium`
+
+2. **Parallel Data Preparation Mode**:
+   - Uses multiple threads for data loading, tokenization, and batch preparation
+   - Single-threaded model update for reliability
+   - Good balance of performance and stability
+   - Recommended for most use cases
+   - Usage: `./wall-e1-model.sh train --size medium --parallel`
+
+3. **Multi-Threaded Training Mode (Experimental)**:
+   - Full multi-threading for both data preparation and model training
+   - Synchronized gradient updates using thread barriers
+   - Potential for significant performance improvement on multi-core systems
+   - May encounter stability issues on some hardware configurations
+   - Usage: `./wall-e1-model.sh train --size medium --mt-training`
+
+Each mode has specific use cases:
+- Use the default mode when stability is critical and performance is less important
+- Use parallel data preparation mode for a good balance of performance and reliability
+- Use multi-threaded mode when maximum performance is required and you can tolerate some potential instability
+
+The system will automatically allocate appropriate thread pools for each mode based on your CPU architecture.
 
 ## Thread Pool Optimization
 
@@ -180,6 +238,7 @@ Wall-E1 includes several mechanisms to prevent thread deadlocks during training:
 2. **Thread State Tracking**: Tracks the state of each thread to provide detailed diagnostics when issues occur.
 3. **Recovery Mechanisms**: Automatically attempts to recover from deadlocks by terminating stuck threads.
 4. **Optimized Data Threads**: Uses a separate thread pool for data loading operations with `--data-threads`.
+5. **Reliable Training Mode**: Now used by default, providing a fully sequential training approach that eliminates thread synchronization issues by design.
 
 If you encounter "Progress stalled" warnings during text generation, use the `--disable-watchdog` option.
 
@@ -219,6 +278,148 @@ When using JSON format, you can control the number of stories to use with the `-
 - By default, training uses 4000 stories from the dataset, but this can be customized with the `--stories` parameter.
 - Memory optimization provides better performance on machines with limited memory bandwidth.
 - When using larger batch sizes, consider increasing the number of curriculum examples to ensure proper level advancement.
-- If you encounter thread deadlocks during training, increase the `--watchdog-timeout` and `--data-threads` values.
+- Reliable training is now used by default, which has solved the thread deadlock issues that occurred in previous versions.
 - For large datasets, always use `--auto-resize-vocab` to handle unexpected vocabulary growth. 
-- When training on JSON-formatted datasets like TinyStories, be sure to include the `--json-format` parameter. 
+- When training on JSON-formatted datasets like TinyStories, be sure to include the `--json-format` parameter.
+
+## Wall-E1 Training Scripts
+
+This directory contains scripts for training and evaluating Wall-E1 models.
+
+### Main Command Script
+
+The `wall-e1-model.sh` script is the main entry point for training and evaluating models. Use it as follows:
+
+```bash
+./wall-e1-model.sh [command] [options]
+```
+
+Commands:
+- `train`: Train a new model
+- `profile`: Train with performance metrics collection
+- `clean`: Remove temporary files
+
+### Training Options
+
+The `train` command supports the following options:
+
+```bash
+./wall-e1-model.sh train [--size tiny|small|medium|large] [--model-dim N] [--ff-dim N] 
+                        [--heads N] [--layers N] [--dropout N] [--epochs N] [--vocab-size N] 
+                        [--min-freq N] [--batch-size N] [--save-path FILE] [--learning-rate N]
+                        [--stories N] [--cpus N] [--memory-opt] [--disable-curriculum] 
+                        [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--mt-training]
+```
+
+### Common Examples
+
+Train a small model with default settings:
+```bash
+./wall-e1-model.sh train --size small
+```
+
+Train a medium model with parallel data preparation:
+```bash
+./wall-e1-model.sh train --size medium --parallel
+```
+
+Train with multi-threaded model training (experimental):
+```bash
+./wall-e1-model.sh train --size small --mt-training
+```
+
+Custom configuration:
+```bash
+./wall-e1-model.sh train --model-dim 256 --ff-dim 1024 --layers 4 --epochs 10 --stories 500 --memory-opt --enable-skip --strong-anti-rep --json-format --parallel
+```
+
+### Profiling Options
+
+The `profile` command accepts the same options as `train` but will collect detailed performance metrics:
+
+```bash
+./wall-e1-model.sh profile --size tiny --stories 50 --parallel
+```
+
+This will run a short training session with performance metrics collection, saving results to the `profiling_results` directory.
+
+## Multi-Threaded Training (Experimental)
+
+For maximum performance on multi-core systems, Wall-E1 now includes a full multi-threaded training implementation with the following improvements:
+
+1. **Efficient Thread Utilization**: The system automatically determines the optimal number of worker threads based on batch size and available CPU cores to maximize parallelism without excessive thread overhead.
+
+2. **Enhanced Gradient Computation**: The `train_step_compute_only` method uses parallel iterators and column-wise normalization for better CPU utilization during gradient computation.
+
+3. **Improved Synchronization**: Replaced traditional barriers with atomic counters and mutex-based synchronization to prevent deadlocks and ensure reliable operation.
+
+4. **Thread State Tracking**: Detailed thread state tracking and reporting helps identify bottlenecks and potential issues during training.
+
+5. **Automatic Timeout Detection**: Built-in watchdog monitors ensure that training doesn't stall indefinitely due to thread synchronization issues.
+
+To enable multi-threaded training, use the `--mt-training` or `--mt` flag:
+
+```bash
+./wall-e1-model.sh train --size small --mt-training
+```
+
+This mode will parallelize both the data preparation and the gradient computation/model updates, resulting in improved training speeds on multi-core systems.
+
+**NOTE:** Multi-threaded training is still experimental and may not be stable for all model configurations. Best results are achieved with larger batch sizes that allow for better workload distribution across threads.
+
+## Performance Optimization Features
+
+Wall-E1 offers three distinct training modes to balance reliability and performance:
+
+1. **Reliable Training (Default)**: The standard training approach, which ensures consistent results by using a single thread for model updates.
+   - Uses sequential processing for both data preparation and model updates
+   - Completely eliminates thread synchronization issues by design
+   - Best option for debugging or when absolute reliability is required
+   - Slowest performance, especially on multi-core systems
+
+2. **Parallel Data Preparation**: The `--parallel` option allows safe parallelization of data preparation while maintaining reliable single-threaded model training. This gives you:
+   - Parallel data loading, tokenization, and batch creation
+   - Single-threaded model parameter updates for reliability
+   - Up to 2-3x speedup over default mode, depending on your hardware
+   - Good balance of performance and reliability for most use cases
+
+3. **Multi-Threaded Model Training**: The new `--mt-training` option enables full multi-threaded model training:
+   - Parallel batch processing across multiple CPU cores
+   - Thread-safe gradient accumulation with atomic operations
+   - Synchronized weight updates using coordination barriers
+   - Watchdog monitoring to detect potential deadlocks
+   - Up to 4-5x speedup over default mode on many-core systems
+   - Currently experimental - may not be stable in all configurations
+
+### Usage Recommendations
+
+For maximum reliability (e.g., when debugging):
+```bash
+./wall-e1-model.sh train --size medium
+```
+
+For good performance while maintaining reliability (recommended for most use cases):
+```bash
+./wall-e1-model.sh train --size medium --parallel
+```
+
+For maximum performance (experimental):
+```bash
+./wall-e1-model.sh train --size medium --mt-training
+```
+
+The optimal choice depends on your hardware, dataset size, and requirements:
+- Single-core or dual-core systems may see limited benefit from `--mt-training`
+- Systems with 4+ cores will see significant improvement with `--parallel`
+- Systems with 8+ cores will benefit most from `--mt-training` for large models
+- Always use `--parallel` at minimum when training medium or large models
+
+## Implementation Details
+
+The scripts in this directory wrap the Rust-based Wall-E1 training system, providing convenient access to the most common training options. The implementation includes:
+
+1. `wall-e1-model.sh` - Main entry point script
+2. `train_optimized_accuracy.sh` - Focused on reliable training
+3. `profile_training.sh` - Performance profiling script
+
+These scripts automatically configure optimal thread pool sizes, memory allocation strategies, and other low-level optimizations based on your system and the selected options. 

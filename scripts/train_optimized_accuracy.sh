@@ -19,6 +19,8 @@ show_usage() {
     echo "  --watchdog-timeout <secs>    Timeout for watchdog thread detection (default: 60)"
     echo "  --data-threads <number>      Number of threads for data loading"
     echo "  --target-id-max <number>     Maximum target ID value (default: auto-detected)"
+    echo "  --parallel                   Enable parallel data preparation (for faster training)"
+    echo "  --mt-training                Enable multi-threaded model training (experimental)"
     echo "  --help                       Display this help message"
 }
 
@@ -36,6 +38,8 @@ AUTO_RESIZE_VOCAB=""
 WATCHDOG_TIMEOUT=""
 DATA_THREADS=""
 TARGET_ID_MAX=""
+PARALLEL_DATA_PREP=""
+MT_TRAINING=""
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -91,6 +95,19 @@ while [[ "$#" -gt 0 ]]; do
         --target-id-max)
             TARGET_ID_MAX="--target-id-max $2"
             shift 2
+            ;;
+        --reliable-training)
+            echo "Note: Reliable training is now the default mode, --reliable-training option is not needed"
+            shift
+            ;;
+        --parallel-data-prep|--parallel)
+            PARALLEL_DATA_PREP="--parallel"
+            shift
+            ;;
+        --mt-training|--mt)
+            MT_TRAINING="--mt-training"
+            PARALLEL_DATA_PREP="--parallel"
+            shift
             ;;
         --help)
             show_usage
@@ -177,6 +194,7 @@ echo "Auto-resize vocabulary: ${AUTO_RESIZE_VOCAB:+Enabled}"
 echo "Watchdog timeout: ${WATCHDOG_TIMEOUT:+${WATCHDOG_TIMEOUT#--watchdog-timeout }}"
 echo "Data loading threads: ${DATA_THREADS:+${DATA_THREADS#--data-threads }}"
 echo "Maximum target ID: ${TARGET_ID_MAX:+${TARGET_ID_MAX#--target-id-max }}"
+echo "Parallel data preparation: ${PARALLEL_DATA_PREP:+Enabled}"
 echo "Model save path: $MODEL_SAVE_PATH"
 echo "-------------------------------"
 
@@ -205,7 +223,9 @@ RUST_BACKTRACE=1 cargo run --release --bin Wall-E -- \
   $AUTO_RESIZE_VOCAB \
   $WATCHDOG_TIMEOUT \
   $DATA_THREADS \
-  $TARGET_ID_MAX
+  $TARGET_ID_MAX \
+  $PARALLEL_DATA_PREP \
+  $MT_TRAINING
 
 echo "Training complete. Model saved to $MODEL_SAVE_PATH"
 

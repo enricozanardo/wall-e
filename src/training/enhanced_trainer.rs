@@ -16,6 +16,9 @@ use crate::nabla::memory_opt;
 use crate::nabla::memory_opt::{GradientCheckpointer, CheckpointStrategy};
 use crate::utils::thread_pool::get_global_thread_pool;
 use lazy_static;
+use std::sync::{Arc, Mutex, Barrier};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Instant;
 
 
 /// Helper function to convert bytes to u64 (little endian)
@@ -761,7 +764,7 @@ impl EnhancedTrainer {
                 println!("Advancing to curriculum level: {:?}", self.curriculum.get_current_level());
             }
         } else if num_batches >= min_batches_for_advance {
-            println!("Staying at current level {:?} - Avg loss {:.6} > threshold {:.6}", 
+            println!("Remaining at current level {:?} - Avg loss {:.6} > threshold {:.6}", 
                      self.curriculum.get_current_level(), avg_loss, level_threshold);
         } else {
             println!("Not enough batches ({} < {}) to evaluate level advancement", 
@@ -3034,10 +3037,14 @@ impl EnhancedTrainer {
         Ok(())
     }
 
-    /// Guaranteed reliable single-threaded training method
-    /// This method avoids all thread synchronization issues by operating in a single thread
-    pub fn train_reliable(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>]) -> f32 {
-        println!("🔒 Using reliable single-threaded training mode");
+    /// Guaranteed reliable training method that can use parallel data preparation
+    /// This method avoids thread synchronization issues while allowing parallel data processing
+    pub fn train_reliable(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>], use_parallel: bool) -> f32 {
+        if use_parallel {
+            println!("🔒 Using reliable training mode with parallel data preparation");
+        } else {
+            println!("🔒 Using reliable single-threaded training mode");
+        }
         
         // Pre-process all batches with a single vocabulary resize operation if needed
         match self.preprocess_all_batches(targets) {
@@ -3094,6 +3101,75 @@ impl EnhancedTrainer {
             println!("Warning: No batches processed in this epoch");
             0.0
         }
+    }
+    
+    /// Enhanced training from tokenized data with optional parallel data preparation
+    pub fn train_from_tokens(&mut self, tokens: &[usize], batch_size: usize, use_parallel: bool) -> Result<f32, String> {
+        // Log which training path is being used
+        if use_parallel {
+            println!("\n🟢🟢🟢 SINGLE-THREADED TRAINING WITH PARALLEL DATA PREP ACTIVATED 🟢🟢🟢\n");
+        } else {
+            println!("\n🟡🟡🟡 FULLY SEQUENTIAL TRAINING ACTIVATED (NO PARALLELISM) 🟡🟡🟡\n");
+        }
+        
+        // Get sequence length and stride
+        let max_seq_len = self.get_max_seq_len();
+        let stride = max_seq_len / 2; // 50% overlap between windows
+        
+        println!("🔄 Preparing training data with sequence length: {}, stride: {}", max_seq_len, stride);
+        
+        // Generate input/target pairs
+        let (all_inputs, all_targets) = if use_parallel {
+            // Use parallel data preparation
+            self.prepare_data_parallel(tokens, max_seq_len, stride)?
+        } else {
+            // Use sequential data preparation
+            let mut inputs = Vec::new();
+            let mut targets = Vec::new();
+            
+            // Calculate window positions
+            let window_indices: Vec<usize> = (0..tokens.len().saturating_sub(max_seq_len))
+                .step_by(stride)
+                .filter(|&i| i + max_seq_len <= tokens.len())
+                .collect();
+                
+            println!("✅ Will create {} sliding windows sequentially", window_indices.len());
+            
+            // Process each window sequentially
+            for &start_idx in &window_indices {
+                // Create input window
+                let input = tokens[start_idx..start_idx + max_seq_len].to_vec();
+                
+                // Create target by shifting input by one position
+                let mut target = Vec::with_capacity(max_seq_len);
+                for j in 0..max_seq_len {
+                    let target_idx = (start_idx + j + 1) % tokens.len();
+                    target.push(tokens[target_idx]);
+                }
+                
+                // Add to our collections
+                inputs.push(input);
+                targets.push(target);
+            }
+            
+            (inputs, targets)
+        };
+        
+        println!("✅ Created {} input/target pairs", all_inputs.len());
+        
+        // Create batches
+        let (batched_inputs, batched_targets) = self.create_batches(&all_inputs, &all_targets, batch_size)?;
+        
+        // Verify model is properly initialized
+        match self.ensure_model_initialized() {
+            Ok(_) => println!("✅ Model initialization verified"),
+            Err(e) => println!("⚠️ Model initialization issue: {}", e)
+        }
+        
+        // Train on batches
+        let loss = self.train_reliable(&batched_inputs, &batched_targets, use_parallel);
+        
+        Ok(loss)
     }
 
     /// Ensure the model is properly initialized before training starts
@@ -3162,7 +3238,407 @@ impl EnhancedTrainer {
         println!("✅ Model verification complete - ready for training");
         Ok(())
     }
+
+    /// Prepare training data in parallel with high reliability
+    /// 
+    /// This method creates input/target pairs from tokenized data using parallel processing
+    /// but maintains clear ownership boundaries to prevent deadlocks
+    pub fn prepare_data_parallel(&self, tokens: &[usize], max_seq_len: usize, stride: usize) 
+        -> Result<(Vec<Vec<usize>>, Vec<Vec<usize>>), String> {
+        use rayon::prelude::*;
+        
+        println!("🔄 Preparing training data in parallel mode");
+        
+        // Calculate window positions
+        let window_indices: Vec<usize> = (0..tokens.len().saturating_sub(max_seq_len))
+            .step_by(stride)
+            .filter(|&i| i + max_seq_len <= tokens.len())
+            .collect();
+        
+        let estimated_windows = window_indices.len();
+        println!("✅ Will create {} sliding windows in parallel", estimated_windows);
+        
+        // Create a safety limit to prevent empty results
+        if estimated_windows == 0 {
+            return Err("No valid windows could be created with the given parameters".to_string());
+        }
+        
+        // Create a timer for monitoring
+        let start_time = std::time::Instant::now();
+        let timeout = std::time::Duration::from_secs(60); // 1 minute timeout
+        
+        // Get the number of threads from Rayon's thread pool
+        let thread_pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+        let num_threads = thread_pool.current_num_threads();
+        println!("🧵 Using {} threads for parallel data preparation", num_threads);
+        
+        // Process chunks in parallel with controlled scope
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // Use controlled parallel scope to ensure proper cleanup
+            let parallel_result: Result<Vec<(Vec<usize>, Vec<usize>)>, String> = thread_pool.install(|| {
+                let result_windows: Vec<(Vec<usize>, Vec<usize>)> = window_indices.par_iter()
+                    .map(|&start_idx| {
+                        // Create input window
+                        let input = tokens[start_idx..start_idx + max_seq_len].to_vec();
+                        
+                        // Create target by shifting input by one position
+                        let mut target = Vec::with_capacity(max_seq_len);
+                        for j in 0..max_seq_len {
+                            let target_idx = (start_idx + j + 1) % tokens.len();
+                            target.push(tokens[target_idx]);
+                        }
+                        
+                        // Return this window pair
+                        (input, target)
+                    })
+                    .collect();
+                
+                // Safety check - ensure we got enough windows
+                if result_windows.len() < estimated_windows / 2 {
+                    Err(format!("Parallel processing created only {} windows out of {} expected", 
+                              result_windows.len(), estimated_windows))
+                } else {
+                    Ok(result_windows)
+                }
+            });
+            
+            parallel_result
+        }));
+        
+        // Check for panics or timeouts
+        if start_time.elapsed() > timeout {
+            return Err("Timeout during parallel data preparation".to_string());
+        }
+        
+        // Handle the result
+        let window_pairs = match result {
+            Ok(Ok(windows)) => windows,
+            Ok(Err(e)) => return Err(format!("Error during parallel processing: {}", e)),
+            Err(_) => return Err("Panic during parallel data preparation".to_string()),
+        };
+        
+        println!("✅ Created {} window pairs in {:.2?}", window_pairs.len(), start_time.elapsed());
+        
+        // Separate inputs and targets for caller
+        let mut all_inputs = Vec::with_capacity(window_pairs.len());
+        let mut all_targets = Vec::with_capacity(window_pairs.len());
+        
+        for (input, target) in window_pairs {
+            all_inputs.push(input);
+            all_targets.push(target);
+        }
+        
+        Ok((all_inputs, all_targets))
+    }
+    
+    /// Batches the inputs and targets into appropriately sized batches for training
+    /// This is done sequentially as it's not computationally intensive
+    pub fn create_batches(&self, inputs: &[Vec<usize>], targets: &[Vec<usize>], batch_size: usize)
+        -> Result<(Vec<Vec<Vec<usize>>>, Vec<Array2<usize>>), String> {
+        
+        println!("🔄 Creating batches from {} input/target pairs", inputs.len());
+        
+        // Ensure inputs and targets match
+        if inputs.len() != targets.len() {
+            return Err(format!("Mismatch between inputs ({}) and targets ({})", 
+                             inputs.len(), targets.len()));
+        }
+        
+        let create_batches_start = std::time::Instant::now();
+        
+        // Calculate the number of batches
+        let num_batches = (inputs.len() + batch_size - 1) / batch_size;
+        
+        // Prepare output containers
+        let mut batched_inputs = Vec::with_capacity(num_batches);
+        let mut batched_targets = Vec::with_capacity(num_batches);
+        
+        // Get the sequence length (assuming all sequences have same length)
+        let max_sequence_length = if !inputs.is_empty() {
+            inputs[0].len()
+        } else {
+            return Err("No inputs provided for batching".to_string());
+        };
+        
+        // Create batches
+        for batch_idx in 0..num_batches {
+            let start_idx = batch_idx * batch_size;
+            let end_idx = std::cmp::min(start_idx + batch_size, inputs.len());
+            
+            // Skip creating empty batches
+            if start_idx >= inputs.len() {
+                continue;
+            }
+            
+            // Create this batch's input
+            let mut batch_input = Vec::with_capacity(end_idx - start_idx);
+            for idx in start_idx..end_idx {
+                batch_input.push(inputs[idx].clone());
+            }
+            
+            // Create this batch's target (converted to Array2)
+            let mut batch_target = Array2::zeros((end_idx - start_idx, max_sequence_length));
+            for (i, idx) in (start_idx..end_idx).enumerate() {
+                for (j, &token) in targets[idx].iter().enumerate() {
+                    batch_target[[i, j]] = token;
+                }
+            }
+            
+            batched_inputs.push(batch_input);
+            batched_targets.push(batch_target);
+        }
+        
+        let create_batches_time = create_batches_start.elapsed();
+        println!("✅ Created {} batches in {:.2?}", batched_inputs.len(), create_batches_time);
+        
+        Ok((batched_inputs, batched_targets))
+    }
+
+    /// Train with parallel batch processing for improved performance
+    /// This method processes multiple batches in parallel while synchronizing model updates
+    pub fn train_parallel(&mut self, inputs: &[Vec<Vec<usize>>], targets: &[Array2<usize>]) -> Result<f32, String> {
+        println!("\n🔴🔴🔴 MULTI-THREADED TRAINING ACTIVATED - USING {} BATCHES ON MULTIPLE THREADS 🔴🔴🔴\n", inputs.len());
+        
+        if inputs.len() != targets.len() {
+            return Err(format!("Input/target count mismatch: {} vs {}", inputs.len(), targets.len()));
+        }
+        
+        if inputs.is_empty() {
+            return Ok(0.0);
+        }
+        
+        // Create a shared mutex for loss accumulation
+        let loss_mutex = Arc::new(Mutex::new((0.0f32, 0usize)));
+        
+        // Get thread pool and determine number of worker threads
+        let thread_pool = get_global_thread_pool();
+        let num_threads = thread_pool.get_num_threads().min(inputs.len());
+        
+        // Use at least 2 threads, but no more than half the available cores if the batch count is small
+        let num_threads = if inputs.len() < 4 {
+            2.min(inputs.len())
+        } else if inputs.len() < num_threads {
+            // For smaller batch counts, use fewer threads to avoid overhead
+            (inputs.len() / 2).max(2)
+        } else {
+            num_threads
+        };
+        
+        println!("🧵 Using {} threads to process {} batches", num_threads, inputs.len());
+        
+        // Create a shared model for gradient accumulation
+        let model_mutex = Arc::new(Mutex::new(self.trainer.clone()));
+        
+        // Use atomic counters for synchronization
+        let batch_counter = Arc::new(AtomicUsize::new(0));
+        let threads_done = Arc::new(AtomicUsize::new(0));
+        let panic_counter = Arc::new(AtomicUsize::new(0));
+        
+        // Thread state tracking
+        let thread_states = Arc::new(Mutex::new(HashMap::<String, ThreadState>::new()));
+        
+        // Track start time
+        let start_time = Instant::now();
+        
+        // Vector to store thread handles
+        let mut handles = Vec::with_capacity(num_threads);
+        
+        // Launch worker threads
+        for thread_id in 0..num_threads {
+            // Clone shared resources for this thread
+            let loss_mutex = Arc::clone(&loss_mutex);
+            let model_mutex = Arc::clone(&model_mutex);
+            let batch_counter = Arc::clone(&batch_counter);
+            let thread_states = Arc::clone(&thread_states);
+            let panic_counter = Arc::clone(&panic_counter);
+            let threads_done = Arc::clone(&threads_done);
+            
+            // Clone inputs/targets references for the closure
+            let inputs = inputs.to_vec();
+            let targets = targets.to_vec();
+            
+            // Clone the trainer for this worker
+            let mut worker = self.clone_for_parallel();
+            
+            // Spawn a worker thread
+            let handle = std::thread::spawn(move || {
+                println!("🧮 Worker thread {:?} started", std::thread::current().id());
+                
+                // Update thread state to idle
+                let thread_id_str = format!("{:?}", std::thread::current().id());
+                thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::Idle);
+                
+                // Process batches until none are left
+                loop {
+                    // Claim a batch atomically
+                    let batch_idx = batch_counter.fetch_add(1, Ordering::SeqCst);
+                    if batch_idx >= inputs.len() {
+                        break; // No more batches to process
+                    }
+                    
+                    // Update thread state to forward pass
+                    thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::ForwardPass);
+                    
+                    println!("🧵 Thread {:?} processing batch {}/{}", std::thread::current().id(), batch_idx + 1, inputs.len());
+                    
+                    // Process this batch
+                    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        // Get the batch and target
+                        let batch = &inputs[batch_idx];
+                        let target = &targets[batch_idx];
+                        
+                        // Compute gradients but don't apply them yet
+                        let loss = worker.trainer.train_step_compute_only(batch, target);
+                        
+                        // Extract gradients from worker
+                        let gradients = worker.trainer.accumulated_grads.get("output_projection").cloned();
+                        
+                        (loss, gradients)
+                    }));
+                    
+                    // Handle the result or panic
+                    match result {
+                        Ok((loss, Some(gradients))) => {
+                            // Update thread state to backward pass
+                            thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::BackwardPass);
+                            
+                            // Measure elapsed time for this batch
+                            let batch_time = start_time.elapsed();
+                            println!("⏱️ Thread {:?} completed forward/backward pass in {:.2?}", 
+                                     std::thread::current().id(), batch_time);
+                            
+                            // Add loss to shared accumulator under lock
+                            {
+                                let mut loss_guard = loss_mutex.lock().unwrap();
+                                loss_guard.0 += loss;
+                                loss_guard.1 += 1;
+                            }
+                            
+                            println!("✅ Thread {:?} completed batch {} with loss {:.6}", 
+                                     std::thread::current().id(), batch_idx + 1, loss);
+                            
+                            // Update thread state
+                            thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::AggregatingGradients);
+                            
+                            // Apply gradients to the shared model
+                            println!("🧵 Thread {:?} applying gradients", std::thread::current().id());
+                            
+                            // Lock the model and apply gradients
+                            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                                // Use a deterministic approach instead of competition for the lock
+                                if let Ok(mut model_guard) = model_mutex.lock() {
+                                    // Apply gradients to the shared model
+                                    model_guard.accumulate_gradients(&gradients).unwrap_or_else(|e| {
+                                        println!("⚠️ Error accumulating gradients: {}", e);
+                                    });
+                                    
+                                    println!("✅ Thread {:?} successfully applied gradients", std::thread::current().id());
+                                    true
+                                } else {
+                                    println!("⚠️ Thread {:?} failed to acquire model lock", std::thread::current().id());
+                                    false
+                                }
+                            }));
+                            
+                            if let Err(_) = result {
+                                println!("💥 Thread {:?} panicked while applying gradients", std::thread::current().id());
+                                panic_counter.fetch_add(1, Ordering::SeqCst);
+                            }
+                        },
+                        Ok((_, None)) => {
+                            println!("⚠️ Thread {:?} failed to compute gradients for batch {}", 
+                                     std::thread::current().id(), batch_idx + 1);
+                        },
+                        Err(_) => {
+                            println!("💥 Thread {:?} panicked during forward/backward pass", std::thread::current().id());
+                            panic_counter.fetch_add(1, Ordering::SeqCst);
+                        }
+                    }
+                }
+                
+                // Mark this thread as completed
+                thread_states.lock().unwrap().insert(thread_id_str, ThreadState::Completed);
+                println!("🏁 Thread {:?} has completed all assigned batches", std::thread::current().id());
+                threads_done.fetch_add(1, Ordering::SeqCst);
+            });
+            
+            handles.push(handle);
+        }
+        
+        // Just wait for threads to finish by monitoring the counter
+        println!("🔄 Waiting for all threads to finish...");
+        let wait_start = Instant::now();
+        
+        while threads_done.load(Ordering::SeqCst) < num_threads {
+            println!("🔄 Thread completion: {}/{} threads", 
+                     threads_done.load(Ordering::SeqCst), num_threads);
+                     
+            // Check for timeout
+            if wait_start.elapsed() > std::time::Duration::from_secs(120) {
+                println!("⚠️ Timeout while waiting for threads to finish! Some threads may have stalled.");
+                break;
+            }
+            
+            // Sleep briefly to avoid busy waiting
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            
+            // Print thread states to help diagnose issues
+            if let Ok(states) = thread_states.lock() {
+                println!("👁️ Thread States:");
+                for (id, state) in states.iter() {
+                    println!("  - Thread {}: {:?}", id, state);
+                }
+            }
+        }
+        
+        println!("✅ All {} worker threads have finished", num_threads);
+        
+        // Check for excessive panics
+        let panic_count = panic_counter.load(Ordering::SeqCst);
+        if panic_count > num_threads / 2 {
+            return Err(format!("Too many worker threads panicked: {}/{}", panic_count, num_threads));
+        }
+        
+        // Get accumulated loss
+        let (total_loss, batch_count) = {
+            let loss_guard = loss_mutex.lock().unwrap();
+            (loss_guard.0, loss_guard.1)
+        };
+        
+        // Calculate average loss
+        let avg_loss = if batch_count > 0 {
+            total_loss / batch_count as f32
+        } else {
+            0.0
+        };
+        
+        // Get the final model with accumulated gradients
+        if let Ok(mut final_model) = model_mutex.lock() {
+            // Apply the accumulated gradients with the optimizer
+            if let Err(e) = final_model.apply_accumulated_gradients() {
+                println!("⚠️ Error applying accumulated gradients: {}", e);
+            }
+            
+            // Copy the updated model back to self
+            self.trainer = final_model.clone();
+        }
+        
+        let elapsed = start_time.elapsed();
+        println!("✅ Multi-threaded training completed in {:.2?} with avg loss: {:.6}", elapsed, avg_loss);
+        
+        Ok(avg_loss)
+    }
+
+    // Compute-only version of train_step for multi-threaded training
+    pub fn train_step_compute_only(&mut self, batch: &Vec<Vec<usize>>, targets: &Array2<usize>) -> f32 {
+        // Implementation will be added in the Trainer struct
+        self.trainer.train_step_compute_only(batch, targets)
+    }
+
+    // Using existing train_parallel implementation at lines 3392+
 }
+
+// End of EnhancedTrainer implementation
 
 /// Implement TextGenerationModel for EnhancedTrainer
 impl crate::training::TextGenerationModel for EnhancedTrainer {

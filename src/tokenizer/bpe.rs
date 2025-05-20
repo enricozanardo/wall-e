@@ -356,6 +356,10 @@ impl Tokenizer for BPETokenizer {
     fn as_vocab_mut(&mut self) -> Option<&mut Vocab> {
         Some(&mut self.vocab)
     }
+    
+    fn clone_box(&self) -> Box<dyn Tokenizer> {
+        Box::new(self.clone())
+    }
 }
 
 #[cfg(test)]

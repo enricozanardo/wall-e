@@ -1,0 +1,25 @@
+===== WALL-E1 TRAINING PROFILE SUMMARY =====
+Date: Tue May 20 01:24:07 CEST 2025
+
+CONFIGURATION:
+  Model size: 128d (2 layers)
+  Stories: 500
+  Epochs: 5
+  Memory optimization: enabled
+
+TIMING SUMMARY:
+  Batch preparation: Data not available
+  Training step time: Data not available
+Training completed in 989.93851592s
+
+TOP 5 TIME-CONSUMING OPERATIONS:
+#1: train_epoch_full - Total: 194.0823s, Avg: 194.0823s, Count: 1
+#1: train_epoch_full - Total: 185.6614s, Avg: 185.6614s, Count: 1
+#1: train_epoch_full - Total: 186.0186s, Avg: 186.0186s, Count: 1
+#1: train_epoch_full - Total: 185.7378s, Avg: 185.7378s, Count: 1
+#1: train_epoch_full - Total: 186.3473s, Avg: 186.3473s, Count: 1
+#1: training_process - Total: 989.9385s, Avg: 989.9385s, Count: 1
+#2: training_process/epoch_1 - Total: 194.0824s, Avg: 194.0824s, Count: 1
+#3: training_process/epoch_5 - Total: 186.3475s, Avg: 186.3475s, Count: 1
+#4: training_process/epoch_3 - Total: 186.0188s, Avg: 186.0188s, Count: 1
+#5: training_process/epoch_4 - Total: 185.7380s, Avg: 185.7380s, Count: 1

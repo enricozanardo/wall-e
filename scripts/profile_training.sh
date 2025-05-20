@@ -34,118 +34,166 @@ MIN_FREQ=""
 ENABLE_SKIP=""
 STRONG_ANTI_REP=""
 JSON_FORMAT="--json-format" # Default to JSON format since most training data is JSON
+PARALLEL_DATA_PREP="" # New parameter for parallel data preparation
+MT_TRAINING=""
 
-# Process arguments
+# Help message function
+show_usage() {
+    echo "Usage: $0 [options] <data_file>"
+    echo "Runs training with performance profiling enabled"
+    echo ""
+    echo "Options:"
+    echo "  --stories <number>           Number of stories to process (default: $STORIES)"
+    echo "  --model-dim <number>         Model dimension (default: $MODEL_DIM)"
+    echo "  --ff-dim <number>            Feed-forward dimension (default: $FF_DIM)"
+    echo "  --layers <number>            Number of layers (default: $LAYERS)"
+    echo "  --epochs <number>            Number of epochs (default: $EPOCHS)"
+    echo "  --cpus <number>              Number of CPUs to use"
+    echo "  --memory-opt                 Enable memory optimization (default: enabled)"
+    echo "  --no-memory-opt              Disable memory optimization"
+    echo "  --checkpoint <strategy>      Checkpoint strategy (uniform, layerwise, adaptive)"
+    echo "  --thread-opt <strategy>      Thread optimization strategy (default, aggressive, conservative)"
+    echo "  --batch-size <size>          Batch size"
+    echo "  --curriculum-examples <num>  Number of curriculum examples"
+    echo "  --auto-resize-vocab          Automatically resize vocabulary"
+    echo "  --vocab-size <number>        Vocabulary size"
+    echo "  --min-freq <number>          Minimum token frequency"
+    echo "  --watchdog-timeout <seconds> Watchdog timeout in seconds"
+    echo "  --data-threads <number>      Number of data loading threads"
+    echo "  --target-id-max <number>     Maximum target ID for tokens"
+    echo "  --enable-skip                Enable skip connections"
+    echo "  --strong-anti-rep            Use stronger anti-repetition"
+    echo "  --json-format                Process input as JSON format"
+    echo "  --parallel                  Enable parallel data preparation (for faster training)"
+    echo "  --mt-training               Enable multi-threaded model training (experimental)"
+    echo "  --help                       Show this help message"
+}
+
+# Parse command-line arguments
 while [[ $# -gt 0 ]]; do
-  case $1 in
-    --stories)
-      STORIES="$2"
-      shift 2
-      ;;
-    --model-dim)
-      MODEL_DIM="$2"
-      shift 2
-      ;;
-    --ff-dim)
-      FF_DIM="$2"
-      shift 2
-      ;;
-    --layers)
-      LAYERS="$2"
-      shift 2
-      ;;
-    --epochs)
-      EPOCHS="$2"
-      shift 2
-      ;;
-    --cpus)
-      CPUS="--cpus $2"
-      shift 2
-      ;;
-    --use-memory-opt)
-      MEMORY_OPT="--use-memory-opt"
-      shift 1
-      ;;
-    --memory-opt)
-      MEMORY_OPT="--use-memory-opt"
-      shift 1
-      ;;
-    --checkpoint-strategy)
-      CHECKPOINT_STRATEGY="--checkpoint-strategy $2"
-      shift 2
-      ;;
-    --thread-opt)
-      THREAD_OPT="--thread-opt $2"
-      shift 2
-      ;;
-    --batch-size)
-      BATCH_SIZE="--batch-size $2"
-      shift 2
-      ;;
-    --curriculum-examples)
-      CURRICULUM_EXAMPLES="--curriculum-examples $2"
-      shift 2
-      ;;
-    # New parameter handling
-    --watchdog-timeout)
-      WATCHDOG_TIMEOUT="--watchdog-timeout $2"
-      shift 2
-      ;;
-    --data-threads)
-      DATA_THREADS="--data-threads $2"
-      shift 2
-      ;;
-    --target-id-max)
-      TARGET_ID_MAX="--target-id-max $2"
-      shift 2
-      ;;
-    --auto-resize-vocab)
-      AUTO_RESIZE_VOCAB="--auto-resize-vocab"
-      shift 1
-      ;;
-    --vocab-size)
-      VOCAB_SIZE="--vocab-size $2"
-      shift 2
-      ;;
-    --min-freq)
-      MIN_FREQ="--min-freq $2"
-      shift 2
-      ;;
-    --enable-skip)
-      ENABLE_SKIP="--enable-skip"
-      shift 1
-      ;;
-    --strong-anti-rep)
-      STRONG_ANTI_REP="--strong-anti-rep"
-      shift 1
-      ;;
-    --json-format)
-      JSON_FORMAT="--json-format"
-      shift 1
-      ;;
-    *)
-      # Assume last argument is the data file
-      if [[ $# -eq 1 ]]; then
-        DATA_FILE="$1"
-      else
-        echo "Unknown option: $1"
-        exit 1
-      fi
-      shift 1
-      ;;
-  esac
+    case "$1" in
+        --stories)
+            STORIES="$2"
+            shift 2
+            ;;
+        --model-dim)
+            MODEL_DIM="$2"
+            shift 2
+            ;;
+        --ff-dim)
+            FF_DIM="$2"
+            shift 2
+            ;;
+        --layers)
+            LAYERS="$2"
+            shift 2
+            ;;
+        --epochs)
+            EPOCHS="$2"
+            shift 2
+            ;;
+        --cpus)
+            CPUS="--cpus $2"
+            shift 2
+            ;;
+        --memory-opt|--use-memory-opt)
+            MEMORY_OPT="--use-memory-opt"
+            shift
+            ;;
+        --no-memory-opt)
+            MEMORY_OPT=""
+            shift
+            ;;
+        --checkpoint)
+            CHECKPOINT_STRATEGY="--checkpoint-strategy $2"
+            shift 2
+            ;;
+        --thread-opt)
+            THREAD_OPT="--thread-opt $2"
+            shift 2
+            ;;
+        --batch-size)
+            BATCH_SIZE="--batch-size $2"
+            shift 2
+            ;;
+        --curriculum-examples)
+            CURRICULUM_EXAMPLES="--curriculum-examples $2"
+            shift 2
+            ;;
+        --auto-resize-vocab)
+            AUTO_RESIZE_VOCAB="--auto-resize-vocab"
+            shift
+            ;;
+        --vocab-size)
+            VOCAB_SIZE="--vocab-size $2"
+            shift 2
+            ;;
+        --min-freq)
+            MIN_FREQ="--min-freq $2"
+            shift 2
+            ;;
+        --watchdog-timeout)
+            WATCHDOG_TIMEOUT="--watchdog-timeout $2"
+            shift 2
+            ;;
+        --data-threads)
+            DATA_THREADS="--data-threads $2"
+            shift 2
+            ;;
+        --target-id-max)
+            TARGET_ID_MAX="--target-id-max $2"
+            shift 2
+            ;;
+        --enable-skip)
+            ENABLE_SKIP="--enable-skip"
+            shift
+            ;;
+        --strong-anti-rep)
+            STRONG_ANTI_REP="--strong-anti-rep"
+            shift
+            ;;
+        --json-format)
+            JSON_FORMAT="--json-format"
+            shift
+            ;;
+        --parallel-data-prep|--parallel)
+            PARALLEL_DATA_PREP="--parallel"
+            shift
+            ;;
+        --mt-training|--mt)
+            MT_TRAINING="--mt-training"
+            PARALLEL_DATA_PREP="--parallel"  # MT training implies parallel data prep
+            shift
+            ;;
+        --help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            # If it's the last argument and not a flag, treat it as the data file
+            if [[ $# -eq 1 && ! $1 == --* ]]; then
+                DATA_FILE="$1"
+                shift
+            else
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+            fi
+            ;;
+    esac
 done
 
-# Ensure DATA_FILE is set
+# Check if data file is provided
 if [[ -z "$DATA_FILE" ]]; then
-  echo "Error: No data file specified"
-  exit 1
+    echo "Error: No data file specified"
+    show_usage
+    exit 1
 fi
 
 # Ensure the data file exists
 if [[ ! -f "$DATA_FILE" ]]; then
-  echo "Error: Data file not found: $DATA_FILE"
-  exit 1
+    echo "Error: Data file not found at: $DATA_FILE"
+    exit 1
 fi
 
 # Check if the file is empty or not valid JSON
@@ -168,119 +216,95 @@ if [[ ! -s "$DATA_FILE" ]] || ! grep -q '{' "$DATA_FILE"; then
   echo "Created sample data with 3 short stories in $DATA_FILE"
 fi
 
-# Run the model training with profiling enabled
-# Use a small dataset and few epochs to make it quick but still representative
-echo "Starting profiled training run at $(date)"
-echo "Results will be saved to $LOGFILE"
-echo "Using data file: $DATA_FILE"
+# Model save path
+SAVE_PATH="models/profiled_model_${TIMESTAMP}.bin"
 
-# Enhanced profiling settings
-export RUST_BACKTRACE=1
+# Start timing
+START_TIME=$(date +%s)
 
-# Build command arguments
-CMD_ARGS=(
-  "--stories" "$STORIES"
-  "--model-dim" "$MODEL_DIM"
-  "--ff-dim" "$FF_DIM"
-  "--layers" "$LAYERS"
-  "--epochs" "$EPOCHS"
-  "--perf-log" "true"
-  "--save-path" "$PROFILE_DIR/model_$TIMESTAMP.json"
-)
+# Run the training command with profiling enabled
+echo "Starting profiled training with log output to: $LOGFILE"
+echo "Command: cargo run --release --bin train_enhanced_model -- --dataset $DATA_FILE --model-dim $MODEL_DIM --ff-dim $FF_DIM --layers $LAYERS --epochs $EPOCHS --max-stories $STORIES --save-path $SAVE_PATH $CPUS $MEMORY_OPT $CHECKPOINT_STRATEGY $THREAD_OPT $BATCH_SIZE $CURRICULUM_EXAMPLES $AUTO_RESIZE_VOCAB $VOCAB_SIZE $MIN_FREQ $WATCHDOG_TIMEOUT $DATA_THREADS $TARGET_ID_MAX $ENABLE_SKIP $STRONG_ANTI_REP $JSON_FORMAT $PARALLEL_DATA_PREP $MT_TRAINING --perf-log" | tee -a "$LOGFILE"
 
-# Add JSON format parameter (if set)
-if [[ -n "$JSON_FORMAT" ]]; then
-  CMD_ARGS+=($JSON_FORMAT)
-fi
+# Execute with timing and logging
+{
+    time cargo run --release --bin train_enhanced_model -- \
+        --dataset "$DATA_FILE" \
+        --model-dim "$MODEL_DIM" \
+        --ff-dim "$FF_DIM" \
+        --layers "$LAYERS" \
+        --epochs "$EPOCHS" \
+        --max-stories "$STORIES" \
+        --save-path "$SAVE_PATH" \
+        $CPUS \
+        $MEMORY_OPT \
+        $CHECKPOINT_STRATEGY \
+        $THREAD_OPT \
+        $BATCH_SIZE \
+        $CURRICULUM_EXAMPLES \
+        $AUTO_RESIZE_VOCAB \
+        $VOCAB_SIZE \
+        $MIN_FREQ \
+        $WATCHDOG_TIMEOUT \
+        $DATA_THREADS \
+        $TARGET_ID_MAX \
+        $ENABLE_SKIP \
+        $STRONG_ANTI_REP \
+        $JSON_FORMAT \
+        $PARALLEL_DATA_PREP \
+        $MT_TRAINING \
+        --perf-log
+} 2>&1 | tee -a "$LOGFILE"
 
-# Add optional arguments
-if [[ -n "$CPUS" ]]; then
-  CMD_ARGS+=($CPUS)
-fi
+# End timing
+END_TIME=$(date +%s)
+TOTAL_TIME=$((END_TIME - START_TIME))
 
-if [[ -n "$MEMORY_OPT" ]]; then
-  CMD_ARGS+=($MEMORY_OPT)
-fi
+# Extract metrics and save to separate file
+{
+    echo "PROFILING SUMMARY"
+    echo "================="
+    echo "Date: $(date)"
+    echo "Duration: $TOTAL_TIME seconds"
+    echo ""
+    echo "CONFIGURATION"
+    echo "Model dimension: $MODEL_DIM"
+    echo "Feed-forward dimension: $FF_DIM"
+    echo "Layers: $LAYERS"
+    echo "Epochs: $EPOCHS"
+    echo "Stories: $STORIES"
+    echo "Memory optimization: $(if [[ -n "$MEMORY_OPT" ]]; then echo "enabled"; else echo "disabled"; fi)"
+    echo "Parallel data preparation: $(if [[ -n "$PARALLEL_DATA_PREP" ]]; then echo "enabled"; else echo "disabled"; fi)"
+    echo "Multi-threaded training: $(if [[ -n "$MT_TRAINING" ]]; then echo "enabled"; else echo "disabled"; fi)"
+    echo ""
+    echo "EXTRACTED METRICS"
+    
+    # Extract training time
+    TRAIN_TIME=$(grep -Eo "Completed .+ training in [0-9.]+s" "$LOGFILE" | grep -Eo "[0-9.]+s")
+    echo "Training time: $TRAIN_TIME"
+    
+    # Extract memory usage
+    MEM_USAGE=$(grep -Eo "Memory usage: [0-9.]+ MB" "$LOGFILE" | sort -nr | head -1 | grep -Eo "[0-9.]+ MB")
+    echo "Peak memory usage: $MEM_USAGE"
+    
+    # Extract CPU utilization
+    CPU_USAGE=$(grep -Eo "CPU utilization: [0-9.]+%" "$LOGFILE" | sort -nr | head -1 | grep -Eo "[0-9.]+%")
+    echo "CPU utilization: $CPU_USAGE"
+    
+    # Extract average loss
+    AVG_LOSS=$(grep -Eo "average loss: [0-9.]+" "$LOGFILE" | tail -1 | grep -Eo "[0-9.]+")
+    echo "Final average loss: $AVG_LOSS"
+    
+    # Extract profiling data
+    echo ""
+    echo "OPERATION TIMING"
+    grep -E "Operation .+ took [0-9.]+ seconds" "$LOGFILE" | sort -k5 -nr
+} > "$METRICS_FILE"
 
-if [[ -n "$BATCH_SIZE" ]]; then
-  CMD_ARGS+=($BATCH_SIZE)
-fi
-
-if [[ -n "$CURRICULUM_EXAMPLES" ]]; then
-  CMD_ARGS+=($CURRICULUM_EXAMPLES)
-fi
-
-if [[ -n "$CHECKPOINT_STRATEGY" ]]; then
-  CMD_ARGS+=($CHECKPOINT_STRATEGY)
-fi
-
-if [[ -n "$THREAD_OPT" ]]; then
-  CMD_ARGS+=($THREAD_OPT)
-fi
-
-# Add new parameters
-if [[ -n "$WATCHDOG_TIMEOUT" ]]; then
-  CMD_ARGS+=($WATCHDOG_TIMEOUT)
-fi
-
-if [[ -n "$DATA_THREADS" ]]; then
-  CMD_ARGS+=($DATA_THREADS)
-fi
-
-if [[ -n "$TARGET_ID_MAX" ]]; then
-  CMD_ARGS+=($TARGET_ID_MAX)
-fi
-
-if [[ -n "$AUTO_RESIZE_VOCAB" ]]; then
-  CMD_ARGS+=($AUTO_RESIZE_VOCAB)
-fi
-
-if [[ -n "$VOCAB_SIZE" ]]; then
-  CMD_ARGS+=($VOCAB_SIZE)
-fi
-
-if [[ -n "$MIN_FREQ" ]]; then
-  CMD_ARGS+=($MIN_FREQ)
-fi
-
-if [[ -n "$ENABLE_SKIP" ]]; then
-  CMD_ARGS+=($ENABLE_SKIP)
-fi
-
-if [[ -n "$STRONG_ANTI_REP" ]]; then
-  CMD_ARGS+=($STRONG_ANTI_REP)
-fi
-
-# Add data file as the last argument
-CMD_ARGS+=("$DATA_FILE")
-
-echo "Running with parameters: ${CMD_ARGS[@]}"
-
-# Run the training with our enhanced profiling
-cargo run --release --bin Wall-E -- "${CMD_ARGS[@]}" 2>&1 | tee "$LOGFILE"
-
-# Check if training was successful
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
-  echo "Training failed! Check $LOGFILE for details."
-  exit 1
-fi
-
-# Extract the performance metrics section and format it nicely
-echo "Extracting performance metrics..."
-sed -n '/PERFORMANCE METRICS/,/═══════════════════/p' "$LOGFILE" > "$METRICS_FILE"
-
-echo "------------------------------------"
-echo "TOP TIME-CONSUMING OPERATIONS:"
-grep -A 20 "TOP TIME-CONSUMING OPERATIONS" "$METRICS_FILE" | grep "^#" 
-
-echo "------------------------------------"
-echo "PARALLELISM METRICS:"
-grep -A 20 "PARALLELISM METRICS" "$METRICS_FILE" | grep -v "PARALLELISM METRICS" | grep -v "^$" | grep -v "DETAILED"
-
-echo "------------------------------------"
-echo "Performance profile completed. Results saved to:"
-echo "  - Raw log: $LOGFILE"
-echo "  - Metrics: $METRICS_FILE"
+echo ""
+echo "Profiling complete!"
+echo "Full log: $LOGFILE"
+echo "Metrics summary: $METRICS_FILE"
 
 # Create a summary file
 SUMMARY_FILE="$PROFILE_DIR/summary_$TIMESTAMP.txt"

@@ -54,4 +54,14 @@ pub trait Tokenizer: Send + Sync {
     fn as_vocab_mut(&mut self) -> Option<&mut Vocab> {
         None  // Default implementation returns None
     }
+    
+    /// Create a boxed clone of this tokenizer
+    fn clone_box(&self) -> Box<dyn Tokenizer>;
+}
+
+// Implement clone_box for Box<dyn Tokenizer>
+impl Clone for Box<dyn Tokenizer> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }

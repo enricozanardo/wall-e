@@ -1,0 +1,580 @@
+warning: unused import: `Duration`
+ --> src/nabla/memory_opt.rs:4:26
+  |
+4 | use std::time::{Instant, Duration};
+  |                          ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Axis` and `Ix3`
+ --> src/training/mod.rs:4:46
+  |
+4 | use ndarray::{Array, Array1, Array2, Array3, Axis, Ix1, Ix2, Ix3, Ix0, IxDyn, s};
+  |                                              ^^^^            ^^^
+
+warning: unused import: `ndarray::Array0`
+  --> src/training/mod.rs:12:5
+   |
+12 | use ndarray::Array0;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `ndarray::array`
+  --> src/training/mod.rs:13:5
+   |
+13 | use ndarray::array;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `crate::nabla::memory_opt`
+  --> src/training/enhanced_trainer.rs:15:5
+   |
+15 | use crate::nabla::memory_opt;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `MutexGuard` and `Mutex`
+ --> src/training/batch_dispatcher.rs:4:17
+  |
+4 | use std::sync::{Mutex, MutexGuard};
+  |                 ^^^^^  ^^^^^^^^^^
+
+warning: unused import: `std::thread::ThreadId`
+ --> src/training/batch_dispatcher.rs:5:5
+  |
+5 | use std::thread::ThreadId;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `v`
+  --> src/nabla/memory_opt.rs:88:15
+   |
+88 |     if let Ok(v) = std::env::var("MALLOC_ARENA_MAX") {
+   |               ^ help: if this is intentional, prefix it with an underscore: `_v`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count`
+   --> src/tokenizer/word_bpe.rs:420:20
+    |
+420 |         for (word, count) in word_counts.iter().filter(|&(_, count)| *count >= min_frequency) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: unused variable: `tokens_to_add`
+    --> src/training/mod.rs:1259:13
+     |
+1259 |         let tokens_to_add = new_vocab_size - current_size;
+     |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_tokens_to_add`
+
+warning: variable `reported_progress` is assigned to, but never used
+   --> src/training/generation.rs:174:17
+    |
+174 |         let mut reported_progress = false;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_reported_progress` instead
+
+warning: value assigned to `reported_progress` is never read
+   --> src/training/generation.rs:181:17
+    |
+181 |                 reported_progress = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `batch`
+   --> src/training/enhanced_trainer.rs:535:34
+    |
+535 | ...   if let (Some(batch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+
+warning: unused variable: `target`
+   --> src/training/enhanced_trainer.rs:535:47
+    |
+535 | ...ch), Some(target)) = (inputs.get(batch_idx), targets.get(batch_idx)) {
+    |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+
+warning: variable does not need to be mutable
+   --> src/training/enhanced_trainer.rs:539:29
+    |
+539 |                         let mut loss_guard = loss_mutex.lock().unwrap();
+    |                             ----^^^^^^^^^^
+    |                             |
+    |                             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: function `determine_allocator_type` is never used
+  --> src/nabla/memory_opt.rs:79:4
+   |
+79 | fn determine_allocator_type() -> Option<String> {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `get_total_elapsed` is never used
+   --> src/training/enhanced_trainer.rs:162:8
+    |
+131 | impl ThreadStateTracker {
+    | ----------------------- method in this implementation
+...
+162 |     fn get_total_elapsed(&self) -> std::time::Duration {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `run_with_timeout` is never used
+    --> src/training/enhanced_trainer.rs:1998:8
+     |
+198  | impl EnhancedTrainer {
+     | -------------------- method in this implementation
+...
+1998 |     fn run_with_timeout<F, T>(&self, f: F, timeout: std::time::Duration) -> Option<T> 
+     |        ^^^^^^^^^^^^^^^^
+
+warning: constant `V0_HEADER_SIZE` is never used
+  --> src/training/enhanced_trainer.rs:98:15
+   |
+98 |     pub const V0_HEADER_SIZE: usize = 32;
+   |               ^^^^^^^^^^^^^^
+
+warning: field `time` is never read
+  --> src/training/batch_dispatcher.rs:44:5
+   |
+40 | struct LockEvent {
+   |        --------- field in this struct
+...
+44 |     time: Instant,
+   |     ^^^^
+
+warning: `wall-e1` (lib) generated 20 warnings (run `cargo fix --lib -p wall-e1` to apply 8 suggestions)
+warning: unused imports: `ProgressBar` and `ProgressStyle`
+  --> src/bin/train_enhanced_model.rs:16:17
+   |
+16 | use indicatif::{ProgressBar, ProgressStyle};
+   |                 ^^^^^^^^^^^  ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Arc`, `AtomicUsize`, `Mutex`, and `Ordering`
+  --> src/bin/train_enhanced_model.rs:17:17
+   |
+17 | use std::sync::{Arc, Mutex, atomic::{AtomicUsize, Ordering}};
+   |                 ^^^  ^^^^^           ^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused variable: `thread_id`
+  --> src/bin/train_enhanced_model.rs:47:13
+   |
+47 |         let thread_id = format!("{:?}", std::thread::current().id());
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `thread_count`
+   --> src/bin/train_enhanced_model.rs:371:13
+    |
+371 | ...let thread_count = if op == &"data_loading" { min_data_threads } else { pool.get_num_threads() };
+    |        ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_count`
+
+warning: unused variable: `setup_start`
+   --> src/bin/train_enhanced_model.rs:428:9
+    |
+428 |     let setup_start = Instant::now();
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_setup_start`
+
+warning: variable `curriculum_examples` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:462:13
+    |
+462 |     let mut curriculum_examples: usize = 2000;
+    |             ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_curriculum_examples` instead
+
+warning: variable `auto_resize_vocab` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:466:13
+    |
+466 |     let mut auto_resize_vocab = false;
+    |             ^^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_auto_resize_vocab` instead
+
+warning: variable `watchdog_timeout` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:467:13
+    |
+467 |     let mut watchdog_timeout: Option<u64> = None;
+    |             ^^^^^^^^^^^^^^^^
+    |
+    = note: consider using `_watchdog_timeout` instead
+
+warning: variable `target_id_max` is assigned to, but never used
+   --> src/bin/train_enhanced_model.rs:469:13
+    |
+469 |     let mut target_id_max: Option<usize> = None;
+    |             ^^^^^^^^^^^^^
+    |
+    = note: consider using `_target_id_max` instead
+
+warning: value assigned to `curriculum_examples` is never read
+   --> src/bin/train_enhanced_model.rs:655:25
+    |
+655 |                         curriculum_examples = num;
+    |                         ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `auto_resize_vocab` is never read
+   --> src/bin/train_enhanced_model.rs:661:17
+    |
+661 |                 auto_resize_vocab = true;
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `watchdog_timeout` is never read
+   --> src/bin/train_enhanced_model.rs:667:25
+    |
+667 |                         watchdog_timeout = Some(timeout);
+    |                         ^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: value assigned to `target_id_max` is never read
+   --> src/bin/train_enhanced_model.rs:683:25
+    |
+683 |                         target_id_max = Some(max_id);
+    |                         ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: variable does not need to be mutable
+    --> src/bin/train_enhanced_model.rs:1169:9
+     |
+1169 |     let mut path_with_dir = if !final_save_path_str.starts_with("models/") {
+     |         ----^^^^^^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `stride`
+    --> src/bin/train_enhanced_model.rs:1284:9
+     |
+1284 |     let stride = max_sequence_length / 2; // 50% overlap between windows
+     |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_stride`
+
+warning: unused variable: `epoch`
+    --> src/bin/train_enhanced_model.rs:1279:68
+     |
+1279 | fn train_epoch(trainer: &mut EnhancedTrainer, tokens: &Vec<usize>, epoch: usize, 
+     |                                                                    ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+
+warning: unused variable: `batch_inputs`
+    --> src/bin/train_enhanced_model.rs:1405:10
+     |
+1405 | ...t (batch_inputs, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.instal...
+     |       ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_inputs`
+
+warning: unused variable: `min_seq_len`
+    --> src/bin/train_enhanced_model.rs:1405:24
+     |
+1405 | ...ts, min_seq_len, truncated_inputs, batch_targets_arr, timing) = pool_result.install(|| {
+     |        ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_seq_len`
+
+warning: unused variable: `k`
+    --> src/bin/train_enhanced_model.rs:1676:13
+     |
+1676 |     let (m, k) = a.dim();
+     |             ^ help: if this is intentional, prefix it with an underscore: `_k`
+
+warning: function `prepare_batch_parallel` is never used
+    --> src/bin/train_enhanced_model.rs:1369:4
+     |
+1369 | fn prepare_batch_parallel(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `detect_simd_features` is never used
+    --> src/bin/train_enhanced_model.rs:1588:4
+     |
+1588 | fn detect_simd_features() -> Vec<String> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `enable_simd_optimizations` is never used
+    --> src/bin/train_enhanced_model.rs:1625:4
+     |
+1625 | fn enable_simd_optimizations(features: &[String]) -> bool {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_simd` is never used
+    --> src/bin/train_enhanced_model.rs:1671:4
+     |
+1671 | fn matrix_multiply_simd(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>) -> ndarray::Array2<f32> {
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_avx2` is never used
+    --> src/bin/train_enhanced_model.rs:1741:4
+     |
+1741 | fn matrix_multiply_avx2(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray::...
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `matrix_multiply_scalar` is never used
+    --> src/bin/train_enhanced_model.rs:1747:4
+     |
+1747 | fn matrix_multiply_scalar(a: &ndarray::Array2<f32>, b: &ndarray::Array2<f32>, result: &mut ndarray...
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `wall-e1` (bin "Wall-E") generated 25 warnings (run `cargo fix --bin "Wall-E"` to apply 3 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running `target/release/Wall-E --stories 50 --model-dim 128 --ff-dim 512 --layers 2 --epochs 1 --perf-log true --save-path ./profiling_results/model_20250520_010542.json --json-format --use-memory-opt --parallel ./data/tiny_stories_sample.json`
+Detected 20 CPU cores
+🔧 Setting WALL_E_DATA_THREADS to 14 for better parallelism (fixing low CPU usage)
+Memory [startup]: VmSize:	    5300 kB
+Memory [startup]: VmRSS:	    1480 kB
+
+📊 DETAILED STARTUP TIMING 📊
+⏳ Initializing thread pools...
+Creating thread pool with 19 threads for general operations
+  ✅ Global thread pool initialized with 19 threads (2.00ms)
+🔹 Creating dedicated thread pool for 'matrix_multiply' operation with 19 threads
+Creating thread pool with 19 threads for matrix_multiply operations
+  ✅ Thread pool for 'matrix_multiply' initialized with 19 threads (1.03ms)
+🔹 Creating dedicated thread pool for 'gradient_update' operation with 15 threads
+Creating thread pool with 15 threads for gradient_update operations
+  ✅ Thread pool for 'gradient_update' initialized with 15 threads (1.36ms)
+Using WALL_E_DATA_THREADS=14 from environment
+🔹 Creating dedicated thread pool for 'data_loading' operation with 14 threads
+Creating thread pool with 14 threads for data_loading operations
+  ✅ Thread pool for 'data_loading' initialized with 14 threads (818.78µs)
+🔹 Creating dedicated thread pool for 'attention' operation with 19 threads
+Creating thread pool with 19 threads for attention operations
+  ✅ Thread pool for 'attention' initialized with 19 threads (1.61ms)
+✅ Thread pools initialized in 6.87ms
+⏳ Configuring memory allocator...
+  ✅ Cache detection completed in 45.61µs
+     L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Configuring memory allocator for CacheEfficient policy
+Configuring memory allocator for cache line size: 64 bytes
+Configured optimal tensor memory layouts (cache-friendly strides)
+Pre-allocated memory for common tensor sizes
+Memory policy set for optimal cache efficiency
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line=64B
+  ✅ Memory allocator configured in 43.93µs
+  ✅ Memory bandwidth measured in 541.99ms: 8.39 GB/s
+✅ Memory optimizations completed in 542.12ms
+✅ Total initialization completed in 549.00ms
+
+Memory and thread optimizations configured
+
+🔄 STARTING APPLICATION SETUP 🔄
+⏳ Parsing command line arguments...
+  Processing 19 command line arguments
+  🧵 Enabling parallel data preparation
+✅ Arguments parsed in 3.59µs
+⏳ Configuring thread pool with 19 CPU cores
+
+🔄 TRAINING SETUP PHASE 🔄
+Training Configuration:
+  Training data: ./data/tiny_stories_sample.json
+  Data format: TinyStories JSON
+  Max stories: 50
+  Model dimension: 128
+  FF dimension: 512
+  Attention heads: 4
+  Layers: 2
+  Dropout rate: 0.1
+  Learning rate: 0.001
+  Epochs: 1
+  Curriculum learning: enabled
+  Vocabulary size: 10000
+  Min token frequency: 2
+  Skip connections: disabled
+  Strong anti-repetition: disabled
+  Save path: ./profiling_results/model_20250520_010542.json
+  CPU threads: 19
+  Performance logging: enabled
+
+⏳ Reading training data (single-threaded operation)...
+  🔄 Reading JSON file from ./data/tiny_stories_sample.json...
+Found 58300 stories in JSON file
+Will use 50 stories for training
+Processed 50 stories, total text length: 42528 characters
+  ✅ JSON data loaded in 63.35ms, 42528 characters
+✅ Training data loaded in 63.39ms
+Memory [after_data_loading]: VmSize:	 7155068 kB
+Memory [after_data_loading]: VmRSS:	   61656 kB
+
+⏳ Creating trainer...
+Initializing enhanced model with configuration:
+  model_dim: 128 (validated: 128)
+  ff_dim: 512 (validated: 512)
+  num_heads: 4 (validated: 4)
+  num_layers: 2 (validated: 2)
+  dropout_rate: 0.1
+  learning_rate: 0.001
+Initializing output_projection: model_dim=128, vocab_size=101
+  🔄 Configuring trainer options...
+  ✅ Trainer options configured in 45.00ns
+  🔄 Enabling memory optimization with gradient checkpointing...
+Memory optimization enabled with gradient checkpointing
+  ✅ Memory optimization configured in 1.12µs
+Memory [after_memory_opt_enable]: VmSize:	 7155068 kB
+Memory [after_memory_opt_enable]: VmRSS:	   61656 kB
+✅ Trainer initialization completed in 4.77ms
+✅ Basic anti-repetition configured in 1.25µs
+
+⏳ Learning tokenizer vocabulary (single-threaded operation)...
+Analyzing text for vocabulary...
+Parallel vocabulary analysis: processing 5 chunks
+Starting parallel vocabulary learning with 5 chunks
+Using global thread pool with 19 threads
+Word counting completed in 934.68µs, found 1135 unique words
+Learning up to 9899 merges to reach vocab size 10000
+  Learned 1 merges (0.0%) in 230.12µs...
+  Learned 1001 merges (10.1%) in 131.67ms...
+Parallel BPE learning completed in 142.63ms, vocabulary size: 1413
+Learned 1313 merge operations
+Tokenizer vocabulary learned: 1413 tokens (from requested max: 10000)
+Initializing output_projection: model_dim=128, vocab_size=1413
+Resizing output projection to match vocabulary size: 1413
+Vocabulary learning completed in 146.98ms
+✅ Tokenizer vocabulary learned in 146.98ms
+
+⏳ Splitting training/validation data...
+✅ Data split in 1.86µs: 38275 characters for training, 4253 for validation
+
+⏳ Setting up curriculum learning...
+
+⏳ Tokenizing data (single-threaded operation)...
+  🔄 Tokenizing training data (38275 characters)...
+  ✅ Training data tokenized in 24.02ms: 17594 tokens
+  🔄 Tokenizing validation data (4253 characters)...
+  ✅ Validation data tokenized in 2.69ms: 1881 tokens
+✅ All data tokenized in 26.75ms
+Memory [after_tokenization]: VmSize:	 7155068 kB
+Memory [after_tokenization]: VmRSS:	   62692 kB
+
+⏳ Preparing validation dataset...
+    🔄 Configuring thread pool for validation data preparation...
+Hardware: 10 physical cores, 20 logical cores
+Measured memory bandwidth: 8.34 GB/s
+Data loading thread calculation: recommended=5, min=4, max=15, final=5
+    ✅ Using 5 threads for validation data preparation
+🔸 Reusing existing thread pool for 'data_loading' operation
+    ✅ Using thread pool with 14 threads for validation data
+✅ Validation data prepared in 469.45ms: 204 examples
+
+✅ TRAINING SETUP COMPLETED in 711.47ms
+Starting training for 1 epochs...
+
+🔄 BEGINNING TRAINING PROCESS 🔄
+
+⏳ EPOCH 1/1 STARTING
+  🔄 Training on 17594 tokens
+  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...
+Memory [train_epoch_start]: VmSize:	 7155068 kB
+Memory [train_epoch_start]: VmRSS:	   62880 kB
+    🔍 TRAIN EPOCH DETAILED LOGGING
+    🔄 Enabling memory optimization with gradient checkpointing
+Memory optimization enabled with gradient checkpointing
+Gradient checkpointing strategy set to Uniform
+    ✅ Memory optimization enabled in 1.67µs
+Memory [after_memory_opt_enable]: VmSize:	 7155068 kB
+Memory [after_memory_opt_enable]: VmRSS:	   62880 kB
+    🧐 Verifying model initialization before training...
+🔍 Verifying model initialization...
+Model verification:
+  Tokenizer vocabulary size: 1413
+  Model vocabulary size: 1413
+  Model dimensions: 128x512x4x2
+✅ Model vocabulary size is consistent with tokenizer
+✅ Model verification complete - ready for training
+    ✅ Model initialization verified in 2.55µs
+Cache parameters: L1=48 KB, L2=1280 KB, L3=24576 KB, Line size=64 bytes
+Calculating optimal batch size for model_dim=128, seq_len=16, element_size=4 bytes
+Memory per sequence: 8192 bytes (0.01 MB)
+Available L3 cache (80%): 20132659 bytes (19.20 MB)
+Maximum batch size that fits in L3 cache: 2457
+Final optimal batch size (after constraints): 1024
+Calculated memory-optimal batch size: 1024
+    📊 Using batch size: 1024
+    🔄 Training from tokens using parallel data preparation
+🔄 Preparing training data with sequence length: 16, stride: 8
+🔄 Preparing training data in parallel mode
+✅ Will create 2198 sliding windows in parallel
+🧵 Using 19 threads for parallel data preparation
+✅ Created 2198 window pairs in 3.39ms
+✅ Created 2198 input/target pairs
+🔄 Creating batches from 2198 input/target pairs
+✅ Created 3 batches in 153.13µs
+🔍 Verifying model initialization...
+Model verification:
+  Tokenizer vocabulary size: 1413
+  Model vocabulary size: 1413
+  Model dimensions: 128x512x4x2
+✅ Model vocabulary size is consistent with tokenizer
+✅ Model verification complete - ready for training
+✅ Model initialization verified
+🔒 Using reliable training mode with parallel data preparation
+✅ Successfully pre-processed all batches
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 55171, tv_nsec: 21393827 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 8439240 kB
+  VmRSS:	   64376 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 26.139µs, total 26.172µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 26ns, total 27.605µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 10.471µs, total 38.687µs)
+✅ Thread ThreadId(1) training completed in 6627.90ms with loss 7.252121
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 8439268 kB
+  VmRSS:	  154340 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 6.627940957s, total 6.627980353s)
+  Batch 1/3 - Loss: 7.252121
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 55177, tv_nsec: 649380378 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 8439268 kB
+  VmRSS:	  154340 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.364µs, total 9.394µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 27ns, total 10.185µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 15.509µs, total 26.252µs)
+✅ Thread ThreadId(1) training completed in 6499.32ms with loss 7.0228047
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 8439268 kB
+  VmRSS:	  160412 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 6.499366428s, total 6.499393185s)
+🧵 Thread ThreadId(1) created state tracker at Instant { tv_sec: 55184, tv_nsec: 148777581 }
+📊 MEMORY USAGE [thread_ThreadId(1)_start]:
+  VmSize:	 8439268 kB
+  VmRSS:	  160412 kB
+🧵 Thread ThreadId(1) state: Idle -> PreparingBatch (after 9.308µs, total 9.355µs)
+🧵 Thread ThreadId(1) state: PreparingBatch -> ResizingVocabulary (after 25ns, total 10.145µs)
+🧵 Thread ThreadId(1) state: ResizingVocabulary -> ForwardPass (after 2.363µs, total 13.108µs)
+✅ Thread ThreadId(1) training completed in 1007.62ms with loss 6.81393
+📊 MEMORY USAGE [thread_ThreadId(1)_end]:
+  VmSize:	 8459716 kB
+  VmRSS:	  181124 kB
+🧵 Thread ThreadId(1) state: ForwardPass -> Completed (after 1.007670519s, total 1.007684206s)
+  Batch 3/3 - Loss: 6.813930
+Epoch 1 completed with average loss: 7.029619
+    ✅ Training completed successfully
+    ✅ Completed epoch training in 14.14s with loss: 7.029619
+Memory [train_epoch_end]: VmSize:	 8459716 kB
+Memory [train_epoch_end]: VmRSS:	  181124 kB
+
+═════════════════════════ PERFORMANCE METRICS ═════════════════════════
+
+--- TOP TIME-CONSUMING OPERATIONS ---
+#1: train_epoch_full - Total: 14.1397s, Avg: 14.1397s, Count: 1
+
+--- PARALLELISM METRICS ---
+
+--- DETAILED METRICS ---
+
+Operation: train_epoch_full
+  Count:     1
+  Total:     14.1397 sec
+  Average:   14.1397 sec
+  Min/Max:   14.1397/14.1397 sec
+  Thread distribution: 1 threads
+═════════════════════════════════════════════════════════════════════
+  ⏳ Evaluating model...
+🔄 Temporarily disabled watchdog for evaluation phase
+🛑 Watchdog disabled for text generation
+Generating text with prompt: "Once upon a time" (max_tokens=100)
+Attempting to use model for text generation...
