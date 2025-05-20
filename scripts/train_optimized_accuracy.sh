@@ -59,7 +59,7 @@ while [[ "$#" -gt 0 ]]; do
             shift 2
             ;;
         --memory-opt)
-            MEMORY_OPT="--use-memory-opt"
+            MEMORY_OPT="--memory-opt"
             shift
             ;;
         --checkpoint-strategy)
@@ -221,10 +221,8 @@ echo "-------------------------------"
 echo "Starting training..."
 echo "MT_TRAINING parameter value: \"$MT_TRAINING\""
 
-# Set RUST_BACKTRACE for better error reporting
-export RUST_BACKTRACE=1
-
-cargo run --release --bin Wall-E -- \
+# Use the new CLI wrapper instead of directly calling cargo run
+./scripts/wall-e-cli.sh \
     --model-dim $MODEL_DIM \
     --ff-dim $FF_DIM \
     --heads $HEADS \

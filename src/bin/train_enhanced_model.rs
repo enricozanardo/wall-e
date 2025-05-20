@@ -608,6 +608,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     prompt = Some(val);
                 }
             }
+
+            "--dataset" => {
+                if let Some(val) = arg_iter.next() {
+                    training_data_path = Some(val);
+                }
+            }
+
             "--max-tokens" => {
                 if let Some(val) = arg_iter.next() {
                     _max_tokens = val.parse().unwrap_or(_max_tokens);
