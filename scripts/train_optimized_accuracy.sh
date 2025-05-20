@@ -17,6 +17,7 @@ show_usage() {
     echo "  --curriculum-examples <num>  Number of curriculum examples (default: 500)"
     echo "  --auto-resize-vocab          Enable automatic vocabulary resizing"
     echo "  --watchdog-timeout <secs>    Timeout for watchdog thread detection (default: 60)"
+    echo "  --batch-timeout <secs>       Timeout for batch processing in multi-threaded mode (default: 60)"
     echo "  --data-threads <number>      Number of threads for data loading"
     echo "  --target-id-max <number>     Maximum target ID value (default: auto-detected)"
     echo "  --parallel                   Enable parallel data preparation (for faster training)"
@@ -40,6 +41,7 @@ DATA_THREADS=""
 TARGET_ID_MAX=""
 PARALLEL_DATA_PREP=""
 MT_TRAINING=""
+BATCH_TIMEOUT=""
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -86,6 +88,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --watchdog-timeout)
             WATCHDOG_TIMEOUT="--watchdog-timeout $2"
+            shift 2
+            ;;
+        --batch-timeout)
+            BATCH_TIMEOUT="--batch-timeout $2"
             shift 2
             ;;
         --data-threads)
@@ -170,6 +176,18 @@ if [[ -n "$DATA_THREADS" ]]; then
     export WALL_E_DATA_THREADS=${DATA_THREADS#--data-threads }
 fi
 
+# Add batch timeout environment variable
+if [[ -n "$BATCH_TIMEOUT" ]]; then
+    export WALL_E_BATCH_TIMEOUT=${BATCH_TIMEOUT#--batch-timeout }
+    echo "Setting WALL_E_BATCH_TIMEOUT=${BATCH_TIMEOUT#--batch-timeout } for multi-threaded training"
+fi
+
+# Set environment variable for multi-threaded training
+if [[ -n "$MT_TRAINING" ]]; then
+    export WALL_E_MT_TRAINING=1
+    echo "Setting WALL_E_MT_TRAINING=1 to enable multi-threaded model training"
+fi
+
 # Configure the model save path
 MODEL_SAVE_PATH="models/high_accuracy_model.walle"
 
@@ -192,40 +210,47 @@ echo "Batch size: ${BATCH_SIZE:+${BATCH_SIZE#--batch-size }}"
 echo "Curriculum examples: $CURRICULUM_EXAMPLES"
 echo "Auto-resize vocabulary: ${AUTO_RESIZE_VOCAB:+Enabled}"
 echo "Watchdog timeout: ${WATCHDOG_TIMEOUT:+${WATCHDOG_TIMEOUT#--watchdog-timeout }}"
+echo "Batch timeout: ${BATCH_TIMEOUT:+${BATCH_TIMEOUT#--batch-timeout }}"
 echo "Data loading threads: ${DATA_THREADS:+${DATA_THREADS#--data-threads }}"
 echo "Maximum target ID: ${TARGET_ID_MAX:+${TARGET_ID_MAX#--target-id-max }}"
 echo "Parallel data preparation: ${PARALLEL_DATA_PREP:+Enabled}"
 echo "Model save path: $MODEL_SAVE_PATH"
 echo "-------------------------------"
 
-# Run the training
-RUST_BACKTRACE=1 cargo run --release --bin Wall-E -- \
-  $DATA_FILE \
-  --model-dim $MODEL_DIM \
-  --ff-dim $FF_DIM \
-  --heads $HEADS \
-  --layers $LAYERS \
-  --epochs $EPOCHS \
-  --vocab-size 5000 \
-  --min-freq 2 \
-  --save-path $MODEL_SAVE_PATH \
-  --learning-rate 0.0001 \
-  --enable-skip \
-  --strong-anti-rep \
-  --json-format \
-  --stories $STORIES \
-  --perf-log true \
-  --curriculum-examples $CURRICULUM_EXAMPLES \
-  $MEMORY_OPT \
-  $CHECKPOINT_STRATEGY \
-  $THREAD_OPT \
-  $BATCH_SIZE \
-  $AUTO_RESIZE_VOCAB \
-  $WATCHDOG_TIMEOUT \
-  $DATA_THREADS \
-  $TARGET_ID_MAX \
-  $PARALLEL_DATA_PREP \
-  $MT_TRAINING
+# Run the training command
+echo "Starting training..."
+echo "MT_TRAINING parameter value: \"$MT_TRAINING\""
+
+# Set RUST_BACKTRACE for better error reporting
+export RUST_BACKTRACE=1
+
+cargo run --release --bin Wall-E -- \
+    --model-dim $MODEL_DIM \
+    --ff-dim $FF_DIM \
+    --heads $HEADS \
+    --layers $LAYERS \
+    --epochs $EPOCHS \
+    --vocab-size 5000 \
+    --min-freq 2 \
+    --save-path $MODEL_SAVE_PATH \
+    --dataset $DATA_FILE \
+    --json-format \
+    --stories $STORIES \
+    --learning-rate 0.0001 \
+    --enable-skip \
+    --strong-anti-rep \
+    $MEMORY_OPT \
+    $CHECKPOINT_STRATEGY \
+    $THREAD_OPT \
+    $BATCH_SIZE \
+    --curriculum-examples $CURRICULUM_EXAMPLES \
+    $AUTO_RESIZE_VOCAB \
+    $WATCHDOG_TIMEOUT \
+    $BATCH_TIMEOUT \
+    $DATA_THREADS \
+    $TARGET_ID_MAX \
+    $PARALLEL_DATA_PREP \
+    $MT_TRAINING
 
 echo "Training complete. Model saved to $MODEL_SAVE_PATH"
 
@@ -235,3 +260,6 @@ MAX_TOKENS=50
 
 echo -e "\nGenerating sample text with prompt: \"$PROMPT\""
 ./scripts/test_generation.sh "$PROMPT" $MAX_TOKENS $MODEL_SAVE_PATH 
+
+# Print debug info about the MT_TRAINING parameter
+echo "MT_TRAINING value: $MT_TRAINING" 

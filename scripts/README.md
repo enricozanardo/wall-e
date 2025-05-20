@@ -8,7 +8,7 @@ The `wall-e1-model.sh` script provides a unified interface for all Wall-E1 model
 
 ```bash
 # Train a new model
-./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--profile|--perf-log]
+./wall-e1-model.sh train --size small|medium|large [--stories <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--batch-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--profile|--perf-log]
 
 # Generate text from a prompt
 ./wall-e1-model.sh generate "Your prompt here" --max-tokens 50 [--disable-watchdog]
@@ -78,7 +78,7 @@ All trained models use the `.walle` extension for consistency. The internal form
 ./wall-e1-model.sh train --size medium --parallel
 
 # Train with all options
-./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --data-threads 12 --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format --parallel
+./wall-e1-model.sh train --size large --stories 5000 --cpus 8 --memory-opt --checkpoint-strategy adaptive --thread-opt gradient_update --batch-size 128 --epochs 15 --curriculum-examples 5000 --auto-resize-vocab --target-id-max 10000 --watchdog-timeout 180 --batch-timeout 60 --data-threads 12 --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format --parallel
 
 # Train with performance profiling
 ./wall-e1-model.sh train --size small --perf-log
@@ -143,6 +143,7 @@ You can use the profiling and benchmarking scripts to measure performance improv
 - **--curriculum-examples <number>**: Number of examples to use for curriculum initialization (default: 500). Increasing this value can prevent stalling in curriculum level advancement, especially with larger batch sizes.
 - **--auto-resize-vocab**: Automatically resize vocabulary when target IDs exceed the current maximum, preventing "target_id out of range" errors
 - **--watchdog-timeout <seconds>**: Set timeout for watchdog thread detection (default: 60). Increase for larger models or slower systems.
+- **--batch-timeout <seconds>**: Set timeout for individual batch processing in multi-threaded mode (default: 60). Helps prevent threads from hanging in computation.
 - **--data-threads <number>**: Number of threads for data loading (min: 8, default: 70% of available cores). Increasing can help with CPU utilization.
 - **--target-id-max <number>**: Maximum target ID value (default: auto-detected, min: 5000). Set higher for larger vocabularies.
 - **--vocab-size <number>**: Size of the vocabulary (default: 10000). Smaller values create a more compact model, larger values improve accuracy but increase memory usage.
@@ -423,3 +424,27 @@ The scripts in this directory wrap the Rust-based Wall-E1 training system, provi
 3. `profile_training.sh` - Performance profiling script
 
 These scripts automatically configure optimal thread pool sizes, memory allocation strategies, and other low-level optimizations based on your system and the selected options. 
+
+## Known Issues
+
+### Multi-threaded Training Implementation
+
+The test program confirms that multi-threaded training is properly implemented and works correctly when using the test binary directly:
+
+```bash
+# Run the multi-threading test to verify it's working:
+cargo run --release --bin test_multithreading
+```
+
+The test will validate that:
+1. Multi-threaded training provides a significant speedup (5-6x) over single-threaded training
+2. All CPU cores are utilized during training
+3. The batch timeout mechanism effectively prevents deadlocks
+
+However, there's currently an issue with the script-based approach:
+
+1. There's a mismatch between script parameters and binary parameters. When running through `./scripts/wall-e1-model.sh`, the training command will fail with an "Unknown option: --dataset" error.
+2. The parameters aren't being properly passed from one script to another.
+
+**Workaround:**
+If you need to use multi-threaded training, use the test_multithreading binary directly for now, or modify your own version of the scripts to fix the parameter handling issues. 

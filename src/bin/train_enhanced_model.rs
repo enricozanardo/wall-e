@@ -465,6 +465,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // New parameters added for enhanced functionality
     let mut auto_resize_vocab = false;
     let mut watchdog_timeout: Option<u64> = None;
+    let mut batch_timeout: Option<u64> = None;
     let mut data_threads: Option<usize> = None;
     let mut target_id_max: Option<usize> = None;
     let mut disable_watchdog = false;
@@ -472,6 +473,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut use_parallel = false;
     // New parameter for full multi-threaded training
     let mut use_mt_training = false;
+
+    // Check for MT training environment variable
+    if let Ok(val) = std::env::var("WALL_E_MT_TRAINING") {
+        if val == "1" || val.to_lowercase() == "true" {
+            println!("🔴 Multi-threaded training enabled via environment variable");
+            use_mt_training = true;
+        }
+    }
 
     // Display help if no arguments are provided or explicitly requested
     if args.len() == 1 || args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
@@ -507,6 +516,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("  --thread-opt <strat>    Thread optimization strategy: default, aggressive, conservative");
         println!("  --auto-resize-vocab <bool> Automatically resize vocabulary (yes/no)");
         println!("  --watchdog-timeout <sec> Set watchdog timeout in seconds for detecting hangs");
+        println!("  --batch-timeout <sec>   Set timeout for individual batch processing in multi-threaded mode");
         println!("  --data-threads <num>    Set number of threads for data loading");
         println!("  --target-id-max <num>   Set maximum token ID to target (for focused training)");
         println!("  --disable-watchdog      Disable the watchdog timer");
@@ -672,6 +682,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
+            "--batch-timeout" => {
+                if let Some(val) = arg_iter.next() {
+                    if let Ok(timeout) = val.parse::<u64>() {
+                        batch_timeout = Some(timeout);
+                        println!("Batch processing timeout set to {} seconds", timeout);
+                    }
+                }
+            }
             "--data-threads" => {
                 if let Some(val) = arg_iter.next() {
                     if let Ok(threads) = val.parse::<usize>() {
@@ -730,6 +748,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::env::set_var("WALL_E_DISABLE_WATCHDOG", "true");
         }
         println!("🛑 Watchdog disabled for training session");
+    }
+    
+    // Set batch timeout for multi-threaded training
+    if let Some(timeout) = batch_timeout {
+        unsafe {
+            std::env::set_var("WALL_E_BATCH_TIMEOUT", timeout.to_string());
+        }
+        println!("⏱️ Setting WALL_E_BATCH_TIMEOUT={} for multi-threaded batch processing", timeout);
     }
     
     // Log argument parsing time
@@ -1082,7 +1108,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // This is likely the step using a single core during initialization
         let train_epoch_start = Instant::now();
         println!("  ⌛ Running train_epoch - this initial setup might be single-threaded momentarily...");
-        let loss = train_epoch(&mut trainer, &training_tokens, epoch, enable_memory_optimization, manual_batch_size, use_parallel, use_mt_training);
+        let loss = train_epoch(
+            &mut trainer,
+            &training_tokens,
+            epoch,
+            enable_memory_optimization,
+            manual_batch_size,
+            use_parallel,
+            use_mt_training,
+        );
         let train_epoch_time = train_epoch_start.elapsed();
         
         global_perf_logger.end(format!("epoch_{}", epoch + 1).as_str());

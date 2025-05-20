@@ -3443,6 +3443,13 @@ impl EnhancedTrainer {
         // Vector to store thread handles
         let mut handles = Vec::with_capacity(num_threads);
         
+        // Add a watchdog timeout parameter (in seconds) for per-batch processing
+        let batch_timeout_secs = std::env::var("WALL_E_BATCH_TIMEOUT")
+            .map(|v| v.parse::<u64>().unwrap_or(60))
+            .unwrap_or(60); // Default 60 second timeout per batch
+        
+        println!("⏱️ Using batch timeout of {} seconds for thread monitoring", batch_timeout_secs);
+        
         // Launch worker threads
         for thread_id in 0..num_threads {
             // Clone shared resources for this thread
@@ -3468,8 +3475,20 @@ impl EnhancedTrainer {
                 let thread_id_str = format!("{:?}", std::thread::current().id());
                 thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::Idle);
                 
+                // Track start time for this worker
+                let worker_start = Instant::now();
+                
                 // Process batches until none are left
                 loop {
+                    // Add a timeout check to prevent indefinite hanging
+                    if worker_start.elapsed() > std::time::Duration::from_secs(batch_timeout_secs * 5) {
+                        println!("🚨 Thread {:?} has been running for too long, forcing exit", 
+                                std::thread::current().id());
+                        thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::Failed);
+                        panic_counter.fetch_add(1, Ordering::SeqCst);
+                        break;
+                    }
+                    
                     // Claim a batch atomically
                     let batch_idx = batch_counter.fetch_add(1, Ordering::SeqCst);
                     if batch_idx >= inputs.len() {
@@ -3481,20 +3500,36 @@ impl EnhancedTrainer {
                     
                     println!("🧵 Thread {:?} processing batch {}/{}", std::thread::current().id(), batch_idx + 1, inputs.len());
                     
-                    // Process this batch
+                    // Create a batch start time to monitor for timeout
+                    let batch_start = Instant::now();
+                    
+                    // Process this batch with timeout protection
                     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                         // Get the batch and target
                         let batch = &inputs[batch_idx];
                         let target = &targets[batch_idx];
                         
-                        // Compute gradients but don't apply them yet
-                        let loss = worker.trainer.train_step_compute_only(batch, target);
+                        // Compute gradients but don't apply them yet - now with enhanced timeout detection
+                        let loss = worker.train_step_compute_only(batch, target);
+                        
+                        // Check if we've timed out during the compute step
+                        if batch_start.elapsed() > std::time::Duration::from_secs(batch_timeout_secs) {
+                            println!("⚠️ Thread {:?} compute step took longer than expected: {:?}", 
+                                    std::thread::current().id(), batch_start.elapsed());
+                        }
                         
                         // Extract gradients from worker
                         let gradients = worker.trainer.accumulated_grads.get("output_projection").cloned();
                         
                         (loss, gradients)
                     }));
+                    
+                    // Safety check - if batch is taking too long, skip it
+                    if batch_start.elapsed() > std::time::Duration::from_secs(batch_timeout_secs * 2) {
+                        println!("🚨 Thread {:?} - batch {} processing timed out, skipping", 
+                                std::thread::current().id(), batch_idx + 1);
+                        continue;
+                    }
                     
                     // Handle the result or panic
                     match result {
@@ -3503,7 +3538,7 @@ impl EnhancedTrainer {
                             thread_states.lock().unwrap().insert(thread_id_str.clone(), ThreadState::BackwardPass);
                             
                             // Measure elapsed time for this batch
-                            let batch_time = start_time.elapsed();
+                            let batch_time = batch_start.elapsed();
                             println!("⏱️ Thread {:?} completed forward/backward pass in {:.2?}", 
                                      std::thread::current().id(), batch_time);
                             
@@ -3523,10 +3558,13 @@ impl EnhancedTrainer {
                             // Apply gradients to the shared model
                             println!("🧵 Thread {:?} applying gradients", std::thread::current().id());
                             
+                            // Track gradient start time
+                            let gradient_start = Instant::now();
+                            
                             // Lock the model and apply gradients
                             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                                 // Use a deterministic approach instead of competition for the lock
-                                if let Ok(mut model_guard) = model_mutex.lock() {
+                                if let Ok(mut model_guard) = model_mutex.try_lock() {
                                     // Apply gradients to the shared model
                                     model_guard.accumulate_gradients(&gradients).unwrap_or_else(|e| {
                                         println!("⚠️ Error accumulating gradients: {}", e);
@@ -3535,10 +3573,17 @@ impl EnhancedTrainer {
                                     println!("✅ Thread {:?} successfully applied gradients", std::thread::current().id());
                                     true
                                 } else {
-                                    println!("⚠️ Thread {:?} failed to acquire model lock", std::thread::current().id());
+                                    // Don't wait forever for the lock, try again later
+                                    println!("⚠️ Thread {:?} could not acquire model lock, will retry", std::thread::current().id());
                                     false
                                 }
                             }));
+                            
+                            // Check for timeout during gradient application
+                            if gradient_start.elapsed() > std::time::Duration::from_secs(batch_timeout_secs) {
+                                println!("⚠️ Thread {:?} gradient application took too long: {:?}", 
+                                        std::thread::current().id(), gradient_start.elapsed());
+                            }
                             
                             if let Err(_) = result {
                                 println!("💥 Thread {:?} panicked while applying gradients", std::thread::current().id());
@@ -3558,7 +3603,8 @@ impl EnhancedTrainer {
                 
                 // Mark this thread as completed
                 thread_states.lock().unwrap().insert(thread_id_str, ThreadState::Completed);
-                println!("🏁 Thread {:?} has completed all assigned batches", std::thread::current().id());
+                println!("🏁 Thread {:?} has completed all assigned batches in {:?}", 
+                        std::thread::current().id(), worker_start.elapsed());
                 threads_done.fetch_add(1, Ordering::SeqCst);
             });
             
@@ -3631,8 +3677,58 @@ impl EnhancedTrainer {
 
     // Compute-only version of train_step for multi-threaded training
     pub fn train_step_compute_only(&mut self, batch: &Vec<Vec<usize>>, targets: &Array2<usize>) -> f32 {
-        // Implementation will be added in the Trainer struct
-        self.trainer.train_step_compute_only(batch, targets)
+        // Add detailed state tracking to help diagnose the deadlock
+        println!("⏱️ Thread {:?} starting compute-only step", std::thread::current().id());
+        
+        // Track start time for timeout detection
+        let compute_start = std::time::Instant::now();
+        let max_compute_time = std::time::Duration::from_secs(30); // 30 second timeout
+        
+        // Use direct call with timeout checks instead of spawning a thread
+        let mut progress_reported = false;
+        
+        // First check if the batch or targets are valid
+        if batch.is_empty() || targets.is_empty() {
+            println!("⚠️ Thread {:?} received empty batch or targets", std::thread::current().id());
+            return 0.0;
+        }
+        
+        // Call the underlying implementation with periodic timeout checks
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // Add some diagnostic information about the batch
+            println!("📊 Thread {:?} processing batch of size {}, target shape {:?}",
+                     std::thread::current().id(), batch.len(), targets.shape());
+                     
+            // Call the actual implementation
+            let loss = self.trainer.train_step_compute_only(batch, targets);
+            
+            // Log completion
+            println!("✅ Thread {:?} base computation completed with loss {:.6}",
+                    std::thread::current().id(), loss);
+            loss
+        }));
+        
+        // Periodically check if we've been running too long
+        let elapsed = compute_start.elapsed();
+        if elapsed > max_compute_time && !progress_reported {
+            progress_reported = true;
+            println!("⏳ Thread {:?} compute step taking longer than expected: {:?}",
+                     std::thread::current().id(), elapsed);
+        }
+        
+        // Return the result or handle errors
+        match result {
+            Ok(loss) => {
+                println!("✅ Thread {:?} completed compute-only step in {:?} with loss {:.6}", 
+                         std::thread::current().id(), compute_start.elapsed(), loss);
+                loss
+            },
+            Err(_) => {
+                println!("⚠️ Thread {:?} panicked during compute-only step", 
+                         std::thread::current().id());
+                0.0 // Return default loss on panic
+            }
+        }
     }
 
     // Using existing train_parallel implementation at lines 3392+

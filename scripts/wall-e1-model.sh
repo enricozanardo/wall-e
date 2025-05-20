@@ -10,7 +10,7 @@ show_usage() {
   echo "Usage: $0 [command] [options]"
   echo ""
   echo "Commands:"
-  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--mt-training] Train a new model with specified options"
+  echo "  train [--size small|medium|large] [--stories <number>] [--cpus <number>] [--memory-opt] [--checkpoint-strategy <strategy>] [--thread-opt <operation>] [--batch-size <number>] [--epochs <number>] [--curriculum-examples <number>] [--profile] [--auto-resize-vocab] [--watchdog-timeout <seconds>] [--batch-timeout <seconds>] [--data-threads <number>] [--target-id-max <number>] [--vocab-size <number>] [--min-freq <number>] [--enable-skip] [--strong-anti-rep] [--json-format] [--parallel] [--mt-training] Train a new model with specified options"
   echo "  generate [prompt] [options]        Generate text from a prompt"
   echo "  clean                              Remove all model files"
   echo ""
@@ -27,6 +27,7 @@ show_usage() {
   echo "  --profile, --perf-log              Enable detailed performance profiling"
   echo "  --auto-resize-vocab                Automatically resize vocabulary for out-of-range target IDs"
   echo "  --watchdog-timeout [seconds]       Set timeout for watchdog thread detection (default: 60)"
+  echo "  --batch-timeout [seconds]         Set timeout for individual batch processing in multi-threaded mode (default: 60)"
   echo "  --data-threads [number]            Number of threads for data loading (min: 8, default: 70% of available cores)"
   echo "  --target-id-max [number]           Maximum target ID value (default: auto-detected, min: 5000)"
   echo "  --vocab-size [number]              Size of the vocabulary (default: 10000)"
@@ -55,6 +56,7 @@ show_usage() {
   echo "  $0 train --size small --watchdog-timeout 120 --data-threads 16  Train with custom watchdog and data thread settings"
   echo "  $0 train --size small --vocab-size 5000 --min-freq 2 --enable-skip --strong-anti-rep --json-format  Train with custom vocabulary and architecture settings"
   echo "  $0 train --size small --parallel   Train with parallel data preparation for better performance"
+  echo "  $0 train --size small --mt-training --batch-timeout 90  Train with multi-threading and custom batch timeout"
   echo "  $0 generate \"Once upon a time\"     Generate text from the default model"
   echo "  $0 generate \"Hello world\" --model models/my_model.walle --max-tokens 100 --cpus 2 --disable-watchdog"
 }
@@ -86,6 +88,8 @@ train_model() {
   local auto_resize_vocab_param=""
   local watchdog_timeout=""
   local watchdog_timeout_param=""
+  local batch_timeout=""
+  local batch_timeout_param=""
   local data_threads=""
   local data_threads_param=""
   local target_id_max=""
@@ -127,7 +131,7 @@ train_model() {
         ;;
       --memory-opt)
         memory_opt="true"
-        memory_opt_param="--use-memory-opt"
+        memory_opt_param="--memory-opt"
         shift 1
         ;;
       --checkpoint-strategy)
@@ -163,6 +167,11 @@ train_model() {
       --watchdog-timeout)
         watchdog_timeout="$2"
         watchdog_timeout_param="--watchdog-timeout $watchdog_timeout"
+        shift 2
+        ;;
+      --batch-timeout)
+        batch_timeout="$2"
+        batch_timeout_param="--batch-timeout $batch_timeout"
         shift 2
         ;;
       --data-threads)
@@ -231,10 +240,11 @@ train_model() {
         fi
         ;;
       --mt-training|--mt)
-        # New parameter for multi-threaded training
+        echo "Enabling multi-threaded training (experimental)"
         mt_training_param="--mt-training"
-        parallel_data_prep_param="--parallel" # MT training implies parallel data prep
-        shift 1
+        # Also make sure we're using parallel data preparation with MT training
+        parallel_data_prep_param="--parallel"
+        shift
         ;;
       *)
         echo "Unknown option: $1"
@@ -273,136 +283,45 @@ train_model() {
   
   # Call the training script
   echo "Training a $size model..."
-  if [[ -n "$stories" ]]; then
-    echo "Using $stories stories for training"
-  fi
-  if [[ -n "$cpus" ]]; then
-    echo "Using $cpus CPU cores for training"
-  fi
-  if [[ -n "$memory_opt" ]]; then
-    echo "Memory optimization enabled"
-  fi
-  if [[ -n "$checkpoint_strategy" ]]; then
-    echo "Using $checkpoint_strategy gradient checkpointing strategy"
-  fi
-  if [[ -n "$thread_opt" ]]; then
-    echo "Optimizing thread allocation for $thread_opt operations"
-  fi
-  if [[ -n "$batch_size" ]]; then
-    echo "Using manual batch size: $batch_size"
-  fi
-  if [[ -n "$epochs" ]]; then
-    echo "Using $epochs training epochs"
-  fi
-  if [[ -n "$curriculum_examples" ]]; then
-    echo "Using $curriculum_examples examples for curriculum initialization"
-  fi
-  if [[ -n "$auto_resize_vocab" ]]; then
-    echo "Automatic vocabulary resizing enabled"
-  fi
-  if [[ -n "$watchdog_timeout" ]]; then
-    echo "Watchdog timeout set to $watchdog_timeout seconds"
-  fi
-  if [[ -n "$data_threads" ]]; then
-    echo "Using $data_threads threads for data loading"
-  fi
-  if [[ -n "$target_id_max" ]]; then
-    echo "Maximum target ID set to $target_id_max"
-  fi
-  if [[ -n "$vocab_size" ]]; then
-    echo "Vocabulary size set to $vocab_size"
-  fi
-  if [[ -n "$min_freq" ]]; then
-    echo "Minimum token frequency set to $min_freq"
-  fi
-  if [[ -n "$enable_skip" ]]; then
-    echo "Skip connections enabled"
-  fi
-  if [[ -n "$strong_anti_rep" ]]; then
-    echo "Strong anti-repetition mechanisms enabled"
-  fi
-  if [[ -n "$json_format" ]]; then
-    echo "Using JSON format for input data"
-  fi
-  if [[ -n "$parallel_data_prep" ]]; then
-    echo "Parallel data preparation enabled"
-  fi
-  if [[ -n "$profile" ]]; then
-    echo "Performance profiling enabled"
+  echo "Using $stories stories for training"
+  echo "Using $epochs training epochs"
+  
+  # Output batch timeout information if set
+  if [[ -n "$batch_timeout_param" ]]; then
+    batch_timeout_val=${batch_timeout_param#--batch-timeout }
+    echo "Batch timeout set to $batch_timeout_val seconds"
+    export WALL_E_BATCH_TIMEOUT=$batch_timeout_val
   fi
   
-  # Check if data file exists
-  local data_file="./data/tiny_stories_sample.json"
-  
-  # First check for the 10k version
-  if [[ -f "./data/tinystories-10k.json" ]]; then
-    data_file="./data/tinystories-10k.json"
-  elif [[ -f "./data/tinystories-1k.json" ]]; then
-    data_file="./data/tinystories-1k.json"
-  elif [[ ! -f "$data_file" ]]; then
-    echo "Error: Training data file not found. Expected $data_file"
-    echo "Please place the TinyStories JSON dataset in the data directory."
-    exit 1
+  # Enable multi-threaded training explicitly if set
+  if [[ "$mt_training_param" == "--mt-training" ]]; then
+    echo "Multi-threaded training enabled"
+    export WALL_E_MT_TRAINING=1
   fi
-
-  # Set up save path
-  local save_path="models/high_accuracy_model.walle"
   
-  if [[ -n "$profile" ]]; then
-    # Use our profiling script
-    echo "Running with performance profiling..."
-    
-    # Create profiling directory if it doesn't exist
-    mkdir -p ./profiling_results
-    
-    ./scripts/profile_training.sh \
-      $stories_param \
-      --model-dim $model_dim \
-      --ff-dim $ff_dim \
-      --layers $layers \
-      $epochs_param \
-      $cpus_param \
-      $memory_opt_param \
-      $checkpoint_strategy_param \
-      $thread_opt_param \
-      $batch_size_param \
-      $curriculum_examples_param \
-      $auto_resize_vocab_param \
-      $watchdog_timeout_param \
-      $data_threads_param \
-      $target_id_max_param \
-      $vocab_size_param \
-      $min_freq_param \
-      $enable_skip_param \
-      $strong_anti_rep_param \
-      $json_format_param \
-      $parallel_data_prep_param \
-      $mt_training_param \
-      $data_file
-  else
-    # Use the regular training script
-    ./scripts/train_optimized_accuracy.sh \
-      --size "$size" \
-      $stories_param \
-      $cpus_param \
-      $memory_opt_param \
-      $checkpoint_strategy_param \
-      $thread_opt_param \
-      $batch_size_param \
-      $epochs_param \
-      $curriculum_examples_param \
-      $auto_resize_vocab_param \
-      $watchdog_timeout_param \
-      $data_threads_param \
-      $target_id_max_param \
-      $vocab_size_param \
-      $min_freq_param \
-      $enable_skip_param \
-      $strong_anti_rep_param \
-      $json_format_param \
-      $parallel_data_prep_param \
-      $mt_training_param
-  fi
+  # Run the training script with parameters
+  ./scripts/train_optimized_accuracy.sh \
+    --size $size \
+    $stories_param \
+    $cpus_param \
+    $memory_opt_param \
+    $checkpoint_strategy_param \
+    $thread_opt_param \
+    $batch_size_param \
+    $epochs_param \
+    $curriculum_examples_param \
+    $auto_resize_vocab_param \
+    $watchdog_timeout_param \
+    $batch_timeout_param \
+    $data_threads_param \
+    $target_id_max_param \
+    $vocab_size_param \
+    $min_freq_param \
+    $enable_skip_param \
+    $strong_anti_rep_param \
+    $json_format_param \
+    $parallel_data_prep_param \
+    $mt_training_param
   
   echo "Training complete! Model saved to models/high_accuracy_model.walle"
 }
